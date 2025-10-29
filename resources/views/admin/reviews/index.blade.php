@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between mb-3">
-    <h2>Danh sách đánh giá</h2>
+    <h2>Quản lý danh sách đánh giá</h2>
     <a href="#" class="btn btn-primary">Thêm đánh giá mới</a>
 </div>
 
@@ -49,7 +49,7 @@
             <td>{{ $review->created_at->format('d/m/Y H:i') }}</td>
             <td>
                 <a href="#" class="btn btn-sm btn-info">Xem</a>
-                
+
                 <a href="#" class="btn btn-sm btn-warning">Sửa</a>
 
                 <form action="{{ route('admin.reviews.destroy', $review->id) }}" method="POST" class="d-inline-block" onsubmit="return confirm('Bạn có chắc muốn xóa đánh giá này?');">

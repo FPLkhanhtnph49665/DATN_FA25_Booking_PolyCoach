@@ -19,6 +19,26 @@ class AuthenticatedSessionController extends Controller
         return view('auth.login');
     }
 
+    protected function authenticated(Request $request, $user)
+{
+    // Nếu tài khoản bị khóa
+    if ($user->status === 0) {
+        Auth::logout(); // đăng xuất ngay lập tức
+        return redirect()->route('login')->withErrors([
+            'email' => 'Tài khoản của bạn đã bị khóa.',
+        ]);
+    }
+
+    // Phân quyền admin
+    if ($user->role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    }
+
+    return redirect('/'); // user bình thường
+}
+
+
+
     /**
      * Handle an incoming authentication request.
      */

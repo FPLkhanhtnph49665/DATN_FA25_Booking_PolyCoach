@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="d-flex justify-content-between mb-3">
-        <h2>Danh sách tuyến đường</h2>
+        <h2>Quản lý danh sách tuyến đường</h2>
         <a href="#" class="btn btn-primary">Thêm tuyến mới</a>
     </div>
 
@@ -43,7 +43,7 @@
                     </td>
                     <td>
                         <a href="#" class="btn btn-sm btn-info">Xem</a>
-                        
+
                         <a href="#" class="btn btn-sm btn-warning">Sửa</a>
 
                         <form action="" method="POST" class="d-inline-block"

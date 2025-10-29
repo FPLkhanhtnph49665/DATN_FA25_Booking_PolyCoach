@@ -32,6 +32,12 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    public function isRoleAdmin(): bool
+    {
+        return $this->role === 'admin'; // hoặc 'is_admin' nếu bạn dùng cột này
+    }
+
+
     // Relationship
     public function tickets()
     {

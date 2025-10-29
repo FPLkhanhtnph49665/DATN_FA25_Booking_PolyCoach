@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\BusController;
 use App\Http\Controllers\Admin\TripController;
@@ -17,27 +18,19 @@ Route::get('/', function () {
 })->name('comingsoon');
 
 
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::view('/', 'admin.dashboard')->name('dashboard');
-Route::resource('users', UserController::class);
-Route::resource('routes', RouteController::class);
-Route::resource('buses', BusController::class);
-Route::resource('trips', TripController::class);
-Route::resource('tickets', TicketController::class);
-Route::resource('passengers', PassengerController::class);
-Route::resource('payments', PaymentController::class);
-Route::resource('reviews', ReviewController::class);
-Route::resource('contacts', ContactController::class);
-    // Route::view('users', 'admin.users.index')->name('users.index');
-    // Route::view('routes', 'admin.routes.index')->name('routes.index');
-    // Route::view('buses', 'admin.buses.index')->name('buses.index');
-    // Route::view('trips', 'admin.trips.index')->name('trips.index');
-    // Route::view('tickets', 'admin.tickets.index')->name('tickets.index');
-    // Route::view('payments', 'admin.payments.index')->name('payments.index');
-    // Route::view('reviews', 'admin.reviews.index')->name('reviews.index');
-    // Route::view('contacts', 'admin.contacts.index')->name('contacts.index');
-    // Route::view('passengers', 'admin.passengers.index')->name('passengers.index');
+    Route::resource('users', UserController::class);
+    Route::resource('bus-routes', RouteController::class);
+    Route::resource('buses', BusController::class);
+    Route::resource('trips', TripController::class);
+    Route::resource('tickets', TicketController::class);
+    Route::resource('passengers', PassengerController::class);
+    Route::resource('payments', PaymentController::class);
+    Route::resource('reviews', ReviewController::class);
+    Route::resource('contacts', ContactController::class);
 });
+
 
 
 Route::get('/dashboard', function () {
@@ -50,4 +43,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

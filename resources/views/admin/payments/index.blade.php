@@ -5,7 +5,7 @@
 
 @section('content')
     <div class="d-flex justify-content-between mb-3">
-        <h2>Danh sách thanh toán</h2>
+        <h2>Quản lý danh sách thanh toán</h2>
         <a href="#" class="btn btn-primary">Thêm thanh toán mới</a>
     </div>
 
@@ -48,7 +48,7 @@
                     <td>{{ $payment->created_at->format('d/m/Y H:i') }}</td>
                     <td>
                         <a href="#" class="btn btn-sm btn-info">Xem</a>
-                        
+
                         <a href="#" class="btn btn-sm btn-warning">Sửa</a>
 
                         <form action="{{ route('admin.payments.destroy', $payment->id) }}" method="POST" class="d-inline-block"

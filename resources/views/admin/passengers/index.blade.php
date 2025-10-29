@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between mb-3">
-    <h2>Danh sách hành khách</h2>
+    <h2>Quản lý danh sách hành khách</h2>
     <a href="#" class="btn btn-primary">Thêm hành khách mới</a>
 </div>
 
