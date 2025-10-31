@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use App\Models\User;
 
 class UserFactory extends Factory
@@ -18,7 +17,13 @@ class UserFactory extends Factory
         $firstName = $this->faker->firstName();
         $lastName = $this->faker->lastName();
 
+        // Tạo user_code theo kiểu DATN_FA25_PoLyCoach_0001
+        $lastUserId = User::max('id') ?? 0;
+        $number = $lastUserId + 1;
+        $userCode = 'DATN_FA25_PoLyCoach_' . str_pad($number, 4, '0', STR_PAD_LEFT);
+
         return [
+            'user_code' => $userCode,
             'first_name' => $firstName,
             'last_name' => $lastName,
             'full_name' => $firstName . ' ' . $lastName,
@@ -27,6 +32,7 @@ class UserFactory extends Factory
             'role' => $this->faker->randomElement(['admin','customer']),
             'status' => 1,
             'password' => static::$password ??= Hash::make('123456'),
+            'image' => null, // hoặc có thể dùng faker: $this->faker->image('public/storage/images', 100, 100, null, false)
         ];
     }
 
