@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\RouteController;
 use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\ContactController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\PassengerController;
 
@@ -19,7 +20,8 @@ Route::get('/', function () {
 
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', AdminMiddleware::class])->group(function () {
-    Route::view('/', 'admin.dashboard')->name('dashboard');
+    // Route::get('/', 'admin.dashboard')->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', UserController::class);
     Route::resource('bus-routes', RouteController::class);
     Route::resource('buses', BusController::class);

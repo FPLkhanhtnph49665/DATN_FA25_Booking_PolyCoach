@@ -4,18 +4,46 @@
 @section('title', 'Quản lý Users')
 
 @section('content')
-    <div class="d-flex justify-content-between mb-3">
-        <h2>Danh sách Users</h2>
-        <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Thêm User mới</a>
-    </div>
+<div class="d-flex justify-content-between mb-3">
+    <h2>Danh sách Users</h2>
+    <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Thêm User mới</a>
+</div>
 
-    <table class="table table-striped table-bordered">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+@if(session('success'))
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Thành công!',
+            text: '{{ session('success') }}',
+            showConfirmButton: false,
+            timer: 2000
+        });
+    </script>
+@endif
+
+@if(session('error'))
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi!',
+            text: '{{ session('error') }}',
+            showConfirmButton: true
+        });
+    </script>
+@endif
+
+<div class="table-responsive">
+    <table class="table table-striped table-bordered align-middle">
         <thead class="table-dark">
             <tr>
                 <th>#</th>
+                <th>Mã User</th>
                 <th>Họ</th>
                 <th>Tên</th>
                 <th>Full Name</th>
+                <th>Ảnh</th>
                 <th>Email</th>
                 <th>Phone</th>
                 <th>Role</th>
@@ -28,11 +56,16 @@
             @forelse($users as $user)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
+                    <td>{{ $user->user_code }}</td>
                     <td>{{ $user->first_name }}</td>
                     <td>{{ $user->last_name }}</td>
                     <td>{{ $user->full_name }}</td>
+                    <td>
+                        <img src="{{ $user->image ? asset('storage/' . $user->image) : asset('default-avatar.png') }}"
+                             alt="Avatar" class="img-thumbnail rounded-circle" width="50">
+                    </td>
                     <td>{{ $user->email }}</td>
-                    <td>{{ $user->phone ?? '-' }}</td>
+                    <td>{{ $user->masked_phone ?? '-' }}</td>
                     <td>
                         @if($user->role === 'admin')
                             <span class="badge bg-success">Quản trị viên</span>
@@ -49,26 +82,48 @@
                     </td>
                     <td>{{ $user->created_at->format('d/m/Y H:i') }}</td>
                     <td>
-                        <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-warning">Sửa</a>
+                        <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-warning mb-1">Sửa</a>
 
-                        <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline-block"
-                            onsubmit="return confirm('Bạn có chắc muốn xóa user này?');">
+                        <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline-block delete-user-form">
                             @csrf
                             @method('DELETE')
-                            <button class="btn btn-sm btn-danger">Xóa</button>
+                            <button type="submit" class="btn btn-sm btn-danger mb-1">Xóa</button>
                         </form>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="10" class="text-center">Chưa có user nào</td>
+                    <td colspan="12" class="text-center">Chưa có user nào</td>
                 </tr>
             @endforelse
         </tbody>
     </table>
+</div>
 
-    {{-- Pagination --}}
-    <div class="d-flex justify-content-end mt-3">
-        {{ $users->links('pagination::bootstrap-4') }}
-    </div>
+{{-- Pagination --}}
+<div class="d-flex justify-content-end mt-3">
+    {{ $users->links('pagination::bootstrap-4') }}
+</div>
+
+<script>
+    // SweetAlert2 confirm xóa
+    document.querySelectorAll('.delete-user-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Bạn có chắc muốn xóa user này?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Xóa',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+</script>
 @endsection

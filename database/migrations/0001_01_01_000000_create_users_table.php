@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id(); // BIGINT PK
+            $table->string('user_code', 50)->unique();
             $table->string('first_name', 100);
             $table->string('last_name', 100);
             $table->string('full_name', 200); // có thể auto generate
@@ -20,6 +21,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable(); // từ Laravel mặc định
             $table->string('phone', 20)->nullable();
             $table->string('password'); // mật khẩu đã hash
+            $table->string('image')->nullable();
             $table->enum('role', ['admin','customer'])->default('customer'); // phân quyền
             $table->tinyInteger('status')->default(1); // 1: active, 0: blocked
             $table->rememberToken(); // từ Laravel mặc định

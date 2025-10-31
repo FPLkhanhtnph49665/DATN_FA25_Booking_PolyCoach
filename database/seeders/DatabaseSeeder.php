@@ -17,9 +17,22 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Tạo Users: 5 admin + 8 khách hàng
-        User::factory()->count(5)->state(['role' => 'admin'])->create();
-        $customers = User::factory()->count(8)->state(['role' => 'customer'])->create();
+        // 1. Tạo Users: 5 admin + 8 khách hàng với user_code không trùng
+        User::factory()
+            ->count(5)
+            ->state(['role' => 'admin'])
+            ->sequence(fn ($sequence) => [
+                'user_code' => 'DATN_FA25_PoLyCoach_' . str_pad($sequence->index + 1, 4, '0', STR_PAD_LEFT)
+            ])
+            ->create();
+
+        $customers = User::factory()
+            ->count(8)
+            ->state(['role' => 'customer'])
+            ->sequence(fn ($sequence) => [
+                'user_code' => 'DATN_FA25_PoLyCoach_' . str_pad($sequence->index + 6, 4, '0', STR_PAD_LEFT)
+            ])
+            ->create();
 
         // 2. Tạo Routes: 20 tuyến
         $routes = Route::factory()->count(20)->create();
@@ -29,7 +42,7 @@ class DatabaseSeeder extends Seeder
 
         // 4. Tạo Trips: 20 chuyến
         $trips = Trip::factory()
-            ->count(20)
+            ->count(50)
             ->state(function () use ($routes, $buses) {
                 return [
                     'route_id' => $routes->random()->id,
@@ -45,21 +58,12 @@ class DatabaseSeeder extends Seeder
             for ($i = 0; $i < $numTickets; $i++) {
                 $ticket = Ticket::factory()->state([
                     'trip_id' => $trip->id,
-                    'user_id' => $customers->random()->id,
+                    'user_id' => $customers->random()->id, // bắt buộc có user_id
                     'so_ghe' => rand(1, $trip->bus->so_ghe),
                 ])->create();
                 $tickets->push($ticket);
             }
         }
-$tickets = Ticket::factory()
-    ->count(35)
-    ->state(function () use ($customers, $trips) {
-        return [
-            'user_id' => $customers->random()->id, // đây phải có
-            'trip_id' => $trips->random()->id,
-        ];
-    })
-    ->create();
 
         // 6. Tạo Passengers: mỗi ticket 1-5 hành khách, ghế không trùng
         foreach ($tickets as $ticket) {

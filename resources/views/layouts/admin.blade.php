@@ -10,6 +10,7 @@
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+    {{-- <link rel="icon" href="{{ asset('testLogo.png') }}" type="image/png"> --}}
     @stack('styles')
 </head>
 
@@ -19,6 +20,8 @@
         <!-- Sidebar -->
         <nav id="sidebar">
             <h3 class="text-center">Quản Trị Viên</h3>
+            {{-- <img src="{{ asset('testLogo.png') }}" alt="Logo PolyCoach" class="img-fluid"> --}}
+
             <ul class="nav flex-column mt-4">
                 <li class="nav-item"><a href="{{ route('admin.dashboard') }}" class="nav-link">Dashboard</a></li>
                 <li class="nav-item"><a href="{{ route("admin.users.index") }}" class="nav-link">Quản lý Users</a></li>
