@@ -6,7 +6,7 @@
 @section('content')
 <div class="d-flex justify-content-between mb-3">
     <h2>Danh sách chuyến</h2>
-    <a href="{{ route('admin.trips.create') }}" class="btn btn-primary">Thêm chuyến mới</a>
+    <a href="{{ route('admin.trips.create') }}" class="btn btn-success">Thêm chuyến mới</a>
 </div>
 
 @if(session('success'))

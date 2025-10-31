@@ -6,7 +6,7 @@
 @section('content')
 <div class="d-flex justify-content-between mb-3">
     <h2>Danh sách Users</h2>
-    <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Thêm User mới</a>
+    <a href="{{ route('admin.users.create') }}" class="btn btn-success">Thêm User mới</a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

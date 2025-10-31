@@ -6,7 +6,7 @@
 @section('content')
     <div class="d-flex justify-content-between mb-3">
         <h2>Quản lý danh sách thanh toán</h2>
-        <a href="#" class="btn btn-primary">Thêm thanh toán mới</a>
+        <a href="#" class="btn btn-success">Thêm thanh toán mới</a>
     </div>
 
     @if(session('success'))

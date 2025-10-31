@@ -14,7 +14,9 @@ class DashboardController extends Controller
     {
         $totalUsers = User::count();
         $totalBuses = Bus::count();
+        $activeBuses = Bus::where('trang_thai', 1)->count();
         $totalTrips = Trip::count();
+        $activeTrips = Trip::where('trang_thai', 1)->count();
         $totalPayments = Payment::count(); // Thay Customers bằng Payments
 
         // Dữ liệu cho biểu đồ (ví dụ: số Payment theo tháng)
@@ -28,7 +30,9 @@ class DashboardController extends Controller
         return view('admin.dashboard', compact(
             'totalUsers',
             'totalBuses',
+            'activeBuses',
             'totalTrips',
+            'activeTrips',
             'totalPayments',
             'months',
             'paymentsPerMonth'
