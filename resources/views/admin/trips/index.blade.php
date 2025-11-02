@@ -45,7 +45,7 @@
                 @if($trip->trang_thai == 1)
                     <span class="badge bg-success">Hoạt động</span>
                 @else
-                    <span class="badge bg-secondary">Ngưng</span>
+                    <span class="badge bg-secondary">Đang bảo dưỡng</span>
                 @endif
             </td>
             <td>

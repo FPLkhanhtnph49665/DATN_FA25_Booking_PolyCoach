@@ -24,6 +24,7 @@ class BusController extends Controller
     public function create()
     {
         //
+        return view('admin.buses.create');
     }
 
     /**
@@ -32,6 +33,14 @@ class BusController extends Controller
     public function store(Request $request)
     {
         //
+        $request->validate([
+            'bien_so' => 'required|max:20|unique:buses,bien_so',
+            'so_ghe' => 'required|integer|min:4|max:100',
+            'loai_xe' => 'required|in:Giường,Limousine',
+        ]);
+
+        Bus::create($request->all());
+        return redirect()->route('admin.buses.index')->with('success', 'Thêm xe mới thành công!');
     }
 
     /**
@@ -40,6 +49,7 @@ class BusController extends Controller
     public function show(Bus $bus)
     {
         //
+        return view('admin.buses.show', compact('buses'));
     }
 
     /**
@@ -48,15 +58,31 @@ class BusController extends Controller
     public function edit(Bus $bus)
     {
         //
+        return view('admin.buses.edit', compact('bus'));
     }
 
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, Bus $bus)
-    {
-        //
-    }
+{
+    $request->validate([
+        'bien_so' => 'required|max:20|unique:buses,bien_so,' . $bus->id,
+        'so_ghe' => 'required|integer|min:4',
+        'loai_xe' => 'required|in:Giường nằm,Limousine',
+    ]);
+
+    $bus->update([
+        'bien_so' => $request->bien_so,
+        'so_ghe' => $request->so_ghe,
+        'loai_xe' => $request->loai_xe,
+        'trang_thai' => $request->trang_thai ?? $bus->trang_thai,
+    ]);
+
+    return redirect()->route('admin.buses.index')
+                     ->with('success', 'Cập nhật thông tin xe thành công!');
+}
+
 
     /**
      * Remove the specified resource from storage.

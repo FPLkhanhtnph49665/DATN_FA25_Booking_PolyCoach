@@ -83,18 +83,30 @@ class Trip extends Model
     }
 
     // Ghế còn trống dạng ký hiệu A1, A2…
-public function getAvailableSeatsAttribute() {
-    if(!$this->bus) return [];
-    $rows = ['A','B','C','D'];
-    $cols = range(1, ceil($this->bus->so_ghe / count($rows)));
-    $allSeats = [];
-    foreach($rows as $r){
-        foreach($cols as $c){
-            $seat = $r.$c;
-            $allSeats[] = $seat;
-            if(count($allSeats) >= $this->bus->so_ghe) break;
+    public function getAvailableSeatsAttribute()
+    {
+        $bus = $this->bus;
+
+        // ✅ Kiểm tra kỹ dữ liệu trước khi xử lý
+        if (!$bus || !is_numeric($bus->so_ghe) || $bus->so_ghe <= 0 || $bus->so_ghe > 100) {
+            return [];
         }
+
+        $rows = ['A', 'B', 'C', 'D'];
+        $cols = range(1, ceil($bus->so_ghe / count($rows)));
+
+        $allSeats = [];
+        $count = 0;
+
+        foreach ($rows as $r) {
+            foreach ($cols as $c) {
+                $seat = $r . $c;
+                $allSeats[] = $seat;
+                $count++;
+                if ($count >= $bus->so_ghe) break 2; // thoát 2 vòng
+            }
+        }
+
+        return array_diff($allSeats, $this->booked_seats ?? []);
     }
-    return array_diff($allSeats, $this->booked_seats);
-}
 }
