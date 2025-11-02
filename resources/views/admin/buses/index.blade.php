@@ -5,7 +5,7 @@
 @section('content')
     <div class="d-flex justify-content-between mb-3">
         <h2>Quản lý danh sách Xe</h2>
-        <a href="#" class="btn btn-primary">Thêm xe mới</a>
+        <a href="{{ route('admin.buses.create') }}" class="btn btn-primary">Thêm xe mới</a>
     </div>
 
     <table class="table table-striped table-bordered">
@@ -25,16 +25,24 @@
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ $bus->bien_so }}</td>
                     <td>{{ $bus->so_ghe }}</td>
-                    <td>{{ $bus->loai_xe }}</td>
                     <td>
-                        @if($bus->trang_thai == 1)
+    @if ($bus->loai_xe === 'Giường')
+        <span class="badge bg-info">Giường nằm</span>
+    @elseif ($bus->loai_xe === 'Limousine')
+        <span class="badge bg-warning">Limousine</span>
+    @else
+        <span class="badge bg-secondary">Không xác định</span>
+    @endif
+</td>
+                    <td>
+                        @if ($bus->trang_thai == 1)
                             <span class="badge bg-success">Hoạt động</span>
                         @else
-                            <span class="badge bg-secondary">Ngưng</span>
+                            <span class="badge bg-danger">Đang bảo dưỡng</span>
                         @endif
                     </td>
                     <td>
-                        <a href="#" class="btn btn-sm btn-warning">Sửa</a>
+                        <a href="{{ route('admin.buses.edit', $bus->id) }}" class="btn btn-sm btn-warning">Sửa</a>
                         <a href="#" class="btn btn-sm btn-danger">Xóa</a>
                     </td>
                 </tr>

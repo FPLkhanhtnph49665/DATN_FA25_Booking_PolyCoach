@@ -22,6 +22,7 @@
 /* Tiêu đề sidebar */
 #sidebar h3 {
     color: white;
+    background-color: rgb(#00d9ff, rgb(2, 164, 185), blue);
     margin-bottom: 2rem;
 }
 

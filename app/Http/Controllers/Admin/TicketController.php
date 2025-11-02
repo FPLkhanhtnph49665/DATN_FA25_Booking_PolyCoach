@@ -14,7 +14,7 @@ class TicketController extends Controller
     public function index()
     {
         //
-        $tickets = Ticket::with(['trip', 'user'])->paginate(10); // paginate thay vì all
+        $tickets = Ticket::with(['trip', 'user'])->paginate(25); // paginate thay vì all
         return view('admin.tickets.index', compact('tickets'));
     }
 

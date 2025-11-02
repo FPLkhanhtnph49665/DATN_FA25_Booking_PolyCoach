@@ -14,7 +14,7 @@ class RouteController extends Controller
     public function index()
     {
         //
-        $routes = Route::latest()->paginate(10);
+        $routes = Route::latest()->paginate(25);
         return view('admin.routes.index', compact('routes'));
     }
 
@@ -24,6 +24,7 @@ class RouteController extends Controller
     public function create()
     {
         //
+        return view('admin.routes.create');
     }
 
     /**
@@ -32,6 +33,17 @@ class RouteController extends Controller
     public function store(Request $request)
     {
         //
+        $data = $request->validate([
+            'diem_di' => 'required|string|max:100',
+            'diem_den' => 'required|string|max:100',
+            'quang_duong' => 'required|integer|min:1',
+            'thoi_gian_du_kien' => 'required',
+            'trang_thai' => 'required|in:0,1',
+        ]);
+
+        Route::create($data);
+
+        return redirect()->route('admin.bus-routes.index')->with('success', 'Đã tạo tuyến thành công!');
     }
 
     /**

@@ -6,7 +6,7 @@
 @section('content')
     <div class="d-flex justify-content-between mb-3">
         <h2>Danh sách vé</h2>
-        <a href="{{ route('admin.tickets.create') }}" class="btn btn-primary">Thêm vé mới</a>
+        <a href="{{ route('admin.tickets.create') }}" class="btn btn-success">Thêm vé mới</a>
     </div>
 
     @if(session('success'))
@@ -44,7 +44,7 @@
                     <td>{{ $ticket->phuong_thuc_thanh_toan }}</td>
                     <td>
                         <a href="{{ route('admin.tickets.show', $ticket->id) }}" class="btn btn-sm btn-info">Xem</a>
-                        
+
                         <a href="{{ route('admin.tickets.edit', $ticket->id) }}" class="btn btn-sm btn-warning">Sửa</a>
 
                         <form action="{{ route('admin.tickets.destroy', $ticket->id) }}" method="POST" class="d-inline-block"
