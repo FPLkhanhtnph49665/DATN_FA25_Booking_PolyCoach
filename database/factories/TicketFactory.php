@@ -15,7 +15,7 @@ class TicketFactory extends Factory
     {
         $trip = Trip::inRandomOrder()->first() ?? Trip::factory()->create();
         $user = User::inRandomOrder()->first() ?? User::factory()->create();
-        $maxSeats = $trip->bus->so_ghe ?? 40;
+        $maxSeats = $trip->bus?->so_ghe ?? 40;
 
         return [
             'trip_id' => $trip->id,

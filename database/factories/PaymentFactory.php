@@ -13,9 +13,12 @@ class PaymentFactory extends Factory
 
     public function definition(): array
     {
+        $ticket = Ticket::inRandomOrder()->first() ?? Ticket::factory()->create();
+        $user = $ticket->user ?? User::inRandomOrder()->first() ?? User::factory()->create();
+
         return [
-            'ticket_id' => Ticket::factory(),
-            'user_id' => User::factory(),
+            'ticket_id' => $ticket->id,
+            'user_id' => $user->id, // khách hàng thanh toán
             'so_tien' => $this->faker->randomFloat(2, 100000, 500000),
             'phuong_thuc' => $this->faker->randomElement(['Tiền mặt','Momo','VNPay']),
             'trang_thai' => $this->faker->randomElement(['pending','success','failed']),

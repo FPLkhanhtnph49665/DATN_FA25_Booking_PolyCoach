@@ -1,0 +1,88 @@
+/* ===== Reset chung ===== */
+body {
+    background-color: #fdfdfd;
+    color: #333;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ===== Header ===== */
+.client-header {
+    background: linear-gradient(90deg, #ff595e, #ff7b80);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.logo-gif {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.logo-gif:hover {
+    transform: rotate(8deg) scale(1.1);
+}
+
+/* ===== Navbar ===== */
+.nav-link {
+    color: white !important;
+    font-weight: 500;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 0%;
+    height: 2px;
+    background-color: white;
+    transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+/* ===== Footer ===== */
+.client-footer {
+    background-color: #ff595e;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    color: white;
+}
+
+.client-footer a {
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.client-footer a:hover {
+    color: #FFA500;
+}
+
+/* Footer headings */
+.client-footer h5 {
+    font-weight: 600;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .nav-link {
+        display: block;
+        text-align: center;
+        margin: 8px 0;
+    }
+
+    .client-header .container {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+}

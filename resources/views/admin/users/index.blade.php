@@ -8,7 +8,38 @@
     <h2>Danh sách Users</h2>
     <a href="{{ route('admin.users.create') }}" class="btn btn-success">Thêm User mới</a>
 </div>
-
+<form action="{{ route('admin.users.index') }}" method="GET" class="mb-4">
+    <div class="row g-2 align-items-center">
+        <div class="col-md-3">
+            <input type="text" name="keyword" value="{{ request('keyword') }}" class="form-control"
+                placeholder="Tìm theo tên, email, mã user...">
+        </div>
+        <div class="col-md-2">
+            <select name="role" class="form-select">
+                <option value="">-- Vai trò --</option>
+                <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Quản trị viên</option>
+                <option value="user" {{ request('role') == 'user' ? 'selected' : '' }}>Người dùng</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="status" class="form-select">
+                <option value="">-- Trạng thái --</option>
+                <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Kích hoạt</option>
+                <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Khóa</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-search"></i> Tìm kiếm
+            </button>
+        </div>
+        <div class="col-md-2">
+            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary w-100">
+                <i class="bi bi-arrow-repeat"></i> Làm mới
+            </a>
+        </div>
+    </div>
+</form>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 @if(session('success'))

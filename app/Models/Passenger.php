@@ -18,18 +18,30 @@ class Passenger extends Model
         'seat_number'
     ];
 
-    // Quan hệ với vé
+    // -------------------------------
+    // 🔗 RELATIONSHIPS
+    // -------------------------------
+
+    // Mỗi hành khách thuộc 1 vé
     public function ticket()
     {
         return $this->belongsTo(Ticket::class);
     }
+
+    // Hành khách -> User (thông qua vé)
     public function user()
-{
-    return $this->ticket?->user;
-}
+    {
+        return $this->hasOneThrough(
+            User::class,
+            Ticket::class,
+            'id',        // Ticket PK
+            'id',        // User PK
+            'ticket_id', // Passenger FK
+            'user_id'    // Ticket FK
+        );
+    }
 
-
-    // Quan hệ với chuyến qua vé
+    // Hành khách -> Trip (thông qua vé)
     public function trip()
     {
         return $this->hasOneThrough(
@@ -42,17 +54,29 @@ class Passenger extends Model
         );
     }
 
-    // Scope hành khách theo vé đã thanh toán
+    // -------------------------------
+    // 🔍 SCOPES
+    // -------------------------------
+
+    // Lọc hành khách có vé đã thanh toán
     public function scopePaid($query)
     {
-        return $query->whereHas('ticket', function($q){
+        return $query->whereHas('ticket', function ($q) {
             $q->where('trang_thai', 'paid');
         });
     }
 
-    // Accessor ghế
+    // -------------------------------
+    // 🧩 ACCESSORS
+    // -------------------------------
+
     public function getSeatLabelAttribute()
     {
-        return $this->seat_number;
+        return strtoupper($this->seat_number);
+    }
+
+    public function getDisplayNameAttribute()
+    {
+        return $this->name . ($this->age ? " ({$this->age} tuổi)" : '');
     }
 }

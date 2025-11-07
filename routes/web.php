@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BookingController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\ProfileController;
@@ -13,10 +14,19 @@ use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\PassengerController;
+use App\Http\Controllers\Client\HomeController;
+// use App\Http\Controllers\Client\BookingController;
 
-Route::get('/', function () {
-    return view('comingsoon');
-})->name('comingsoon');
+// Route::get('/', function () {
+//     return view('comingsoon');
+// })->name('comingsoon');
+
+
+Route::get('/', [HomeController::class, 'index'])->name('client.home');
+Route::get('/chuyen-di', [TripController::class, 'index'])->name('client.trips');
+Route::get('/tim-chuyen-di', [TripController::class, 'search'])->name('client.searchTrips');
+// Route::post('/bookings', [BookingController::class, 'store'])->name('client.bookings.store');
+
 
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', AdminMiddleware::class])->group(function () {
@@ -26,6 +36,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', AdminMiddleware::cla
     Route::resource('bus-routes', RouteController::class);
     Route::resource('buses', BusController::class);
     Route::resource('trips', TripController::class);
+    Route::resource('bookings', BookingController::class);
     Route::resource('tickets', TicketController::class);
     Route::resource('passengers', PassengerController::class);
     Route::resource('payments', PaymentController::class);

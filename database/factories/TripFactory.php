@@ -12,19 +12,24 @@ class TripFactory extends Factory
     protected $model = Trip::class;
 
     public function definition(): array
-{
-    $startDate = $this->faker->dateTimeBetween('+1 days', '+7 days'); // ngày khởi hành
-    $durationHours = rand(1, 6); // thời gian di chuyển
+    {
+        $route = Route::inRandomOrder()->first() ?? Route::factory()->create();
+        $bus = Bus::inRandomOrder()->first() ?? Bus::factory()->create();
 
-    return [
-        'route_id' => Route::inRandomOrder()->first()->id ?? Route::factory(),
-        'bus_id'   => Bus::inRandomOrder()->first()->id ?? Bus::factory(),
-        'ngay_khoi_hanh' => $startDate,
-        'gio_khoi_hanh' => $startDate,
-        'ngay_den' => (clone $startDate)->modify("+{$durationHours} hours"),
-        'gio_den'  => (clone $startDate)->modify("+{$durationHours} hours"),
-        'gia_ve'   => $this->faker->numberBetween(100000, 500000),
-        'trang_thai' => 1,
-    ];
-}
+        $startDate = $this->faker->dateTimeBetween('+1 days', '+7 days');
+        $durationHours = rand(1, 6);
+
+        $endDate = (clone $startDate)->modify("+{$durationHours} hours");
+
+        return [
+            'route_id' => $route->id,
+            'bus_id' => $bus->id,
+            'ngay_khoi_hanh' => $startDate->format('Y-m-d'),
+            'gio_khoi_hanh' => $startDate->format('H:i:s'),
+            'ngay_den' => $endDate->format('Y-m-d'),
+            'gio_den' => $endDate->format('H:i:s'),
+            'gia_ve' => $this->faker->numberBetween(100000, 500000),
+            'trang_thai' => 1,
+        ];
+    }
 }
