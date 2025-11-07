@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="{{ asset('css/client.css') }}">
     <style>
         /* Header nav link hover */
-        
+
     </style>
 </head>
 
@@ -39,7 +39,7 @@
 
             {{-- Login Button --}}
             <div>
-                <a href="#" class="btn btn-light btn-sm">Đăng nhập</a>
+                <a href="{{ route('login') }}" class="btn btn-light btn-sm">Đăng nhập</a>
             </div>
         </div>
     </header>
@@ -58,7 +58,7 @@
                     <h5 class="fw-bold text-orange mb-3">TRUNG TÂM TỔNG ĐÀI & CSKH</h5>
                     <p class="fs-5 fw-semibold text-orange mb-2">1900 6067</p>
                     <h6 class="fw-bold mb-2">CÔNG TY CỔ PHẦN XE KHÁCH POLYCOACH</h6>
-                    <p class="mb-1">Địa chỉ: 486-486A Lê Văn Lương, P. Tân Hưng, TP.HCM, Việt Nam.</p>
+                    <p class="mb-1">Địa chỉ: Trịnh Văn Bô, Hà Nội, Việt Nam.</p>
                     <p class="mb-1">Email: <a href="mailto:hotro@polycoach.vn">hotro@polycoach.vn</a></p>
                     <p>Điện thoại: 02838386852 | Fax: 02838386853</p>
                 </div>
