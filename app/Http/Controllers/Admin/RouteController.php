@@ -9,72 +9,78 @@ use Illuminate\Http\Request;
 class RouteController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Hiển thị danh sách tuyến.
      */
     public function index()
     {
-        //
         $routes = Route::latest()->paginate(25);
         return view('admin.routes.index', compact('routes'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Form tạo mới tuyến.
      */
     public function create()
     {
-        //
         return view('admin.routes.create');
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Lưu tuyến mới vào database.
      */
     public function store(Request $request)
     {
-        //
         $data = $request->validate([
             'diem_di' => 'required|string|max:100',
             'diem_den' => 'required|string|max:100',
             'quang_duong' => 'required|integer|min:1',
-            'thoi_gian_du_kien' => 'required',
+            'thoi_gian_du_kien' => 'required|string|max:50',
             'trang_thai' => 'required|in:0,1',
         ]);
 
         Route::create($data);
 
-        return redirect()->route('admin.bus-routes.index')->with('success', 'Đã tạo tuyến thành công!');
+        return redirect()->route('admin.routes.index')->with('success', 'Đã tạo tuyến thành công!');
     }
 
     /**
-     * Display the specified resource.
+     * Hiển thị chi tiết tuyến (nếu cần).
      */
     public function show(Route $route)
     {
-        //
+        return view('admin.routes.show', compact('route'));
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Form chỉnh sửa tuyến.
      */
     public function edit(Route $route)
     {
-        //
+        return view('admin.routes.edit', compact('route'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Cập nhật tuyến.
      */
     public function update(Request $request, Route $route)
     {
-        //
+        $data = $request->validate([
+            'diem_di' => 'required|string|max:100',
+            'diem_den' => 'required|string|max:100',
+            'quang_duong' => 'required|integer|min:1',
+            'thoi_gian_du_kien' => 'required|string|max:50',
+            'trang_thai' => 'required|in:0,1',
+        ]);
+
+        $route->update($data);
+
+        return redirect()->route('admin.routes.index')->with('success', 'Cập nhật tuyến thành công!');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Xóa tuyến.
      */
     public function destroy(Route $route)
     {
-        //
     }
 }

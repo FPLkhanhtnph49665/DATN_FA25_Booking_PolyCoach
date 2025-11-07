@@ -4,17 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Ticket extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'trip_id',
         'user_id',
         'so_ghe',
         'trang_thai',
-        'phuong_thuc_thanh_toan'
+        'phuong_thuc_thanh_toan',
     ];
 
     protected $casts = [
@@ -23,11 +24,11 @@ class Ticket extends Model
     ];
 
     // =====================
-    // QUAN HỆ
+    // 🔗 QUAN HỆ
     // =====================
     public function trip()
     {
-        return $this->belongsTo(Trip::class);
+        return $this->belongsTo(Trip::class)->with(['bus', 'route']);
     }
 
     public function user()
@@ -46,54 +47,58 @@ class Ticket extends Model
     }
 
     // =====================
-    // TRẠNG THÁI VÉ
+    // 💡 ACCESSORS
     // =====================
-    public function getTrangThaiLabelAttribute()
+    public function getTrangThaiLabelAttribute(): string
     {
         return match ($this->trang_thai) {
             'pending'  => '<span class="badge bg-warning">Chờ thanh toán</span>',
             'paid'     => '<span class="badge bg-success">Đã thanh toán</span>',
-            'canceled' => '<span class="badge bg-danger">Hủy</span>',
+            'canceled' => '<span class="badge bg-danger">Đã hủy</span>',
             default    => '<span class="badge bg-secondary">Không xác định</span>',
         };
     }
 
-    // =====================
-    // GHẾ
-    // =====================
+    public function getPhuongThucThanhToanLabelAttribute(): string
+    {
+        return match ($this->phuong_thuc_thanh_toan) {
+            'cash' => 'Tiền mặt',
+            'momo' => 'Momo',
+            'bank' => 'Chuyển khoản',
+            default => 'Không rõ',
+        };
+    }
 
-    // Ghế đã đặt cho vé này
-    public function getBookedSeatsAttribute()
+    public function getBookedSeatsAttribute(): array
     {
         return $this->passengers->pluck('seat_number')->toArray();
     }
 
-    // Ghế còn trống so với tổng ghế của xe
-    // Hỗ trợ ký hiệu A1, B2… nếu trip->bus->so_ghe > 0
-    public function getAvailableSeatsAttribute()
+    public function getAvailableSeatsAttribute(): array
     {
-        if(!$this->trip || !$this->trip->bus) return [];
+        if (!$this->trip || !$this->trip->bus) return [];
 
         $totalSeats = $this->trip->bus->so_ghe;
+        $booked = $this->booked_seats;
 
-        // Sinh ký hiệu ghế
-        $rows = ['A','B','C','D','E','F']; // tối đa 6 hàng
+        // Sinh ký hiệu ghế tự động
+        $rows = range('A', 'Z');
         $cols = range(1, ceil($totalSeats / count($rows)));
-        $allSeats = [];
 
-        foreach($rows as $r){
-            foreach($cols as $c){
-                $seat = $r.$c;
+        $allSeats = [];
+        foreach ($rows as $r) {
+            foreach ($cols as $c) {
+                $seat = $r . $c;
                 $allSeats[] = $seat;
-                if(count($allSeats) >= $totalSeats) break;
+                if (count($allSeats) >= $totalSeats) break 2;
             }
         }
 
-        return array_diff($allSeats, $this->booked_seats);
+        return array_values(array_diff($allSeats, $booked));
     }
 
     // =====================
-    // SCOPES
+    // 🔍 SCOPES
     // =====================
     public function scopePaid($query)
     {
@@ -108,5 +113,17 @@ class Ticket extends Model
     public function scopeCanceled($query)
     {
         return $query->where('trang_thai', 'canceled');
+    }
+
+    // Lọc theo người dùng
+    public function scopeByUser($query, $userId)
+    {
+        return $query->where('user_id', $userId);
+    }
+
+    // Lọc theo chuyến
+    public function scopeByTrip($query, $tripId)
+    {
+        return $query->where('trip_id', $tripId);
     }
 }

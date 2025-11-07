@@ -13,11 +13,14 @@ class ReviewFactory extends Factory
 
     public function definition(): array
     {
+        $user = User::inRandomOrder()->first() ?? User::factory()->create();
+        $trip = Trip::inRandomOrder()->first() ?? Trip::factory()->create();
+
         return [
-            'user_id' => User::factory(),
-            'trip_id' => Trip::factory(),
+            'user_id' => $user->id,
+            'trip_id' => $trip->id,
             'rating' => $this->faker->numberBetween(1,5),
-            'noi_dung' => $this->faker->sentence(),
+            'noi_dung' => $this->faker->paragraph(),
         ];
     }
 }

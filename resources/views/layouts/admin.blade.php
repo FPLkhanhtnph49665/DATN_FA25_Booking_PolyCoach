@@ -10,7 +10,7 @@
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
-    {{-- <link rel="icon" href="{{ asset('testLogo.png') }}" type="image/png"> --}}
+    <link rel="icon" href="{{ asset('PolyCoach.gif') }}" alt="Icon PolyCoach">
     @stack('styles')
 </head>
 
@@ -19,23 +19,21 @@
 
         <!-- Sidebar -->
         <nav id="sidebar">
-            <h3 class="text-center">Quản Trị Viên</h3>
-            {{-- <img src="{{ asset('testLogo.png') }}" alt="Logo PolyCoach" class="img-fluid"> --}}
+            <a href="{{ route('admin.dashboard') }}">
+                <img src="{{ asset('PolyCoach.gif') }}" alt="Logo PolyCoach" class="img-fluid">
+            </a>
 
             <ul class="nav flex-column mt-4">
                 <li class="nav-item"><a href="{{ route('admin.dashboard') }}" class="nav-link">Dashboard</a></li>
                 <li class="nav-item"><a href="{{ route("admin.users.index") }}" class="nav-link">Quản lý Users</a></li>
-                <li class="nav-item"><a href="{{ route('admin.bus-routes.index') }}" class="nav-link">Quản lý Tuyến</a>
-                </li>
+                <li class="nav-item"><a href="{{ route('admin.bus-routes.index') }}" class="nav-link">Quản lý Tuyến</a></li>
                 <li class="nav-item"><a href="{{ route('admin.buses.index') }}" class="nav-link">Quản lý Xe</a></li>
                 <li class="nav-item"><a href="{{ route('admin.trips.index') }}" class="nav-link">Quản lý Chuyến</a></li>
+                <li class="nav-item"><a href="{{ route('admin.bookings.index') }}"class="nav-link">Quản lý Booking</a></li>
                 <li class="nav-item"><a href="{{ route('admin.tickets.index') }}" class="nav-link">Quản lý Vé</a></li>
-                <li class="nav-item"><a href="{{ route('admin.payments.index') }}" class="nav-link">Quản lý Thanh
-                        toán</a></li>
-                <li class="nav-item"><a href="{{ route('admin.passengers.index') }}" class="nav-link">Quản lý Hành
-                        khách</a></li>
-                <li class="nav-item"><a href="{{ route('admin.reviews.index') }}" class="nav-link">Quản lý Đánh giá</a>
-                </li>
+                <li class="nav-item"><a href="{{ route('admin.payments.index') }}" class="nav-link">Quản lý Thanh toán</a></li>
+                <li class="nav-item"><a href="{{ route('admin.passengers.index') }}" class="nav-link">Quản lý Hành khách</a></li>
+                <li class="nav-item"><a href="{{ route('admin.reviews.index') }}" class="nav-link">Quản lý Đánh giá</a></li>
                 <li class="nav-item"><a href="{{ route('admin.contacts.index') }}" class="nav-link">Quản lý Liên hệ</a>
                 </li>
             </ul>

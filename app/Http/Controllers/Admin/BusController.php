@@ -9,86 +9,76 @@ use Illuminate\Http\Request;
 class BusController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Hiển thị danh sách xe
      */
     public function index()
     {
-        //
         $buses = Bus::latest()->paginate(25);
         return view('admin.buses.index', compact('buses'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Hiển thị form thêm xe mới
      */
     public function create()
     {
-        //
         return view('admin.buses.create');
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Lưu xe mới
      */
     public function store(Request $request)
     {
-        //
         $request->validate([
-            'bien_so' => 'required|max:20|unique:buses,bien_so',
-            'so_ghe' => 'required|integer|min:4|max:100',
-            'loai_xe' => 'required|in:Giường,Limousine',
+            'bien_so'   => 'required|string|max:20|unique:buses,bien_so',
+            'so_ghe'    => 'required|integer|min:4|max:100',
+            'loai_xe'   => 'required|in:Ghế ngồi,Giường nằm,Limousine',
+            'trang_thai' => 'nullable|in:0,1',
         ]);
 
-        Bus::create($request->all());
+        Bus::create($request->only(['bien_so', 'so_ghe', 'loai_xe', 'trang_thai']));
+
         return redirect()->route('admin.buses.index')->with('success', 'Thêm xe mới thành công!');
     }
 
     /**
-     * Display the specified resource.
+     * Xem chi tiết xe
      */
     public function show(Bus $bus)
     {
-        //
-        return view('admin.buses.show', compact('buses'));
+        return view('admin.buses.show', compact('bus'));
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Hiển thị form chỉnh sửa
      */
     public function edit(Bus $bus)
     {
-        //
         return view('admin.buses.edit', compact('bus'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Cập nhật thông tin xe
      */
     public function update(Request $request, Bus $bus)
-{
-    $request->validate([
-        'bien_so' => 'required|max:20|unique:buses,bien_so,' . $bus->id,
-        'so_ghe' => 'required|integer|min:4',
-        'loai_xe' => 'required|in:Giường nằm,Limousine',
-    ]);
+    {
+        $request->validate([
+            'bien_so'   => 'required|string|max:20|unique:buses,bien_so,' . $bus->id,
+            'so_ghe'    => 'required|integer|min:4|max:100',
+            'loai_xe'   => 'required|in:Ghế ngồi,Giường nằm,Limousine',
+            'trang_thai'=> 'nullable|in:0,1',
+        ]);
 
-    $bus->update([
-        'bien_so' => $request->bien_so,
-        'so_ghe' => $request->so_ghe,
-        'loai_xe' => $request->loai_xe,
-        'trang_thai' => $request->trang_thai ?? $bus->trang_thai,
-    ]);
+        $bus->update($request->only(['bien_so', 'so_ghe', 'loai_xe', 'trang_thai']));
 
-    return redirect()->route('admin.buses.index')
-                     ->with('success', 'Cập nhật thông tin xe thành công!');
-}
-
+        return redirect()->route('admin.buses.index')->with('success', 'Cập nhật thông tin xe thành công!');
+    }
 
     /**
-     * Remove the specified resource from storage.
+     * Xóa (mềm)
      */
     public function destroy(Bus $bus)
     {
-        //
     }
 }

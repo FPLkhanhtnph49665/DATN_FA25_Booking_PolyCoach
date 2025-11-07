@@ -4,65 +4,106 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Models\User;
+use App\Models\Ticket;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Hiển thị danh sách thanh toán.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
-        $payments = Payment::latest()->paginate(25);
+        $query = Payment::with(['user', 'ticket']);
+
+        // Tìm kiếm theo mã thanh toán hoặc người dùng
+        if ($request->filled('keyword')) {
+            $keyword = $request->keyword;
+            $query->where('ma_giao_dich', 'like', "%$keyword%")
+                ->orWhereHas('user', function ($q) use ($keyword) {
+                    $q->where('first_name', 'like', "%$keyword%")
+                      ->orWhere('last_name', 'like', "%$keyword%");
+                });
+        }
+
+        $payments = $query->latest()->paginate(25);
         return view('admin.payments.index', compact('payments'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Hiển thị form tạo mới thanh toán.
      */
     public function create()
     {
-        //
+        $users = User::all();
+        $tickets = Ticket::all();
+        return view('admin.payments.create', compact('users', 'tickets'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Lưu thanh toán mới.
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'user_id'       => 'required|exists:users,id',
+            'ticket_id'     => 'required|exists:tickets,id',
+            'ma_giao_dich'  => 'required|string|max:50|unique:payments,ma_giao_dich',
+            'so_tien'       => 'required|numeric|min:0',
+            'phuong_thuc'   => 'required|in:cash,momo,bank',
+            'trang_thai'    => 'required|in:0,1',
+        ], [
+            'ma_giao_dich.unique' => 'Mã giao dịch này đã tồn tại!',
+        ]);
+
+        Payment::create($data);
+
+        return redirect()->route('admin.payments.index')->with('success', 'Thêm thanh toán thành công!');
     }
 
     /**
-     * Display the specified resource.
+     * Hiển thị chi tiết thanh toán.
      */
     public function show(Payment $payment)
     {
-        //
+        $payment->load(['user', 'ticket']);
+        return view('admin.payments.show', compact('payment'));
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Hiển thị form chỉnh sửa thanh toán.
      */
     public function edit(Payment $payment)
     {
-        //
+        $users = User::all();
+        $tickets = Ticket::all();
+        return view('admin.payments.edit', compact('payment', 'users', 'tickets'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Cập nhật thông tin thanh toán.
      */
     public function update(Request $request, Payment $payment)
     {
-        //
+        $data = $request->validate([
+            'user_id'       => 'required|exists:users,id',
+            'ticket_id'     => 'required|exists:tickets,id',
+            'ma_giao_dich'  => 'required|string|max:50|unique:payments,ma_giao_dich,' . $payment->id,
+            'so_tien'       => 'required|numeric|min:0',
+            'phuong_thuc'   => 'required|in:cash,momo,bank',
+            'trang_thai'    => 'required|in:0,1',
+        ]);
+
+        $payment->update($data);
+
+        return redirect()->route('admin.payments.index')->with('success', 'Cập nhật thanh toán thành công!');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Xóa mềm thanh toán.
      */
     public function destroy(Payment $payment)
     {
-        //
     }
 }

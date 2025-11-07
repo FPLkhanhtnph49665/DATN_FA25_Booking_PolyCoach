@@ -12,10 +12,10 @@ class BusFactory extends Factory
     public function definition(): array
     {
         return [
-            'bien_so' => strtoupper($this->faker->bothify('30K-#####')),
+            'bien_so' => strtoupper($this->faker->unique()->bothify('30K-#####')),
             'so_ghe' => $this->faker->numberBetween(20, 50),
-            'loai_xe' => $this->faker->randomElement(['Giường','Limousine']),
-            'trang_thai' => 1,
+            'loai_xe' => $this->faker->randomElement(['Ghế ngồi','Giường nằm','Limousine']),
+            'trang_thai' => $this->faker->randomElement([0,1]),
         ];
     }
 }

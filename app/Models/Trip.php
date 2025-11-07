@@ -63,6 +63,15 @@ class Trip extends Model
     {
         return $query->where('trang_thai', 1);
     }
+    protected static function booted()
+    {
+        static::creating(function ($trip) {
+            $lastTrip = Trip::latest('id')->first();
+            $number = $lastTrip ? $lastTrip->id + 1 : 1;
+            $trip->ma_chuyen = 'TRIP_' . str_pad($number, 5, '0', STR_PAD_LEFT);
+        });
+    }
+
 
     // Accessor hiển thị giờ khởi hành H:i
     public function getGioKhoiHanhFormattedAttribute()

@@ -6,7 +6,7 @@
 
 /* Sidebar */
 #sidebar {
-    background-color: #FF8000;
+    background-color: #ff595e;
     color: whitesmoke;
     min-width: 250px;
     max-width: 250px;
@@ -34,13 +34,13 @@
 }
 
 #sidebar .nav-link:hover {
-    background-color: #e67300;
+    background-color: #243746;
     color: white;
     border-radius: 4px;
 }
 
 #sidebar .nav-link.active {
-    background-color: #cc6600;
+    background-color: #243746;
     color: white;
     font-weight: bold;
     border-radius: 4px;

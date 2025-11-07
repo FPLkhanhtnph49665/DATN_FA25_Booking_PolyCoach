@@ -13,16 +13,22 @@ return new class extends Migration
     {
         Schema::create('trips', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('route_id')->constrained()->onDelete('cascade');
-            $table->foreignId('bus_id')->constrained()->onDelete('cascade');
+            $table->foreignId('route_id')->constrained()->onDelete('cascade'); // Tuyến đường
+            $table->foreignId('bus_id')->constrained()->onDelete('cascade');   // Xe
             $table->date('ngay_khoi_hanh');
             $table->time('gio_khoi_hanh');
-            $table->date('ngay_den')->nullable(); // ngày dự kiến đến
-            $table->time('gio_den')->nullable();  // giờ dự kiến đến
-            $table->decimal('gia_ve', 10, 2);
-            $table->tinyInteger('trang_thai')->default(1);
+            $table->date('ngay_den')->nullable(); // Ngày dự kiến đến
+            $table->time('gio_den')->nullable();  // Giờ dự kiến đến
+            $table->decimal('gia_ve', 10, 2)->default(0); // Giá vé mặc định
+            $table->tinyInteger('trang_thai')->default(1)->comment('1: Hoạt động, 0: Hủy');
+            $table->unsignedInteger('so_ghe_trong')->default(0)->comment('Số ghế còn trống');
+            $table->string('ma_chuyen', 50)->unique()->comment('Mã định danh chuyến xe');
+
             $table->timestamps();
             $table->softDeletes();
+
+            // Index tối ưu khi tìm chuyến
+            $table->index(['route_id', 'ngay_khoi_hanh', 'gio_khoi_hanh']);
         });
     }
 

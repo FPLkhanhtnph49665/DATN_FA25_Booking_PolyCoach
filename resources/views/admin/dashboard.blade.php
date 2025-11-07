@@ -59,7 +59,7 @@
     {{-- Dòng 2: Tiền mặt, MoMo --}}
     <div class="row g-4 mb-4">
         <div class="col-md-6">
-            <div class="card text-white bg-primary shadow-sm rounded-4">
+            <div class="card text-white shadow-sm rounded-4" style="background-color: #0099CC;">
                 <div class="card-body text-center p-4">
                     <h5 class="card-title">Tiền mặt</h5>
                     <p class="card-text display-5 fw-bold">
@@ -71,7 +71,7 @@
         </div>
 
         <div class="col-md-6">
-            <div class="card text-white bg-warning shadow-sm rounded-4">
+            <div class="card text-white shadow-sm rounded-4" style="background-color: #D900D9;">
                 <div class="card-body text-center p-4">
                     <h5 class="card-title">MoMo</h5>
                     <p class="card-text display-5 fw-bold">
@@ -82,6 +82,7 @@
             </div>
         </div>
     </div>
+
 
     {{-- Biểu đồ --}}
     <div class="card shadow-sm rounded-4">
@@ -109,13 +110,13 @@
                     {
                         label: 'Tiền mặt',
                         data: cashData,
-                        backgroundColor: 'rgb(2, 164, 185)',
+                        backgroundColor: '#0099CC',
                         borderRadius: 8,
                     },
                     {
                         label: 'MoMo',
                         data: momoData,
-                        backgroundColor: 'rgb(250, 4, 176)',
+                        backgroundColor: '#D900D9',
                         borderRadius: 8,
                     }
                 ]
@@ -126,7 +127,7 @@
                     legend: { position: 'top' },
                     tooltip: {
                         callbacks: {
-                            label: function(context) {
+                            label: function (context) {
                                 return context.dataset.label + ': ' +
                                     new Intl.NumberFormat('vi-VN').format(context.raw) + '₫';
                             }
