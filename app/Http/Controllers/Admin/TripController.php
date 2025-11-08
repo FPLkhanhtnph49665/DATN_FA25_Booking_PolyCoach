@@ -55,27 +55,39 @@ class TripController extends Controller
         return view('admin.trips.create', compact('routes', 'buses'));
     }
 
-    /**
-     * Lưu chuyến xe mới
-     */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'route_id' => 'required|exists:routes,id',
-            'bus_id' => 'required|exists:buses,id',
-            'ngay_khoi_hanh' => 'required|date',
-            'gio_khoi_hanh' => 'required',
-            'gia_ve' => 'required|numeric|min:0',
-            'trang_thai' => 'required|in:0,1',
-            'ngay_den' => 'nullable|date|after_or_equal:ngay_khoi_hanh',
-            'gio_den' => 'nullable',
-        ]);
+public function store(Request $request)
+{
+    $request->validate([
+        'route_id' => 'required|exists:routes,id',
+        'bus_id' => 'required|exists:buses,id',
+        'ngay_khoi_hanh' => 'required|date',
+        'gio_khoi_hanh' => 'required',
+        'gia_ve' => 'required|numeric|min:0',
+        'trang_thai' => 'required|in:0,1',
+        'gio_den' => 'nullable',
+    ]);
 
-        Trip::create($request->all());
+    Trip::create($request->all());
 
-        return redirect()->route('admin.trips.index')->with('success', 'Thêm chuyến xe thành công!');
-    }
+    return redirect()->route('admin.trips.index')->with('success', 'Thêm chuyến xe thành công!');
+}
 
+public function update(Request $request, Trip $trip)
+{
+    $request->validate([
+        'route_id' => 'required|exists:routes,id',
+        'bus_id' => 'required|exists:buses,id',
+        'ngay_khoi_hanh' => 'required|date',
+        'gio_khoi_hanh' => 'required',
+        'gia_ve' => 'required|numeric|min:0',
+        'trang_thai' => 'required|in:0,1',
+        'gio_den' => 'nullable',
+    ]);
+
+    $trip->update($request->all());
+
+    return redirect()->route('admin.trips.index')->with('success', 'Cập nhật chuyến xe thành công!');
+}
     /**
      * Hiển thị chi tiết chuyến xe
      */
@@ -83,13 +95,6 @@ class TripController extends Controller
     {
         $trip->load(['route', 'bus']);
         return view('admin.trips.show', compact('trip'));
-    }
-    public function search(Request $request)
-    {
-        $keyword = $request->input('keyword'); // ví dụ tìm theo từ khóa
-        $trips = Trip::where('name', 'like', "%{$keyword}%")->get(); // hoặc theo cột phù hợp
-
-        return view('admin.trips.index', compact('trips'));
     }
 
 
@@ -104,37 +109,24 @@ class TripController extends Controller
         return view('admin.trips.edit', compact('trip', 'routes', 'buses'));
     }
 
-    /**
-     * Cập nhật chuyến xe
-     */
-    public function update(Request $request, Trip $trip)
-    {
-        $request->validate([
-            'route_id' => 'required|exists:routes,id',
-            'bus_id' => 'required|exists:buses,id',
-            'ngay_khoi_hanh' => 'required|date',
-            'gio_khoi_hanh' => 'required',
-            'gia_ve' => 'required|numeric|min:0',
-            'trang_thai' => 'required|in:0,1',
-            'ngay_den' => 'nullable|date|after_or_equal:ngay_khoi_hanh',
-            'gio_den' => 'nullable',
-        ]);
 
-        $trip->update($request->all());
-
-        return redirect()->route('admin.trips.index')->with('success', 'Cập nhật chuyến xe thành công!');
-    }
 
     /**
      * Xóa mềm chuyến xe
      */
-    public function destroy(Trip $trip)
-    {
-        $trip->delete();
-
-        return redirect()->route('admin.trips.index')->with('success', 'Đã chuyển chuyến xe vào thùng rác!');
+   public function destroy(Trip $trip)
+{
+    // Kiểm tra xem có vé đã đặt chưa
+    if ($trip->tickets()->count() > 0) {
+        return redirect()->route('admin.trips.index')
+            ->withErrors('Không thể xóa chuyến này vì đã có vé được đặt!');
     }
 
+    $trip->delete();
+
+    return redirect()->route('admin.trips.index')
+        ->with('success', 'Đã xóa chuyến xe thành công!');
+}
     /**
      * Hiển thị danh sách chuyến xe đã xóa mềm
      */

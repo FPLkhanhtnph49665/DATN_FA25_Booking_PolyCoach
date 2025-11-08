@@ -25,8 +25,8 @@
 
             <ul class="nav flex-column mt-4">
                 <li class="nav-item"><a href="{{ route('admin.dashboard') }}" class="nav-link">Dashboard</a></li>
-                <li class="nav-item"><a href="{{ route("admin.users.index") }}" class="nav-link">Quản lý Users</a></li>
-                <li class="nav-item"><a href="{{ route('admin.bus-routes.index') }}" class="nav-link">Quản lý Tuyến</a></li>
+                <li class="nav-item"><a href="{{ route('admin.users.index') }}" class="nav-link">Quản lý Users</a></li>
+                <li class="nav-item"><a href="{{ route('admin.routes.index') }}" class="nav-link">Quản lý Tuyến</a></li>
                 <li class="nav-item"><a href="{{ route('admin.buses.index') }}" class="nav-link">Quản lý Xe</a></li>
                 <li class="nav-item"><a href="{{ route('admin.trips.index') }}" class="nav-link">Quản lý Chuyến</a></li>
                 <li class="nav-item"><a href="{{ route('admin.bookings.index') }}"class="nav-link">Quản lý Booking</a></li>
