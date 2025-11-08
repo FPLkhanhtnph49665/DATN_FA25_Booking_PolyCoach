@@ -33,7 +33,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', AdminMiddleware::cla
     // Route::get('/', 'admin.dashboard')->name('dashboard');
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', UserController::class);
-    Route::resource('bus-routes', RouteController::class);
+    Route::resource('routes', RouteController::class);
     Route::resource('buses', BusController::class);
     Route::resource('trips', TripController::class);
     Route::resource('bookings', BookingController::class);

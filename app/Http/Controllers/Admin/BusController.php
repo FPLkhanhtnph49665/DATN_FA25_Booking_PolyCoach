@@ -66,7 +66,7 @@ class BusController extends Controller
         $request->validate([
             'bien_so'   => 'required|string|max:20|unique:buses,bien_so,' . $bus->id,
             'so_ghe'    => 'required|integer|min:4|max:100',
-            'loai_xe'   => 'required|in:Ghế ngồi,Giường nằm,Limousine',
+            'loai_xe' => 'required|in:Ghế ngồi,Giường nằm,Limousine',
             'trang_thai'=> 'nullable|in:0,1',
         ]);
 
@@ -78,7 +78,18 @@ class BusController extends Controller
     /**
      * Xóa (mềm)
      */
-    public function destroy(Bus $bus)
-    {
+  public function destroy(Bus $bus)
+{
+    // Kiểm tra xe có đang được sử dụng trong chuyến đi không
+    if ($bus->trips()->count() > 0) {
+        return redirect()->route('admin.buses.index')
+            ->withErrors('Không thể xóa xe này vì đang có chuyến đi sử dụng!');
     }
+    
+    // Xóa cứng (hard delete)
+    $bus->forceDelete();
+    
+    return redirect()->route('admin.buses.index')
+        ->with('success', 'Đã xóa xe thành công!');
+}
 }

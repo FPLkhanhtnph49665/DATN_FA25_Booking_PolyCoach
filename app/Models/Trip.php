@@ -23,9 +23,11 @@ class Trip extends Model
 
     protected $casts = [
         'ngay_khoi_hanh' => 'date',
-        'gio_khoi_hanh'  => 'datetime',
+        'gio_khoi_hanh'  => 'string', // ✅ Đổi từ 'datetime' thành 'string'
         'ngay_den'       => 'date',
-        'gio_den'        => 'datetime',
+        'gio_den'        => 'string', // ✅ Đổi từ 'datetime' thành 'string'
+        'gia_ve'         => 'decimal:0',
+        'trang_thai'     => 'integer',
     ];
 
     // Quan hệ tuyến
@@ -63,6 +65,7 @@ class Trip extends Model
     {
         return $query->where('trang_thai', 1);
     }
+
     protected static function booted()
     {
         static::creating(function ($trip) {
@@ -72,31 +75,48 @@ class Trip extends Model
         });
     }
 
-
-    // Accessor hiển thị giờ khởi hành H:i
+    // ✅ Accessor hiển thị giờ khởi hành (chỉ HH:MM)
     public function getGioKhoiHanhFormattedAttribute()
     {
-        return $this->gio_khoi_hanh ? $this->gio_khoi_hanh->format('H:i') : null;
+        if (!$this->gio_khoi_hanh) {
+            return '-';
+        }
+        
+        // Nếu là string dạng HH:MM:SS, chỉ lấy HH:MM
+        if (is_string($this->gio_khoi_hanh)) {
+            return substr($this->gio_khoi_hanh, 0, 5);
+        }
+        
+        return $this->gio_khoi_hanh;
     }
 
-    // Accessor hiển thị giờ đến H:i
+    // ✅ Accessor hiển thị giờ đến (chỉ HH:MM)
     public function getGioDenFormattedAttribute()
     {
-        return $this->gio_den ? $this->gio_den->format('H:i') : null;
+        if (!$this->gio_den) {
+            return '-';
+        }
+        
+        // Nếu là string dạng HH:MM:SS, chỉ lấy HH:MM
+        if (is_string($this->gio_den)) {
+            return substr($this->gio_den, 0, 5);
+        }
+        
+        return $this->gio_den;
     }
 
-    // Lấy ghế đã đặt dạng array (nếu seat_number là integer)
+    // Lấy ghế đã đặt dạng array
     public function getBookedSeatsAttribute()
     {
-        return $this->passengers->pluck('seat_number')->toArray();
+        return $this->tickets()->pluck('so_ghe')->toArray();
     }
 
-    // Ghế còn trống dạng ký hiệu A1, A2…
+    // ✅ Ghế còn trống dạng ký hiệu A1, A2…
     public function getAvailableSeatsAttribute()
     {
         $bus = $this->bus;
 
-        // ✅ Kiểm tra kỹ dữ liệu trước khi xử lý
+        // Kiểm tra kỹ dữ liệu trước khi xử lý
         if (!$bus || !is_numeric($bus->so_ghe) || $bus->so_ghe <= 0 || $bus->so_ghe > 100) {
             return [];
         }
@@ -112,7 +132,7 @@ class Trip extends Model
                 $seat = $r . $c;
                 $allSeats[] = $seat;
                 $count++;
-                if ($count >= $bus->so_ghe) break 2; // thoát 2 vòng
+                if ($count >= $bus->so_ghe) break 2;
             }
         }
 

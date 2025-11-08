@@ -9,17 +9,32 @@ use Illuminate\Support\Facades\Auth;
 class AdminMiddleware
 {
     public function handle(Request $request, Closure $next)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    if (!$user || $user->role !== 'admin' || $user->status === 0) {
-        Auth::logout(); // nếu cần
-        return redirect()->route('login')->withErrors([
-            'email' => 'Bạn không có quyền truy cập hoặc tài khoản bị khóa.',
-        ]);
+        // Kiểm tra user có tồn tại không
+        if (!$user) {
+            return redirect()->route('login')->withErrors([
+                'email' => 'Vui lòng đăng nhập để tiếp tục.',
+            ]);
+        }
+
+        // Kiểm tra role có phải admin không
+        if ($user->role !== 'admin') {
+            Auth::logout();
+            return redirect()->route('login')->withErrors([
+                'email' => 'Bạn không có quyền truy cập vào trang quản trị.',
+            ]);
+        }
+
+        // Kiểm tra tài khoản có bị khóa không
+        if ($user->status == 0) {
+            Auth::logout();
+            return redirect()->route('login')->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa.',
+            ]);
+        }
+
+        return $next($request);
     }
-
-    return $next($request);
-}
-
 }
