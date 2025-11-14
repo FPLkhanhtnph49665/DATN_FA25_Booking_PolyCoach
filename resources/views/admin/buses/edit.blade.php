@@ -30,8 +30,10 @@
 
             <div class="mb-3">
                 <label for="loai_xe" class="form-label">Loại xe</label>
-                <select name="loai_xe" id="loai_xe" class="form-control">
+                <select name="loai_xe" id="loai_xe" class="form-control" required>
                     <option value="">-- Chọn loại xe --</option>
+                    <option value="Ghế ngồi" {{ old('loai_xe', $bus->loai_xe) == 'Ghế ngồi' ? 'selected' : '' }}>Ghế ngồi
+                    </option>
                     <option value="Giường nằm" {{ old('loai_xe', $bus->loai_xe) == 'Giường nằm' ? 'selected' : '' }}>Giường
                         nằm</option>
                     <option value="Limousine" {{ old('loai_xe', $bus->loai_xe) == 'Limousine' ? 'selected' : '' }}>Limousine

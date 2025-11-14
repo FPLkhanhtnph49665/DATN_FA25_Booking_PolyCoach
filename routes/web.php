@@ -52,7 +52,7 @@ Route::middleware('auth')->group(function () {
 Route::prefix('admin')->name('admin.')->middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', UserController::class);
-    Route::resource('bus-routes', RouteController::class);
+    Route::resource('routes', RouteController::class);
     Route::resource('buses', BusController::class);
     Route::resource('trips', TripController::class);
     Route::resource('bookings', BookingController::class);

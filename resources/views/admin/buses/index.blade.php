@@ -8,6 +8,22 @@
         <a href="{{ route('admin.buses.create') }}" class="btn btn-primary">Thêm xe mới</a>
     </div>
 
+    {{-- Hiển thị thông báo thành công --}}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    {{-- Hiển thị thông báo lỗi --}}
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ $errors->first() }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <table class="table table-striped table-bordered">
         <thead class="table-dark">
             <tr>
@@ -26,14 +42,16 @@
                     <td>{{ $bus->bien_so }}</td>
                     <td>{{ $bus->so_ghe }}</td>
                     <td>
-    @if ($bus->loai_xe === 'Giường')
-        <span class="badge bg-info">Giường nằm</span>
-    @elseif ($bus->loai_xe === 'Limousine')
-        <span class="badge bg-warning">Limousine</span>
-    @else
-        <span class="badge bg-secondary">Không xác định</span>
-    @endif
-</td>
+                        @if ($bus->loai_xe === 'Ghế ngồi')
+                            <span class="badge bg-primary">Ghế ngồi</span>
+                        @elseif ($bus->loai_xe === 'Giường nằm')
+                            <span class="badge bg-info">Giường nằm</span>
+                        @elseif ($bus->loai_xe === 'Limousine')
+                            <span class="badge bg-warning">Limousine</span>
+                        @else
+                            <span class="badge bg-secondary">{{ $bus->loai_xe }}</span>
+                        @endif
+                    </td>
                     <td>
                         @if ($bus->trang_thai == 1)
                             <span class="badge bg-success">Hoạt động</span>
@@ -43,7 +61,12 @@
                     </td>
                     <td>
                         <a href="{{ route('admin.buses.edit', $bus->id) }}" class="btn btn-sm btn-warning">Sửa</a>
-                        <a href="#" class="btn btn-sm btn-danger">Xóa</a>
+                        
+                        <form action="{{ route('admin.buses.destroy', $bus->id) }}" method="POST" class="d-inline-block" onsubmit="return confirm('Bạn có chắc muốn xóa xe này?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                        </form>
                     </td>
                 </tr>
             @empty

@@ -5,14 +5,16 @@
 @section('content')
     <div class="d-flex justify-content-between mb-3">
         <h2>Quản lý danh sách tuyến đường</h2>
-        <a href="{{ route('admin.bus-routes.create') }}" class="btn btn-success">Thêm tuyến mới</a>
+        <a href="{{ route('admin.routes.create') }}" class="btn btn-success">Thêm tuyến mới</a>
     </div>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
-
-    <a href="#" class="btn btn-secondary mb-3">Thùng rác</a>
+    
+    @if($errors->any())
+        <div class="alert alert-danger">{{ $errors->first() }}</div>
+    @endif
 
     <table class="table table-striped table-bordered">
         <thead class="table-dark">
@@ -33,26 +35,24 @@
                     <td>{{ $route->diem_di }}</td>
                     <td>{{ $route->diem_den }}</td>
                     <td>{{ $route->quang_duong }}</td>
-                    <td>{{ \Carbon\Carbon::parse($route->thoi_gian_du_kien)->format('H:i:s') }}</td>
+                   <td>{{ $route->thoi_gian_du_kien }}</td>
                     <td>
                         @if($route->trang_thai == 1)
                             <span class="badge bg-success">Hoạt động</span>
                         @else
-                            <span class="badge bg-secondary">Tạm ngưng hoạt động</span>
+                            <span class="badge bg-secondary">Tạm ngưng</span>
                         @endif
                     </td>
                     <td>
-                        <a href="#" class="btn btn-sm btn-info">Xem</a>
+                        <a href="{{ route('admin.routes.show', $route->id) }}" class="btn btn-sm btn-info">Xem</a>
+                        <a href="{{ route('admin.routes.edit', $route->id) }}" class="btn btn-sm btn-warning">Sửa</a>
 
-                        <a href="#" class="btn btn-sm btn-warning">Sửa</a>
-
-                        <form action="" method="POST" class="d-inline-block"
+                        <form action="{{ route('admin.routes.destroy', $route->id) }}" method="POST" class="d-inline-block"
                             onsubmit="return confirm('Bạn có chắc muốn xóa tuyến này?');">
                             @csrf
                             @method('DELETE')
                             <button class="btn btn-sm btn-danger">Xóa</button>
                         </form>
-
                     </td>
                 </tr>
             @empty
@@ -63,7 +63,6 @@
         </tbody>
     </table>
 
-    {{-- Pagination --}}
     <div class="d-flex justify-content-end mt-3">
         {{ $routes->links('pagination::bootstrap-4') }}
     </div>
