@@ -85,12 +85,26 @@ class TripController extends Controller
         return view('admin.trips.show', compact('trip'));
     }
     public function search(Request $request)
-    {
-        $keyword = $request->input('keyword'); // ví dụ tìm theo từ khóa
-        $trips = Trip::where('name', 'like', "%{$keyword}%")->get(); // hoặc theo cột phù hợp
+{
+    $keyword = $request->input('keyword');
 
-        return view('admin.trips.index', compact('trips'));
-    }
+    $trips = Trip::with('route', 'bus')
+        ->when($keyword, function ($query) use ($keyword) {
+            $query->where('ma_chuyen', 'like', "%{$keyword}%")
+                  ->orWhereHas('route', function ($q) use ($keyword) {
+                      $q->where('diem_di', 'like', "%{$keyword}%")
+                        ->orWhere('diem_den', 'like', "%{$keyword}%");
+                  });
+        })
+        ->orderBy('ngay_khoi_hanh', 'desc')
+        ->paginate(10)
+        ->withQueryString();
+
+    $routes = Route::orderBy('diem_di')->get();
+    $buses = Bus::orderBy('bien_so')->get();
+
+    return view('admin.trips.index', compact('trips', 'routes', 'buses'));
+}
 
 
     /**

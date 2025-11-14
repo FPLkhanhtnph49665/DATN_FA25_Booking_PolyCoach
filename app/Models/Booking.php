@@ -11,19 +11,25 @@ class Booking extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'booking_code',
-        'customer_id',
-        'trip_id',
+        'user_id',                // FK tới users.id
+        'trip_id',                // FK tới trips.id
+        'ngay_dat',
         'tong_tien',
-        'trang_thai', // pending | confirmed | canceled
+        'trang_thai',             // 'Đang chờ' | 'Đã xác nhận' | 'Đã thanh toán' | 'Đã hủy'
+        'phuong_thuc_thanh_toan', // cash / momo / bank / ...
     ];
 
+    protected $casts = [
+        'ngay_dat' => 'datetime',
+    ];
+
+    // Nếu chưa set ngày đặt thì mặc định now()
     protected static function booted()
     {
         static::creating(function ($booking) {
-            $last = Booking::latest('id')->first();
-            $nextId = $last ? $last->id + 1 : 1;
-            $booking->booking_code = 'BOOK_' . str_pad($nextId, 5, '0', STR_PAD_LEFT);
+            if (!$booking->ngay_dat) {
+                $booking->ngay_dat = now();
+            }
         });
     }
 
@@ -31,10 +37,16 @@ class Booking extends Model
     // 🔗 RELATIONSHIPS
     // -------------------------------
 
-    // Booking thuộc về một khách hàng (user có role = customer)
+    // Booking thuộc về một user (customer)
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    // Có thể dùng alias customer() nếu thích
     public function customer()
     {
-        return $this->belongsTo(User::class, 'customer_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     // Booking thuộc về một chuyến đi
@@ -43,44 +55,36 @@ class Booking extends Model
         return $this->belongsTo(Trip::class);
     }
 
-    // Booking có nhiều hành khách
-    public function passengers()
-    {
-        return $this->hasMany(Passenger::class);
-    }
-
-    // Booking có nhiều vé
-    public function tickets()
-    {
-        return $this->hasMany(Ticket::class);
-    }
-
-    // Booking có thể có nhiều thanh toán
-    public function payments()
-    {
-        return $this->hasMany(Payment::class);
-    }
+    // (Tạm thời KHÔNG khai báo passengers/tickets/payments
+    // vì schema chưa có booking_id ở các bảng đó)
 
     // -------------------------------
     // 🧮 ACCESSORS / HELPERS
     // -------------------------------
-    public function getFormattedTotalAttribute()
+
+    public function getFormattedTotalAttribute(): string
     {
         return number_format($this->tong_tien, 0, ',', '.') . ' ₫';
     }
 
-    public function isPending()
+    public function isPending(): bool
     {
-        return $this->trang_thai === 'pending';
+        return $this->trang_thai === 'Đang chờ';
     }
 
-    public function isConfirmed()
+    public function isConfirmed(): bool
     {
-        return $this->trang_thai === 'confirmed';
+        return in_array($this->trang_thai, ['Đã xác nhận', 'Đã thanh toán'], true);
     }
 
-    public function isCanceled()
+    public function isPaid(): bool
     {
-        return $this->trang_thai === 'canceled';
+        return $this->trang_thai === 'Đã thanh toán';
     }
+
+    public function isCanceled(): bool
+    {
+        return $this->trang_thai === 'Đã hủy';
+    }
+    
 }

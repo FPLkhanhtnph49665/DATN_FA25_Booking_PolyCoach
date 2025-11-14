@@ -12,10 +12,10 @@ class Ticket extends Model
 
     protected $fillable = [
         'trip_id',
-        'user_id',
-        'so_ghe',
-        'trang_thai',
-        'phuong_thuc_thanh_toan',
+        'user_id',                 // ai đặt vé
+        'so_ghe',                  // 👉 số LƯỢNG ghế trong vé này (1,2,3...)
+        'trang_thai',              // pending | paid | canceled
+        'phuong_thuc_thanh_toan',  // cash | momo | bank
     ];
 
     protected $casts = [
@@ -26,9 +26,11 @@ class Ticket extends Model
     // =====================
     // 🔗 QUAN HỆ
     // =====================
+
     public function trip()
     {
-        return $this->belongsTo(Trip::class)->with(['bus', 'route']);
+        // Không with() ở đây, để query nhẹ, khi cần thì ->load() bên ngoài
+        return $this->belongsTo(Trip::class);
     }
 
     public function user()
@@ -49,6 +51,7 @@ class Ticket extends Model
     // =====================
     // 💡 ACCESSORS
     // =====================
+
     public function getTrangThaiLabelAttribute(): string
     {
         return match ($this->trang_thai) {
@@ -62,44 +65,49 @@ class Ticket extends Model
     public function getPhuongThucThanhToanLabelAttribute(): string
     {
         return match ($this->phuong_thuc_thanh_toan) {
-            'cash' => 'Tiền mặt',
-            'momo' => 'Momo',
-            'bank' => 'Chuyển khoản',
+            'cash'  => 'Tiền mặt',
+            'momo'  => 'Momo',
+            'bank'  => 'Chuyển khoản',
             default => 'Không rõ',
         };
     }
 
+    // Danh sách ghế (mã ghế) thuộc về ticket này, nếu bạn đang lưu seat_number ở passengers
     public function getBookedSeatsAttribute(): array
     {
         return $this->passengers->pluck('seat_number')->toArray();
     }
-
     public function getAvailableSeatsAttribute(): array
-    {
-        if (!$this->trip || !$this->trip->bus) return [];
+{
+    $trip = $this->trip;
+    if (!$trip || !$trip->bus) return [];
 
-        $totalSeats = $this->trip->bus->so_ghe;
-        $booked = $this->booked_seats;
+    $bus = $trip->bus;
+    $totalSeats = (int) ($bus->so_ghe ?? 0);
+    if ($totalSeats <= 0 || $totalSeats > 100) return [];
 
-        // Sinh ký hiệu ghế tự động
-        $rows = range('A', 'Z');
-        $cols = range(1, ceil($totalSeats / count($rows)));
+    $booked = $trip->booked_seats ?? [];   // dùng từ Trip cho thống nhất
 
-        $allSeats = [];
-        foreach ($rows as $r) {
-            foreach ($cols as $c) {
-                $seat = $r . $c;
-                $allSeats[] = $seat;
-                if (count($allSeats) >= $totalSeats) break 2;
-            }
+    $rows = range('A', 'Z');
+    $cols = range(1, ceil($totalSeats / count($rows)));
+
+    $allSeats = [];
+    foreach ($rows as $r) {
+        foreach ($cols as $c) {
+            $seat = $r . $c;
+            $allSeats[] = $seat;
+            if (count($allSeats) >= $totalSeats) break 2;
         }
-
-        return array_values(array_diff($allSeats, $booked));
     }
+
+    return array_values(array_diff($allSeats, $booked));
+}
+
 
     // =====================
     // 🔍 SCOPES
     // =====================
+
     public function scopePaid($query)
     {
         return $query->where('trang_thai', 'paid');
@@ -115,13 +123,11 @@ class Ticket extends Model
         return $query->where('trang_thai', 'canceled');
     }
 
-    // Lọc theo người dùng
     public function scopeByUser($query, $userId)
     {
         return $query->where('user_id', $userId);
     }
 
-    // Lọc theo chuyến
     public function scopeByTrip($query, $tripId)
     {
         return $query->where('trip_id', $tripId);

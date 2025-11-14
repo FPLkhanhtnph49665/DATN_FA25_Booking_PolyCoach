@@ -10,7 +10,7 @@
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
-    <link rel="icon" href="{{ asset('PolyCoach.gif') }}" alt="Icon PolyCoach">
+    <link rel="icon" href="{{ asset('iconPoLyCoach.png') }}" alt="Icon PolyCoach">
     @stack('styles')
 </head>
 
@@ -26,14 +26,19 @@
             <ul class="nav flex-column mt-4">
                 <li class="nav-item"><a href="{{ route('admin.dashboard') }}" class="nav-link">Dashboard</a></li>
                 <li class="nav-item"><a href="{{ route("admin.users.index") }}" class="nav-link">Quản lý Users</a></li>
-                <li class="nav-item"><a href="{{ route('admin.bus-routes.index') }}" class="nav-link">Quản lý Tuyến</a></li>
+                <li class="nav-item"><a href="{{ route('admin.bus-routes.index') }}" class="nav-link">Quản lý Tuyến</a>
+                </li>
                 <li class="nav-item"><a href="{{ route('admin.buses.index') }}" class="nav-link">Quản lý Xe</a></li>
                 <li class="nav-item"><a href="{{ route('admin.trips.index') }}" class="nav-link">Quản lý Chuyến</a></li>
-                <li class="nav-item"><a href="{{ route('admin.bookings.index') }}"class="nav-link">Quản lý Booking</a></li>
+                <li class="nav-item"><a href="{{ route('admin.bookings.index') }}" class="nav-link">Quản lý Booking</a>
+                </li>
                 <li class="nav-item"><a href="{{ route('admin.tickets.index') }}" class="nav-link">Quản lý Vé</a></li>
-                <li class="nav-item"><a href="{{ route('admin.payments.index') }}" class="nav-link">Quản lý Thanh toán</a></li>
-                <li class="nav-item"><a href="{{ route('admin.passengers.index') }}" class="nav-link">Quản lý Hành khách</a></li>
-                <li class="nav-item"><a href="{{ route('admin.reviews.index') }}" class="nav-link">Quản lý Đánh giá</a></li>
+                <li class="nav-item"><a href="{{ route('admin.payments.index') }}" class="nav-link">Quản lý Thanh
+                        toán</a></li>
+                <li class="nav-item"><a href="{{ route('admin.passengers.index') }}" class="nav-link">Quản lý Hành
+                        khách</a></li>
+                <li class="nav-item"><a href="{{ route('admin.reviews.index') }}" class="nav-link">Quản lý Đánh giá</a>
+                </li>
                 <li class="nav-item"><a href="{{ route('admin.contacts.index') }}" class="nav-link">Quản lý Liên hệ</a>
                 </li>
             </ul>
@@ -57,8 +62,12 @@
                     <ul class="navbar-nav ms-auto align-items-center">
                         <!-- Chào người dùng -->
                         <li class="nav-item me-3">
-                            <span class="nav-link">Chào, {{ Auth::user()->full_name }}</span>
+                            <span class="nav-link">
+                                Chào, {{ Auth::user()->full_name ?? Auth::user()->name ?? 'Admin' }}
+                            </span>
                         </li>
+
+
 
                         <!-- Dropdown hồ sơ + đăng xuất -->
                         <li class="nav-item dropdown">

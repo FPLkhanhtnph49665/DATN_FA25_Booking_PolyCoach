@@ -1,0 +1,234 @@
+/* ==============================
+   File: public/css/client.css
+   Chủ đề: Coral-Teal / Futa-like
+   ============================== */
+
+/* ===================== Variables ===================== */
+:root {
+    --primary: #0f172a;          /* deep indigo */
+    --accent: #0ea5a4;           /* teal */
+    --accent-dark: #059669;      /* gradient cho nút */
+    --muted: #6b7280;
+    --bg: #f8fafc;
+    --text-light: #fff;
+    --header-gradient: linear-gradient(90deg,#ff7a18,#ff4e00);
+    --footer-gradient: linear-gradient(180deg, rgba(15,23,42,0.98) 0%, rgba(2,6,23,0.98) 100%);
+}
+
+/* ===================== Base ===================== */
+html, body {
+    height: 100%;
+    font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    color: var(--primary);
+    background: var(--bg);
+    margin:0;
+}
+
+body{
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main{
+    flex: 1 0 auto;
+}
+
+.text-muted-2{ color: var(--muted); }
+
+/* ===================== Header ===================== */
+.site-header{
+    background: var(--header-gradient);
+    color: var(--text-light);
+}
+.site-topbar{
+    background: rgba(0,0,0,0.08);
+    padding: .35rem 0;
+}
+.site-topbar .btn-login{
+    background: rgba(255,255,255,0.95);
+    color: #ff4e00;
+    font-weight:600;
+}
+.site-logo .logo{ height:50px; object-fit:contain; }
+/* PolyCoach specific logo class (small & cute) */
+.polycoach-logo{ height:40px; width:auto; object-fit:contain; display:block; }
+.brand-name{ font-weight:600; color:#fff; font-size:1.125rem; }
+
+.main-nav .nav-link{
+    color: rgba(255,255,255,0.95);
+    text-transform: uppercase;
+    font-weight:600;
+    letter-spacing:.6px;
+    padding: .35rem .6rem;
+    border-radius: .35rem;
+    transition: background .15s, color .15s, transform .08s;
+}
+.main-nav .nav-link:hover{
+    background: rgba(255,255,255,0.08);
+    text-decoration:none;
+    opacity:.95;
+}
+
+/* Desktop logo/header spacing */
+@media(min-width: 768px){
+    .site-nav{ padding: 18px 0; }
+    .site-logo .logo{ height:64px; }
+    .polycoach-logo{ height:48px; }
+}
+
+/* ===================== Footer ===================== */
+.client-footer{
+    /* Keep default fallback; top area will override */
+    color: #333;
+    padding: 0 1rem 0 1rem;
+}
+.client-footer a{
+    color: inherit;
+    text-decoration: none;
+    transition: opacity .15s;
+}
+.client-footer a:hover{ opacity:.85; }
+
+/* Footer top (light pink area) */
+.client-footer .footer-top{
+    background: #fff6f4; /* soft pink */
+    padding: 3rem 0 1.25rem 0;
+    color: #0b2b1f;
+}
+.client-footer .hotline{ font-size:1.95rem; letter-spacing:1px; }
+.client-footer .hotline.text-danger{ color: #ff4e00; }
+.client-footer .app-badges .badge-store{
+    display:inline-block; padding:.45rem .75rem; border-radius:999px; font-weight:600; font-size:.9rem;
+}
+.badge-store-android{ background:#2ecc71; color:#fff; }
+.badge-store-ios{ background:#111827; color:#fff; }
+.footer-logos img.footer-logo{ height:36px; opacity:.95; }
+
+/* Footer bottom (green strip) */
+.client-footer .footer-bottom{
+    background: #0b6b47; /* FUTA green-ish */
+    margin-top: 1.5rem;
+}
+.client-footer .footer-bottom .small{ color: #fff; }
+
+@media(max-width:767px){
+    .client-footer .hotline{ font-size:1.45rem; }
+    .footer-logos img.footer-logo{ height:32px; }
+}
+
+/* ===================== Main Container ===================== */
+main.container{
+    max-width: 1080px;
+    padding: 2rem 1rem;
+}
+
+/* ===================== Buttons ===================== */
+.btn-primary{
+    background: linear-gradient(90deg,var(--accent), var(--accent-dark));
+    border:none;
+    color:#fff;
+    font-weight:600;
+    transition: opacity .15s;
+}
+.btn-primary:hover{ opacity:.95; }
+
+.btn-search{
+    background: var(--accent);
+    color: #fff;
+    border:none;
+    padding: .6rem 1rem;
+    border-radius:8px;
+    font-weight:600;
+}
+.btn-search:hover{ opacity:.95; }
+
+/* ===================== Utility Cards ===================== */
+.ui-card{
+    background:#fff;
+    border-radius:.625rem;
+    box-shadow:0 6px 18px rgba(15,23,42,0.06);
+    padding:1.25rem;
+}
+
+/* ===================== Avatar ===================== */
+.avatar{ display:inline-block; text-align:center; }
+.avatar strong{ font-size:.85rem; display:block; }
+.avatar.bg-light{ background:#f3f4f6; padding:.35rem; border-radius:.5rem; }
+
+/* ===================== Hero Section ===================== */
+.hero-section{
+    background: linear-gradient(90deg, rgba(6,95,70,0.95) 0%, rgba(14,165,164,0.9) 100%);
+    margin-top: -1px; /* overlap header slightly */
+    padding: 2rem 0;
+    text-align:center;
+}
+.hero-section .display-5{ color: var(--text-light); }
+.hero-section .lead{ color: rgba(255,255,255,0.9); }
+.hero-illustration{ max-height: 260px; }
+
+/* Hero card/form */
+.hero-section .ui-card{ padding:.75rem; }
+.hero-section .form-control{ min-height:44px; border-radius:8px; }
+
+/* Banner & hero search */
+.hero-banner{
+    max-width: 1100px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+    border-radius:14px;
+    padding:1rem 1.25rem 3.5rem 1.25rem;
+    overflow:visible;
+    margin:auto;
+}
+.hero-banner .banner-content{ padding-top:18px; padding-bottom:10px; }
+
+.search-card-hero{
+    background:#fff;
+    border-radius:12px;
+    padding:12px;
+    max-width:980px;
+    margin-top:-48px; /* overlap */
+    box-shadow:0 18px 40px rgba(15,23,42,0.08);
+}
+.search-card-hero .form-control,
+.search-card-hero .form-select{ min-height:48px; border-radius:8px; }
+
+/* Mobile tweaks for hero */
+@media(max-width:767px){
+    .hero-banner{ padding-bottom:1.25rem; }
+    .search-card-hero{ margin-top:12px; }
+    .search-card-hero .form-control,
+    .search-card-hero .form-select{ min-height:44px; }
+}
+
+/* ===================== Auth Pages ===================== */
+.auth-card{ border-radius:.75rem; overflow:hidden; display:flex; }
+.auth-left {
+    background: linear-gradient(180deg, rgba(14,165,164,0.95), rgba(6,95,70,0.95));
+    color:#fff;
+    padding:2rem;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+}
+.auth-left .brand{ font-size:1.75rem; font-weight:700; }
+.auth-left .slogan{ opacity:.95; margin-top:1rem; }
+.auth-image{ max-width:220px; opacity:.95; margin-top:1.5rem; }
+
+.auth-right{ background:#fff; flex:1; padding:2rem; }
+.auth-card .form-control:focus{ box-shadow:0 0 0 .15rem rgba(14,165,164,0.15); }
+
+@media(max-width:767px){ .auth-left{ display:none; } }
+
+/* ===================== Responsive tweaks ===================== */
+@media(max-width:767px){
+    .brand-name{ font-size:1rem; }
+    main.container{ padding-left:1rem; padding-right:1rem; }
+    .site-topbar .btn-login{ font-size:.85rem; padding:.25rem .5rem; }
+}
+
+/* ===================== Misc helpers ===================== */
+.text-muted-2{ color: var(--muted); }

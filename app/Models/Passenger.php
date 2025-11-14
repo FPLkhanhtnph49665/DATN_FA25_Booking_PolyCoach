@@ -15,7 +15,7 @@ class Passenger extends Model
         'name',
         'phone',
         'age',
-        'seat_number'
+        'seat_number',
     ];
 
     // -------------------------------
@@ -28,30 +28,19 @@ class Passenger extends Model
         return $this->belongsTo(Ticket::class);
     }
 
-    // Hành khách -> User (thông qua vé)
-    public function user()
+    // ❗ Không dùng hasOneThrough ở đây vì hướng FK không đúng
+    // Thay vào đó: dùng accessor cho tiện:
+
+    // $passenger->user
+    public function getUserAttribute()
     {
-        return $this->hasOneThrough(
-            User::class,
-            Ticket::class,
-            'id',        // Ticket PK
-            'id',        // User PK
-            'ticket_id', // Passenger FK
-            'user_id'    // Ticket FK
-        );
+        return $this->ticket?->user;
     }
 
-    // Hành khách -> Trip (thông qua vé)
-    public function trip()
+    // $passenger->trip
+    public function getTripAttribute()
     {
-        return $this->hasOneThrough(
-            Trip::class,
-            Ticket::class,
-            'id',        // Ticket PK
-            'id',        // Trip PK
-            'ticket_id', // Passenger FK
-            'trip_id'    // Ticket FK
-        );
+        return $this->ticket?->trip;
     }
 
     // -------------------------------

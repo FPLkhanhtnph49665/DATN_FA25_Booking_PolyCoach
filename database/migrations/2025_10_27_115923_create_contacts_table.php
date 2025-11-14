@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('phone', 20)->nullable();
             $table->text('message');
             $table->tinyInteger('status')->default(0); // 0: chưa xử lý, 1: đã phản hồi
+            $table->softDeletes();
             $table->timestamps();
         });
     }
