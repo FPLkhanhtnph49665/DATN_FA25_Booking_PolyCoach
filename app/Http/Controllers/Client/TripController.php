@@ -8,58 +8,94 @@ use App\Models\Trip;
 
 class TripController extends Controller
 {
-    // Trang danh sách chuyến
+    public function searchTrips(Request $request)
+    {
+        // dùng chung logic với index
+        return $this->index($request);
+    }
+
     public function index(Request $request)
     {
-        $query = Trip::query();
+        // ====== Form chính ======
+        $from  = trim($request->input('from'));
+        $to    = trim($request->input('to'));
+        $date  = $request->input('date');
+        $seats = (int) $request->input('seats', 1);
 
-        // Lọc theo điểm đi, điểm đến, ngày đi
-        if ($request->filled('from')) {
-            $query->where('from', 'like', '%' . $request->from . '%');
+        // ====== Bộ lọc bên trái ======
+        $timeFilters = (array) $request->input('time', []);     // ['sang', 'chieu', ...]
+        $busTypes    = (array) $request->input('bus_type', []); // ['ghe','giuong','limousine']
+
+        // ====== BUILD QUERY CƠ BẢN (KHÔNG ĐỤNG so_ghe_trong) ======
+        $query = Trip::with(['route', 'bus', 'tickets.passengers'])
+            ->active()
+
+            // 1. Điểm đi
+            ->when($from !== '', function ($q) use ($from) {
+                $q->whereHas('route', function ($qr) use ($from) {
+                    $qr->where('diem_di', 'like', "%{$from}%");
+                });
+            })
+
+            // 2. Điểm đến
+            ->when($to !== '', function ($q) use ($to) {
+                $q->whereHas('route', function ($qr) use ($to) {
+                    $qr->where('diem_den', 'like', "%{$to}%");
+                });
+            })
+
+            // 3. Ngày đi
+            ->when(!empty($date), function ($q) use ($date) {
+                $q->whereDate('ngay_khoi_hanh', $date);
+            })
+
+            // 4. Khung giờ đi
+            ->when(!empty($timeFilters), function ($q) use ($timeFilters) {
+                $q->where(function ($query) use ($timeFilters) {
+                    if (in_array('sang', $timeFilters)) {
+                        $query->orWhereBetween('gio_khoi_hanh', ['00:00:00', '05:59:59']);
+                    }
+                    if (in_array('sang2', $timeFilters)) {
+                        $query->orWhereBetween('gio_khoi_hanh', ['06:00:00', '11:59:59']);
+                    }
+                    if (in_array('chieu', $timeFilters)) {
+                        $query->orWhereBetween('gio_khoi_hanh', ['12:00:00', '17:59:59']);
+                    }
+                    if (in_array('toi', $timeFilters)) {
+                        $query->orWhereBetween('gio_khoi_hanh', ['18:00:00', '23:59:59']);
+                    }
+                });
+            })
+
+            // 5. Loại xe
+            ->when(!empty($busTypes), function ($q) use ($busTypes) {
+                $q->whereHas('bus', function ($qr) use ($busTypes) {
+                    $qr->whereIn('loai_xe', $busTypes);
+                });
+            });
+
+        // Lấy toàn bộ trips theo điều kiện trên
+        $trips = $query
+            ->orderBy('ngay_khoi_hanh')
+            ->get();
+
+        // ====== LỌC THEO SỐ GHẾ TRỐNG BẰNG ACCESSOR so_ghe_trong ======
+        if ($seats > 0) {
+            $trips = $trips->filter(function ($trip) use ($seats) {
+                // so_ghe_trong là accessor trong Trip model
+                return $trip->so_ghe_trong >= $seats;
+            })->values();
         }
 
-        if ($request->filled('to')) {
-            $query->where('to', 'like', '%' . $request->to . '%');
-        }
-
-        if ($request->filled('date')) {
-            $query->whereDate('departure_time', $request->date);
-        }
-
-        $trips = $query->paginate(10);
-
+        // (Nếu sau này cần paginate, ta sẽ custom LengthAwarePaginator từ collection,
+        // còn hiện tại dùng collection là đủ để hiển thị)
         return view('client.trips.index', compact('trips'));
     }
 
-    // Form tìm kiếm chuyến
+    public function show(Trip $trip)
+    {
+        $trip->load('route', 'bus', 'tickets.passengers');
 
-    public function search(Request $request)
-{
-    $query = Trip::query();
-
-    // Lọc theo điểm đi
-    if ($request->filled('from')) {
-        $query->where('from', 'like', '%' . $request->from . '%');
+        return view('client.trips.show', compact('trip'));
     }
-
-    // Lọc theo điểm đến
-    if ($request->filled('to')) {
-        $query->where('to', 'like', '%' . $request->to . '%');
-    }
-
-    // Lọc theo ngày đi
-    if ($request->filled('date')) {
-        $query->whereDate('departure_time', $request->date); // giả sử cột ngày đi là departure_time
-    }
-
-    // Lọc theo số ghế trống
-    if ($request->filled('seats')) {
-        $query->where('available_seats', '>=', $request->seats); // giả sử cột số ghế trống là available_seats
-    }
-
-    // Phân trang 10 chuyến/ trang và giữ query string
-    $trips = $query->paginate(10)->withQueryString();
-
-    return view('client.trips.index', compact('trips'));
-}
 }

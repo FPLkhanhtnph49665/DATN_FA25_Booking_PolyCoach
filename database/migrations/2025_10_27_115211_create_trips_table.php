@@ -21,7 +21,6 @@ return new class extends Migration
             $table->time('gio_den')->nullable();  // Giờ dự kiến đến
             $table->decimal('gia_ve', 10, 2)->default(0); // Giá vé mặc định
             $table->tinyInteger('trang_thai')->default(1)->comment('1: Hoạt động, 0: Hủy');
-            $table->unsignedInteger('so_ghe_trong')->default(0)->comment('Số ghế còn trống');
             $table->string('ma_chuyen', 50)->unique()->comment('Mã định danh chuyến xe');
 
             $table->timestamps();

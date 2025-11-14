@@ -1,88 +1,222 @@
-/* ===== Reset chung ===== */
+/* =============================
+   File: public/css/client.css
+   Chủ đề: Coral Red (#ff595e)
+   ============================= */
+
+/* ===== Reset & Base ===== */
 body {
-    background-color: #fdfdfd;
+    background-color: #fffaf9;
     color: #333;
     font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    scroll-behavior: smooth;
+}
+
+a {
+    color: #ff595e;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #ff2e34;
 }
 
 /* ===== Header ===== */
 .client-header {
     background: linear-gradient(90deg, #ff595e, #ff7b80);
     color: white;
-    transition: all 0.3s ease;
+    padding: 10px 0;
+    box-shadow: 0 2px 10px rgba(255, 89, 94, 0.3);
 }
 
-.logo-gif {
+.client-header .logo {
     width: 60px;
     height: 60px;
-    border-radius: 50%;
-    object-fit: contain;
-    transition: transform 0.3s ease;
 }
 
-.logo-gif:hover {
-    transform: rotate(8deg) scale(1.1);
-}
-
-/* ===== Navbar ===== */
-.nav-link {
-    color: white !important;
+.client-header nav a {
+    color: white;
     font-weight: 500;
-    position: relative;
-    transition: all 0.3s ease;
+    margin: 0 12px;
+    transition: opacity 0.3s ease;
 }
 
-.nav-link::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: -4px;
-    width: 0%;
-    height: 2px;
-    background-color: white;
-    transition: width 0.3s ease;
-}
-
-.nav-link:hover::after {
-    width: 100%;
+.client-header nav a:hover {
+    opacity: 0.85;
+    text-decoration: underline;
 }
 
 /* ===== Footer ===== */
 .client-footer {
-    background-color: #ff595e;
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    background: #ff595e;
     color: white;
+    padding: 25px 0;
+    text-align: center;
+    font-size: 15px;
+    margin-top: auto;
 }
 
-.client-footer a {
-    color: white;
-    text-decoration: none;
-    transition: color 0.3s ease;
+/* ===== Banner / Carousel ===== */
+.banner-img {
+    height: 350px;
+    object-fit: cover;
+    border-radius: 12px;
 }
 
-.client-footer a:hover {
-    color: #FFA500;
+/* ===== Card (Search / Login Box) ===== */
+.card-box {
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #ffe4e6;
+    box-shadow: 0 6px 18px rgba(255, 89, 94, 0.12);
+    transition: all 0.3s ease;
 }
 
-/* Footer headings */
-.client-footer h5 {
+.card-box:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(255, 89, 94, 0.18);
+}
+
+/* ===== Form Controls ===== */
+.form-label {
+    color: #444;
     font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.form-control,
+.form-select {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #ff595e;
+    box-shadow: 0 0 0 0.15rem rgba(255, 89, 94, 0.25);
+}
+
+/* ===== Buttons ===== */
+.btn-primary,
+.btn-login {
+    background: linear-gradient(90deg, #ff595e, #ff7b80);
+    border: none;
+    color: white;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover,
+.btn-login:hover {
+    background: #ff2e34;
+    box-shadow: 0 5px 15px rgba(255, 89, 94, 0.3);
+}
+
+/* ===== Tab Buttons (Login/Register) ===== */
+.tab-btn {
+    color: #555;
+    font-weight: 600;
+    padding-bottom: 8px;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+    color: #ff595e;
+    border-color: #ff595e;
+}
+
+/* ===== Login/Register Box ===== */
+.auth-box {
+    max-width: 450px;
+    margin: 50px auto;
+    padding: 40px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 6px 20px rgba(255, 89, 94, 0.15);
+    border-top: 5px solid #ff595e;
+}
+
+.auth-title {
+    font-weight: 700;
+    color: #ff595e;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.auth-footer a {
+    color: #ff595e;
+    font-weight: 600;
+}
+
+/* ===== Popular Routes ===== */
+.popular-route {
+    background-color: #fff;
+    border: 2px solid #ffe4e6;
+    border-radius: 12px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.popular-route:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(255, 89, 94, 0.15);
+    border-color: #ff595e;
+}
+
+.popular-route h6 {
+    color: #ff595e;
+}
+
+/* ===== Inputs in Auth Forms ===== */
+.input-icon {
+    position: relative;
+}
+
+.input-icon input {
+    padding-left: 38px;
+}
+
+.input-icon i {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    color: #ff595e;
+    font-size: 18px;
 }
 
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
-    .nav-link {
-        display: block;
-        text-align: center;
-        margin: 8px 0;
+    .auth-box {
+        margin: 30px 15px;
+        padding: 25px;
     }
 
-    .client-header .container {
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
+    .banner-img {
+        height: 220px;
+    }
+
+    .client-header nav a {
+        font-size: 14px;
+    }
+
+    .search-card {
+        padding: 1.25rem;
     }
 }

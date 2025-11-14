@@ -12,9 +12,13 @@ class Bus extends Model
 
     protected $fillable = [
         'bien_so',     // Biển số xe
-        'so_ghe',      // Tổng số ghế
-        'loai_xe',     // Ghế ngồi / Giường nằm
-        'trang_thai',  // 1: hoạt động, 0: bảo trì
+        'so_ghe',      // Tổng số ghế trên xe
+        'loai_xe',     // ghe_ngoi | giuong_nam (hoặc giá trị bạn quy ước)
+        'trang_thai',  // 1: hoạt động, 0: bảo trì/ngưng
+    ];
+
+    protected $casts = [
+        'trang_thai' => 'boolean',
     ];
 
     // -------------------------------
@@ -31,19 +35,25 @@ class Bus extends Model
     // -------------------------------
 
     // Hiển thị loại xe rõ ràng hơn
-    public function getLoaiXeLabelAttribute()
+    public function getLoaiXeLabelAttribute(): string
     {
-        return $this->loai_xe === 'giuong_nam' ? 'Giường nằm' : 'Ghế ngồi';
+        return match ($this->loai_xe) {
+            'giuong_nam' => 'Giường nằm',
+            'ghe_ngoi'   => 'Ghế ngồi',
+            default      => ucfirst(str_replace('_', ' ', $this->loai_xe ?? 'Không rõ')),
+        };
     }
 
     // Hiển thị trạng thái dạng text
-    public function getTrangThaiLabelAttribute()
+    public function getTrangThaiLabelAttribute(): string
     {
-        return $this->trang_thai ? 'Đang hoạt động' : 'Bảo trì';
+        return $this->trang_thai
+            ? 'Đang hoạt động'
+            : 'Bảo trì / Ngưng hoạt động';
     }
 
-    // Ghế còn trống (tính toán dựa trên các chuyến đang mở)
-    public function getTongChuyenAttribute()
+    // Tổng số chuyến mà xe này đã/đang được gán
+    public function getTongChuyenAttribute(): int
     {
         return $this->trips()->count();
     }

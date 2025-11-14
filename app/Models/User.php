@@ -59,7 +59,7 @@ class User extends Authenticatable
     // Relationship
     public function bookings()
     {
-        return $this->hasMany(Booking::class, 'customer_id');
+        return $this->hasMany(Booking::class, 'user_id');
     }
     public function tickets()
     {
