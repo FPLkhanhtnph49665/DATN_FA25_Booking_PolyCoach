@@ -25,12 +25,14 @@
             <div class="col-lg-3 col-md-6">
                 <label class="form-label fw-semibold mb-1">Điểm đi</label>
                 <div class="futa-input">
-                    <input type="text"
-                           name="from"
-                           class="form-control border-0 shadow-none p-0"
-                           placeholder="VD: Hà Nội"
-                           value="{{ request('from') }}"
-                           required>
+                    <select name="from" class="form-select border-0 shadow-none p-0" required>
+                        <option value="">-- Chọn điểm đi --</option>
+                        @foreach ($allFrom as $from)
+                            <option value="{{ $from }}" {{ request('from') == $from ? 'selected' : '' }}>
+                                {{ $from }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
 
@@ -38,24 +40,24 @@
             <div class="col-lg-3 col-md-6">
                 <label class="form-label fw-semibold mb-1">Điểm đến</label>
                 <div class="futa-input">
-                    <input type="text"
-                           name="to"
-                           class="form-control border-0 shadow-none p-0"
-                           placeholder="VD: Đà Nẵng"
-                           value="{{ request('to') }}"
-                           required>
+                    <select name="to" class="form-select border-0 shadow-none p-0" required>
+                        <option value="">-- Chọn điểm đến --</option>
+                        @foreach ($allTo as $to)
+                            <option value="{{ $to }}" {{ request('to') == $to ? 'selected' : '' }}>
+                                {{ $to }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
+
 
             {{-- Ngày đi --}}
             <div class="col-lg-3 col-md-6">
                 <label class="form-label fw-semibold mb-1">Ngày đi</label>
                 <div class="futa-input">
-                    <input type="date"
-                           name="date"
-                           class="form-control border-0 shadow-none p-0"
-                           value="{{ request('date', date('d-m-Y')) }}"
-                           required>
+                    <input type="date" name="date" class="form-control border-0 shadow-none p-0"
+                        value="{{ request('date', date('d-m-Y')) }}" required>
                 </div>
             </div>
 
@@ -64,7 +66,7 @@
                 <label class="form-label fw-semibold mb-1">Số vé</label>
                 <div class="futa-input">
                     <select name="seats" class="form-select border-0 shadow-none p-0">
-                        @for($i = 1; $i <= 10; $i++)
+                        @for ($i = 1; $i <= 10; $i++)
                             <option value="{{ $i }}" {{ request('seats', 1) == $i ? 'selected' : '' }}>
                                 {{ $i }} vé
                             </option>
@@ -91,6 +93,7 @@
         padding: 20px 24px;
         transition: all 0.3s;
     }
+
     .trip-search-wrapper:hover {
         box-shadow: 0 8px 25px rgba(255, 120, 60, 0.18);
     }
@@ -107,9 +110,11 @@
         font-weight: 600;
         transition: all 0.2s;
     }
+
     .trip-type-pill span {
         line-height: 1;
     }
+
     .trip-type-pill.active,
     .trip-type-pill:hover {
         background: #ffe0d1;
@@ -129,11 +134,13 @@
         display: flex;
         align-items: center;
     }
+
     .futa-input:focus-within {
         border-color: #ff7043;
         box-shadow: 0 0 0 1px rgba(255, 112, 67, 0.2);
         background: #ffffff;
     }
+
     .futa-input input,
     .futa-input select {
         background: transparent;
@@ -147,9 +154,40 @@
         color: #fff;
         transition: all 0.2s;
     }
+
     .btn-search:hover {
         background-color: #f4511e;
         transform: translateY(-1px);
         box-shadow: 0 6px 16px rgba(244, 81, 30, 0.35);
+    }
+
+    .futa-input select {
+        background: transparent;
+        border: none;
+        width: 100%;
+        padding: 0;
+        font-size: 1rem;
+        -webkit-appearance: none;
+        /* Chrome, Safari */
+        -moz-appearance: none;
+        /* Firefox */
+        appearance: none;
+        cursor: pointer;
+    }
+
+    /* Thêm mũi tên select kiểu tùy chỉnh */
+    .futa-input {
+        position: relative;
+    }
+
+    .futa-input::after {
+        content: "▼";
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.6rem;
+        color: #888;
+        pointer-events: none;
     }
 </style>
