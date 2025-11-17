@@ -84,7 +84,7 @@
                         <a href="javascript:void(0)">Chính sách</a>
                     </div>
 
-                    <a href="{{ route('client.trips.show', $trip->id) }}"
+                    <a href="{{ route('client.trips.show',['trip_id' => $trip->id]) }}"
                        class="btn btn-warning rounded-pill px-4 fw-semibold futa-btn-choose">
                         Chọn chuyến
                     </a>

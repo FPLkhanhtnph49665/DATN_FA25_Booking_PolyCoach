@@ -27,9 +27,9 @@ use App\Http\Controllers\Client\ContactController as ClientContactController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('client.home');
-Route::get('/chuyen-di', [ClientTripController::class, 'index'])->name('client.trips');
+Route::get('/lich-trinh', [ClientTripController::class, 'index'])->name('client.trips');
 Route::get('/tim-chuyen-di', [ClientTripController::class, 'searchTrips'])->name('client.searchTrips');
-Route::get('/chuyen-di/{trip}', [ClientTripController::class, 'show'])->name('client.trips.show');
+Route::get('/dat-ve', [ClientTripController::class, 'show'])->name('client.trips.show');
 Route::get('/lien-he', [ClientContactController::class, 'showForm'])->name('client.contact.show');
 Route::post('/lien-he', [ClientContactController::class, 'submit'])->name('client.contact.submit');
 
@@ -44,7 +44,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/dat-ve', [ClientBookingController::class, 'store'])
         ->name('client.bookings.store');
 
-    Route::get('/dat-ve/{booking}', [ClientBookingController::class, 'show'])
+    Route::get('/da-dat-ve/{booking}', [ClientBookingController::class, 'show'])
         ->name('client.bookings.show');
 });
 
@@ -61,15 +61,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', AdminMiddleware::cla
     Route::resource('payments', PaymentController::class);
     Route::resource('reviews', ReviewController::class);
     Route::resource('contacts', ContactController::class);
-});
-
-
-
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__ . '/auth.php';

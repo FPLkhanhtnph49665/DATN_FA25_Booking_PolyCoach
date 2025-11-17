@@ -15,17 +15,17 @@ class BookingController extends Controller
 {
     public function store(Request $request)
     {
-        // 🔒 Bắt buộc đăng nhập
+        // Bắt buộc đăng nhập
         if (!Auth::check()) {
             return redirect()
                 ->route('login')
                 ->with('error', 'Bạn cần đăng nhập để đặt vé.');
         }
 
-        // ✅ Validate dữ liệu từ form
+        // Validate
         $request->validate([
             'trip_id'        => 'required|exists:trips,id',
-            'seat_codes'     => 'required|string',           // A01,A02,...
+            'seat_codes'     => 'required|string',          // <— KHỚP input
             'customer_name'  => 'required|string|max:255',
             'customer_phone' => 'required|string|max:20',
             'customer_email' => 'nullable|email',
@@ -33,80 +33,59 @@ class BookingController extends Controller
             'drop_point'     => 'nullable|string|max:255',
         ]);
 
-        // Lấy chuyến + xe + hành khách hiện có
         $trip = Trip::with(['bus', 'passengers'])->findOrFail($request->trip_id);
 
-        // Tách danh sách ghế từ input
-        $seatCodes = array_filter(array_map('trim', explode(',', $request->seat_codes)));
-        $seatCodes = array_unique($seatCodes);
-        $seatCount = count($seatCodes);
+        // Chuẩn hoá ghế
+        $seatCodes = collect(explode(',', $request->seat_codes))
+            ->map(fn($v) => trim($v))
+            ->filter()
+            ->unique()
+            ->values();
 
-        if ($seatCount === 0) {
+        if ($seatCodes->isEmpty()) {
+            return back()->withErrors(['seat_codes' => 'Bạn chưa chọn ghế nào.'])->withInput();
+        }
+
+        // Ghế đã đặt
+        $booked = $trip->booked_seats;
+
+        // Kiểm tra trùng
+        $conflict = $seatCodes->intersect($booked);
+        if ($conflict->isNotEmpty()) {
             return back()
-                ->withErrors(['seat_codes' => 'Bạn chưa chọn ghế nào.'])
+                ->withErrors(['seat_codes' => 'Ghế ' . $conflict->implode(', ') . ' đã có người đặt.'])
                 ->withInput();
         }
 
-        // Tổng số ghế của xe
-        $totalSeats = (int) ($trip->bus->so_ghe ?? 0);
-        if ($totalSeats <= 0) {
-            return back()
-                ->withErrors(['trip_id' => 'Xe của chuyến này chưa được cấu hình số ghế.'])
-                ->withInput();
-        }
-
-        // Ghế đã được đặt trước đó (từ passengers)
-        $booked = $trip->booked_seats;    // accessor trong Trip model → array seat_number
-
-        // Kiểm tra ghế trùng
-        $conflict = array_intersect($seatCodes, $booked);
-        if (!empty($conflict)) {
-            $conflictStr = implode(', ', $conflict);
-            return back()
-                ->withErrors(['seat_codes' => "Các ghế $conflictStr đã có người đặt, vui lòng chọn ghế khác."])
-                ->withInput();
-        }
-
-        // Kiểm tra không vượt quá số ghế trống
-        $available = $trip->so_ghe_trong; // accessor trong Trip model
-        if ($seatCount > $available) {
-            return back()
-                ->withErrors(['seat_codes' => "Chỉ còn $available ghế trống trên chuyến này."])
-                ->withInput();
-        }
-
-        // Tính tổng tiền
-        $unitPrice  = (int) $trip->gia_ve;
+        // Tính giá
+        $seatCount  = $seatCodes->count();
+        $unitPrice  = (int)$trip->gia_ve;
         $totalPrice = $seatCount * $unitPrice;
 
         DB::beginTransaction();
         try {
-            // 1️⃣ Tạo booking (đơn đặt vé tổng)
+            // 1) Tạo booking
             $booking = Booking::create([
-                'user_id'                => Auth::id(),
-                'trip_id'                => $trip->id,
-                'ngay_dat'               => now(),
-                'tong_tien'              => $totalPrice,
-                'trang_thai'             => 'Đang chờ',   // theo enum trong migration
-                'phuong_thuc_thanh_toan' => 'cash',      // tạm để cash, sau này thêm Momo/ VNPay
+                'user_id'   => Auth::id(),
+                'trip_id'   => $trip->id,
+                'tong_tien' => $totalPrice,
+                'trang_thai'=> 'Đang chờ',
             ]);
 
-            // 2️⃣ Tạo ticket chính cho user này
+            // 2) Ticket
             $ticket = Ticket::create([
-                'trip_id'               => $trip->id,
-                'user_id'               => Auth::id(),
-                'so_ghe'                => $seatCount,
-                'trang_thai'            => 'pending',    // khớp Ticket::getTrangThaiLabelAttribute
-                'phuong_thuc_thanh_toan'=> 'cash',
+                'trip_id'    => $trip->id,
+                'user_id'    => Auth::id(),
+                'so_ghe'     => $seatCount,
+                'trang_thai' => 'pending',
             ]);
 
-            // 3️⃣ Tạo passengers theo từng ghế
+            // 3) Passenger mỗi ghế
             foreach ($seatCodes as $code) {
                 Passenger::create([
                     'ticket_id'   => $ticket->id,
                     'name'        => $request->customer_name,
                     'phone'       => $request->customer_phone,
-                    'age'         => null,
                     'seat_number' => $code,
                 ]);
             }
@@ -114,14 +93,11 @@ class BookingController extends Controller
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
-
-            return back()
-                ->withErrors(['general' => 'Có lỗi khi tạo đơn đặt vé, vui lòng thử lại.'])
-                ->withInput();
+            return back()->withErrors(['general' => 'Lỗi hệ thống, vui lòng thử lại.']);
         }
 
         return redirect()
-            ->route('client.trips.show', $trip->id)
+            ->route('client.bookings.show', $booking->id)   // <— SỬA ĐÚNG
             ->with('success', 'Đặt vé thành công!');
     }
 }
