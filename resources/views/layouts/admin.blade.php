@@ -77,7 +77,7 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                    <a class="dropdown-item" href="">
                                         <i class="bi bi-gear"></i> Hồ sơ
                                     </a>
                                 </li>

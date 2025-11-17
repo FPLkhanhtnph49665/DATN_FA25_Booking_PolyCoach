@@ -25,8 +25,9 @@ class TripController extends Controller
         // ====== Bộ lọc bên trái ======
         $timeFilters = (array) $request->input('time', []);     // ['sang', 'chieu', ...]
         $busTypes    = (array) $request->input('bus_type', []); // ['ghe','giuong','limousine']
+        $rows        = (array) $request->input('row', []);      // ['front','middle','back']
 
-        // ====== BUILD QUERY CƠ BẢN (KHÔNG ĐỤNG so_ghe_trong) ======
+        // ====== BUILD QUERY CƠ BẢN (KHÔNG ĐỤNG so_ghe_trong, row) ======
         $query = Trip::with(['route', 'bus', 'tickets.passengers'])
             ->active()
 
@@ -87,15 +88,89 @@ class TripController extends Controller
             })->values();
         }
 
-        // (Nếu sau này cần paginate, ta sẽ custom LengthAwarePaginator từ collection,
-        // còn hiện tại dùng collection là đủ để hiển thị)
+        // ====== LỌC THEO HÀNG GHẾ (front / middle / back) ======
+        if (!empty($rows)) {
+            // chỉ giữ các giá trị hợp lệ
+            $rows = array_values(array_intersect($rows, ['front', 'middle', 'back']));
+
+            if (!empty($rows)) {
+                // Map hàng ghế -> danh sách mã ghế
+                $seatRows = [
+                    'front'  => ['A01','A02','A03','A04','B01','B02','B03','B04'],
+                    'middle' => [
+                        'A05','A06','A07','A08','A09','A10','A11','A12',
+                        'B05','B06','B07','B08','B09','B10','B11','B12',
+                    ],
+                    'back'   => ['A13','A14','A15','A16','B13','B14','B15','B16','B17'],
+                ];
+
+                // Full sơ đồ ghế
+                $fullSeats = array_values(array_unique(array_merge(
+                    $seatRows['front'],
+                    $seatRows['middle'],
+                    $seatRows['back'],
+                )));
+
+                $trips = $trips->filter(function ($trip) use ($rows, $seatRows, $fullSeats, $seats) {
+                    // Lấy danh sách ghế đã đặt từ tickets.passengers (cột seat_code)
+                    $bookedSeats = [];
+
+                    if ($trip->relationLoaded('tickets')) {
+                        $bookedSeats = $trip->tickets
+                            ->flatMap(function ($ticket) {
+                                return $ticket->passengers ?? collect();
+                            })
+                            ->pluck('seat_code')
+                            ->filter()
+                            ->map(function ($code) {
+                                return strtoupper(trim($code));
+                            })
+                            ->values()
+                            ->all();
+                    }
+
+                    // Ghế còn trống = fullSeats - bookedSeats
+                    $availableSeats = array_values(array_diff($fullSeats, $bookedSeats));
+
+                    // Ghế thuộc các hàng được chọn
+                    $allowedSeats = [];
+                    foreach ($rows as $r) {
+                        if (isset($seatRows[$r])) {
+                            $allowedSeats = array_merge($allowedSeats, $seatRows[$r]);
+                        }
+                    }
+                    $allowedSeats = array_values(array_unique($allowedSeats));
+
+                    // Giao giữa "ghế trống" và "ghế thuộc hàng đã chọn"
+                    $availableInRows = array_values(array_intersect($availableSeats, $allowedSeats));
+
+                    // Điều kiện: phải đủ số ghế yêu cầu trong các hàng này
+                    $needSeats = max($seats, 1);
+
+                    return count($availableInRows) >= $needSeats;
+                })->values();
+            }
+        }
+
         return view('client.trips.index', compact('trips'));
     }
 
-    public function show(Trip $trip)
+    public function show(Request $request)
     {
-        $trip->load('route', 'bus', 'tickets.passengers');
+        // /dat-ve?trip_id=...
+        $tripId = $request->query('trip_id');
 
-        return view('client.trips.show', compact('trip'));
+        if (!$tripId) {
+            abort(404, 'Thiếu trip_id');
+        }
+
+        $trip = Trip::with(['route', 'bus', 'tickets.passengers'])
+            ->findOrFail($tripId);
+
+        // TODO: có thể tái sử dụng logic trên để tính $bookedSeats
+        // tạm thời để rỗng (chưa chặn chọn ghế đã đặt)
+        $bookedSeats = [];
+
+        return view('client.trips.show', compact('trip', 'bookedSeats'));
     }
 }

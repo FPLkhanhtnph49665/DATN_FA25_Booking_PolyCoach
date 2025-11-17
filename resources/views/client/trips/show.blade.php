@@ -207,8 +207,8 @@
 </style>
 
 @php
-    $route = $trip->route;
-    $date = \Carbon\Carbon::parse($trip->ngay_khoi_hanh);
+    $route = optional($trip->route);
+    $date  = \Carbon\Carbon::parse($trip->ngay_khoi_hanh);
     $weekdayMap = [
         1 => 'Thứ 2',
         2 => 'Thứ 3',
@@ -219,6 +219,12 @@
         0 => 'Chủ nhật',
     ];
     $weekday = $weekdayMap[$date->dayOfWeek] ?? '';
+
+    // đảm bảo giá vé là số, tránh phá JS
+    $price = (int) ($trip->gia_ve ?? 0);
+
+    // nếu controller chưa truyền thì cho rỗng
+    $bookedSeats = $bookedSeats ?? [];
 @endphp
 
 {{-- HEADER CAM --}}
@@ -250,7 +256,9 @@
             <form action="{{ route('client.bookings.store') }}" method="POST" id="booking-form">
                 @csrf
                 <input type="hidden" name="trip_id" value="{{ $trip->id }}">
-                <input type="hidden" name="seats" id="input-seat-count">
+
+                {{-- số lượng ghế + danh sách mã ghế --}}
+                <input type="hidden" name="seat_count" id="input-seat-count">
                 <input type="hidden" name="seat_codes" id="input-seat-codes">
 
                 <div class="booking-main-card">
@@ -270,14 +278,12 @@
                                 <div class="seat-floor-title">Tầng dưới</div>
                                 <div class="seat-floor-body">
                                     @php
-                                        // mỗi mảng là 1 cột ghế (trên xuống)
                                         $floor1Columns = [
                                             ['A01', 'A02', 'A03', 'A04'],
                                             ['A05', 'A06', 'A07', 'A08'],
                                             ['A09', 'A10', 'A11', 'A12'],
                                             ['A13', 'A14', 'A15', 'A16'],
                                         ];
-                                        $bookedSeats = []; // TODO: sau này lấy từ DB
                                     @endphp
 
                                     @foreach($floor1Columns as $column)
@@ -287,8 +293,7 @@
                                                     $isBooked = in_array($code, $bookedSeats);
                                                 @endphp
                                                 <div class="seat {{ $isBooked ? 'booked' : 'available' }}"
-                                                     data-code="{{ $code }}"
-                                                     data-booked="{{ $isBooked ? '1' : '0' }}">
+                                                     data-code="{{ $code }}">
                                                     {{ $code }}
                                                 </div>
                                             @endforeach
@@ -306,7 +311,7 @@
                                             ['B01', 'B02', 'B03', 'B04'],
                                             ['B05', 'B06', 'B07', 'B08'],
                                             ['B09', 'B10', 'B11', 'B12'],
-                                            ['B13', 'B14', 'B15', 'B16', 'B17'],
+                                            ['B13', 'B14', 'B15', 'B16'],
                                         ];
                                     @endphp
 
@@ -317,8 +322,7 @@
                                                     $isBooked = in_array($code, $bookedSeats);
                                                 @endphp
                                                 <div class="seat {{ $isBooked ? 'booked' : 'available' }}"
-                                                     data-code="{{ $code }}"
-                                                     data-booked="{{ $isBooked ? '1' : '0' }}">
+                                                     data-code="{{ $code }}">
                                                     {{ $code }}
                                                 </div>
                                             @endforeach
@@ -500,11 +504,13 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const price = {{ $trip->gia_ve }};
-        const seatsEls = document.querySelectorAll('.seat');
-        const inputSeatCount = document.getElementById('input-seat-count');
-        const inputSeatCodes = document.getElementById('input-seat-codes');
-        const btnSubmit = document.getElementById('btn-submit');
+        // Giá vé (đã ép sang int ở PHP)
+        const price = {{ $price }};
+
+        const seatsEls        = document.querySelectorAll('.seat');
+        const inputSeatCount  = document.getElementById('input-seat-count');
+        const inputSeatCodes  = document.getElementById('input-seat-codes');
+        const btnSubmit       = document.getElementById('btn-submit');
 
         const sidebarSeatQty   = document.getElementById('sidebar-seat-qty');
         const sidebarSeatCodes = document.getElementById('sidebar-seat-codes');
@@ -525,7 +531,8 @@
             if (inputSeatCount) inputSeatCount.value = count;
             if (inputSeatCodes) inputSeatCodes.value = selected.join(',');
 
-            if (btnSubmit) btnSubmit.disabled = count === 0;
+            // Không cho bấm thanh toán khi chưa chọn ghế
+            if (btnSubmit) btnSubmit.disabled = (count === 0);
 
             if (sidebarSeatQty)   sidebarSeatQty.textContent   = count + ' ghế';
             if (sidebarSeatCodes) sidebarSeatCodes.textContent = count ? selected.join(', ') : '—';
@@ -539,12 +546,17 @@
 
         seatsEls.forEach(el => {
             el.addEventListener('click', function () {
-                if (this.dataset.booked === '1') return;
+                // GHẾ ĐÃ BÁN: có class "booked" thì không cho chọn
+                if (this.classList.contains('booked')) {
+                    return;
+                }
+
                 this.classList.toggle('selected');
                 updateSummary();
             });
         });
 
+        // Khởi tạo lần đầu
         updateSummary();
     });
 </script>
