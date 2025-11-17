@@ -1,4 +1,3 @@
-{{-- resources/views/admin/trips/index.blade.php --}}
 @extends('layouts.admin')
 
 @section('title', 'Quản lý Chuyến')
@@ -9,8 +8,20 @@
     <a href="{{ route('admin.trips.create') }}" class="btn btn-success">Thêm chuyến mới</a>
 </div>
 
+{{-- Hiển thị thông báo thành công --}}
 @if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+{{-- Hiển thị thông báo lỗi --}}
+@if($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ $errors->first() }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 @endif
 
 <table class="table table-striped table-bordered">
@@ -21,7 +32,6 @@
             <th>Xe</th>
             <th>Ngày khởi hành</th>
             <th>Giờ khởi hành</th>
-            <th>Ngày đến dự kiến</th>
             <th>Giờ đến dự kiến</th>
             <th>Giá vé</th>
             <th>Ghế còn trống</th>
@@ -37,15 +47,14 @@
             <td>{{ optional($trip->bus)->bien_so ?? '-' }}</td>
             <td>{{ $trip->ngay_khoi_hanh?->format('d/m/Y') ?? '-' }}</td>
             <td>{{ $trip->gio_khoi_hanh_formatted }}</td>
-            <td>{{ $trip->ngay_den?->format('d/m/Y') ?? '-' }}</td>
-            <td>{{ $trip->gio_den_formatted ?? '-' }}</td>
+            <td>{{ $trip->gio_den_formatted }}</td>
             <td>{{ number_format($trip->gia_ve, 0, ',', '.') }}₫</td>
-            <td>{{ count($trip->available_seats) }} / {{ $trip->bus?->so_ghe ?? 0 }}</td>
+            <td>{{ count($trip->available_seats ?? []) }} / {{ $trip->bus?->so_ghe ?? 0 }}</td>
             <td>
                 @if($trip->trang_thai == 1)
                     <span class="badge bg-success">Hoạt động</span>
                 @else
-                    <span class="badge bg-secondary">Đang bảo dưỡng</span>
+                    <span class="badge bg-secondary">Tạm ngưng</span>
                 @endif
             </td>
             <td>
@@ -54,13 +63,13 @@
                 <form action="{{ route('admin.trips.destroy', $trip->id) }}" method="POST" class="d-inline-block" onsubmit="return confirm('Bạn có chắc muốn xóa chuyến này?');">
                     @csrf
                     @method('DELETE')
-                    <button class="btn btn-sm btn-danger">Xóa</button>
+                    <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
                 </form>
             </td>
         </tr>
         @empty
         <tr>
-            <td colspan="11" class="text-center">Chưa có chuyến nào</td>
+            <td colspan="10" class="text-center">Chưa có chuyến nào</td>
         </tr>
         @endforelse
     </tbody>
