@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -101,25 +102,25 @@ class AuthenticatedSessionController extends Controller
             ->with(['trip.route'])
             ->orderByDesc('created_at');
 
-        if ($code !== '') {
+        if ($request->filled('code')) {
             // tạm thời lọc theo id vé
             $query->where('id', $code);
         }
 
-        if (!empty($date)) {
+        if ($request->filled('date')) {
             $query->whereHas('trip', function ($q) use ($date) {
                 $q->whereDate('ngay_khoi_hanh', $date);
             });
         }
 
-        if ($routeQ !== '') {
+        if ($request->filled('route')) {
             $query->whereHas('trip.route', function ($q) use ($routeQ) {
                 $q->where('diem_di', 'like', "%{$routeQ}%")
                     ->orWhere('diem_den', 'like', "%{$routeQ}%");
             });
         }
 
-        if ($status !== '') {
+        if ($request->filled('status')) {
             $query->where('trang_thai', $status);
         }
 
