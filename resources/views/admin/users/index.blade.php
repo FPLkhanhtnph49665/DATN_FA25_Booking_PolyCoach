@@ -97,7 +97,7 @@
                             <tr>
                                 <td class="text-muted small">{{ $loop->iteration + ($users->currentPage() - 1) * $users->perPage() }}</td>
                                 <td>
-                                    <span class="badge bg-secondary-subtle text-light border border-primary-subtle">
+                                    <span class="badge bg-secondary-subtle text-dark border border-primary-subtle">
                                         {{ $user->user_code }}
                                     </span>
                                 </td>
