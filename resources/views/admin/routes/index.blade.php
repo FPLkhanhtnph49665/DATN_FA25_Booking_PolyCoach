@@ -115,7 +115,7 @@
 
                                 <td>
                                     @if(!is_null($route->distance))
-                                        <span class="badge bg-secondary-subtle text-light border border-primary-subtle">
+                                        <span class="badge bg-secondary-subtle text-dark border border-primary-subtle">
                                             {{ number_format($route->distance) }} km
                                         </span>
                                     @else
