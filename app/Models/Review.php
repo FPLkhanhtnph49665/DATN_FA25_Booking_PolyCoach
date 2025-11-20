@@ -13,9 +13,9 @@ class Review extends Model
     protected $fillable = [
         'user_id',
         'trip_id',
-        'rating',       // điểm đánh giá (1-5)
-        'noi_dung',     // nội dung đánh giá
-        'status',       // pending | approved | rejected
+        'rating',    // rating score (1-5)
+        'content',   // review content
+        'status',    // pending | approved | rejected
     ];
 
     protected $casts = [
@@ -25,79 +25,76 @@ class Review extends Model
     protected static function booted()
     {
         static::creating(function ($review) {
-            // Trạng thái mặc định khi tạo mới
+            // default status when creating a new review
             $review->status = $review->status ?? 'pending';
         });
     }
 
-    /* ---------------------------
-       QUAN HỆ
-    ----------------------------*/
+    // -------------------------------
+    // 🔗 RELATIONSHIPS
+    // -------------------------------
 
-    // Người viết đánh giá
+    // Author of the review
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Chuyến xe được đánh giá
+    // Trip being reviewed
     public function trip()
     {
         return $this->belongsTo(Trip::class);
     }
 
-    /* ---------------------------
-       SCOPES
-    ----------------------------*/
+    // -------------------------------
+    // 🔍 SCOPES
+    // -------------------------------
 
-    // Chỉ lấy đánh giá đã duyệt
     public function scopeApproved($query)
     {
         return $query->where('status', 'approved');
     }
 
-    // Lọc theo chuyến
     public function scopeForTrip($query, $tripId)
     {
         return $query->where('trip_id', $tripId);
     }
 
-    // Lọc theo số sao
     public function scopeRating($query, $stars)
     {
         return $query->where('rating', $stars);
     }
 
-    /* ---------------------------
-       ACCESSORS
-    ----------------------------*/
+    // -------------------------------
+    // 🧮 ACCESSORS / HELPERS
+    // -------------------------------
 
-    // Trả về chuỗi sao (⭐️⭐️⭐️)
-    public function getStarsAttribute()
+    // Returns star symbols: ⭐️⭐️⭐️
+    public function getStarsAttribute(): string
     {
         return str_repeat('⭐', (int) round($this->rating));
     }
 
-    // Thời gian hiển thị dễ đọc hơn
-    public function getFormattedDateAttribute()
+    // Formatted created date
+    public function getFormattedDateAttribute(): string
     {
         return $this->created_at ? $this->created_at->format('d/m/Y H:i') : '';
     }
 
-    /* ---------------------------
-       THỐNG KÊ / TÍNH TRUNG BÌNH
-    ----------------------------*/
+    // -------------------------------
+    // 📊 STATISTICS
+    // -------------------------------
 
-    // Tính trung bình điểm rating của 1 chuyến
-    public static function averageRatingByTrip($tripId)
+    // Average rating for a trip
+    public static function averageRatingByTrip($tripId): float
     {
         return static::where('trip_id', $tripId)
             ->where('status', 'approved')
             ->avg('rating') ?? 0;
     }
 
-    // Đếm số lượt đánh giá theo chuyến
-    public static function countByTrip($tripId)
+    // Count of approved reviews for a trip
+    public static function countByTrip($tripId): int
     {
         return static::where('trip_id', $tripId)
             ->where('status', 'approved')

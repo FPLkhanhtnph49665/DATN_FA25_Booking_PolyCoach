@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class BusController extends Controller
 {
     /**
-     * Hiển thị danh sách xe
+     * Display a listing of buses.
      */
     public function index()
     {
@@ -18,7 +18,7 @@ class BusController extends Controller
     }
 
     /**
-     * Hiển thị form thêm xe mới
+     * Show the form for creating a new bus.
      */
     public function create()
     {
@@ -26,24 +26,25 @@ class BusController extends Controller
     }
 
     /**
-     * Lưu xe mới
+     * Store a newly created bus in storage.
      */
     public function store(Request $request)
     {
         $request->validate([
-            'bien_so'   => 'required|string|max:20|unique:buses,bien_so',
-            'so_ghe'    => 'required|integer|min:4|max:100',
-            'loai_xe'   => 'required|in:Ghế ngồi,Giường nằm,Limousine',
-            'trang_thai' => 'nullable|in:0,1',
+            'plate_number' => 'required|string|max:20|unique:buses,plate_number',
+            'seat_count'   => 'required|integer|min:4|max:100',
+            'bus_type'     => 'required|in:Seating,Bunk,Limousine',
+            'status'       => 'nullable|in:0,1',
         ]);
 
-        Bus::create($request->only(['bien_so', 'so_ghe', 'loai_xe', 'trang_thai']));
+        Bus::create($request->only(['plate_number', 'seat_count', 'bus_type', 'status']));
 
-        return redirect()->route('admin.buses.index')->with('success', 'Thêm xe mới thành công!');
+        return redirect()->route('admin.buses.index')
+            ->with('success', 'Bus created successfully!');
     }
 
     /**
-     * Xem chi tiết xe
+     * Display the specified bus.
      */
     public function show(Bus $bus)
     {
@@ -51,7 +52,7 @@ class BusController extends Controller
     }
 
     /**
-     * Hiển thị form chỉnh sửa
+     * Show the form for editing the specified bus.
      */
     public function edit(Bus $bus)
     {
@@ -59,37 +60,38 @@ class BusController extends Controller
     }
 
     /**
-     * Cập nhật thông tin xe
+     * Update the specified bus in storage.
      */
     public function update(Request $request, Bus $bus)
     {
         $request->validate([
-            'bien_so'   => 'required|string|max:20|unique:buses,bien_so,' . $bus->id,
-            'so_ghe'    => 'required|integer|min:4|max:100',
-            'loai_xe' => 'required|in:Ghế ngồi,Giường nằm,Limousine',
-            'trang_thai'=> 'nullable|in:0,1',
+            'plate_number' => 'required|string|max:20|unique:buses,plate_number,' . $bus->id,
+            'seat_count'   => 'required|integer|min:4|max:100',
+            'bus_type'     => 'required|in:Seating,Bunk,Limousine',
+            'status'       => 'nullable|in:0,1',
         ]);
 
-        $bus->update($request->only(['bien_so', 'so_ghe', 'loai_xe', 'trang_thai']));
+        $bus->update($request->only(['plate_number', 'seat_count', 'bus_type', 'status']));
 
-        return redirect()->route('admin.buses.index')->with('success', 'Cập nhật thông tin xe thành công!');
+        return redirect()->route('admin.buses.index')
+            ->with('success', 'Bus updated successfully!');
     }
 
     /**
-     * Xóa (mềm)
+     * Remove the specified bus from storage.
      */
-  public function destroy(Bus $bus)
-{
-    // Kiểm tra xe có đang được sử dụng trong chuyến đi không
-    if ($bus->trips()->count() > 0) {
+    public function destroy(Bus $bus)
+    {
+        // Check if bus is assigned to any trips
+        if ($bus->trips()->count() > 0) {
+            return redirect()->route('admin.buses.index')
+                ->withErrors('Cannot delete this bus because it is assigned to trips!');
+        }
+
+        // Hard delete
+        $bus->forceDelete();
+
         return redirect()->route('admin.buses.index')
-            ->withErrors('Không thể xóa xe này vì đang có chuyến đi sử dụng!');
+            ->with('success', 'Bus deleted successfully!');
     }
-    
-    // Xóa cứng (hard delete)
-    $bus->forceDelete();
-    
-    return redirect()->route('admin.buses.index')
-        ->with('success', 'Đã xóa xe thành công!');
-}
 }

@@ -13,15 +13,24 @@ return new class extends Migration
     {
         Schema::create('reviews', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // người đánh giá
-            $table->foreignId('trip_id')->constrained()->onDelete('cascade'); // chuyến xe
-            $table->tinyInteger('rating')->default(5)->comment('1-5 sao');
-            $table->text('noi_dung')->nullable();
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending')->comment('trạng thái duyệt');
+
+            // Quan hệ
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // reviewer
+            $table->foreignId('trip_id')->constrained()->onDelete('cascade'); // trip
+
+            // Điểm đánh giá: 1-5
+            $table->tinyInteger('rating')->default(5)->comment('1-5 stars');
+
+            // Nội dung đánh giá
+            $table->text('content')->nullable();
+
+            // Trạng thái duyệt: pending, approved, rejected
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending')->comment('review status');
+
             $table->timestamps();
             $table->softDeletes();
 
-            // Nếu cần lọc/truy vấn nhanh
+            // Index để lọc/truy vấn nhanh
             $table->index(['trip_id', 'status']);
         });
     }

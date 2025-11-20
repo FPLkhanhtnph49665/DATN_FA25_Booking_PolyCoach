@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Builder;
 
 class Trip extends Model
 {
@@ -14,32 +13,31 @@ class Trip extends Model
     protected $fillable = [
         'route_id',
         'bus_id',
-        'ngay_khoi_hanh',
-        'gio_khoi_hanh',
-        'ngay_den',
-        'gio_den',
-        'gia_ve',
-        'trang_thai',
-        'ma_chuyen'
+        'departure_date',
+        'departure_time',
+        'arrival_date',
+        'arrival_time',
+        'ticket_price',
+        'status',
+        'trip_code',
     ];
 
     protected $casts = [
-        'ngay_khoi_hanh' => 'date:Y-m-d',
-        'gio_khoi_hanh'  => 'string',
-        'ngay_den'       => 'date:Y-m-d',
-        'gio_den'        => 'string',
+        'departure_date' => 'date',
+        'arrival_date'   => 'date',
+        'departure_time' => 'datetime:H:i',
+        'arrival_time'   => 'datetime:H:i',
     ];
 
-    // ========== QUAN HỆ ==========
-
+    // Relations
     public function route()
     {
-        return $this->belongsTo(Route::class, 'route_id', 'id');
+        return $this->belongsTo(Route::class);
     }
 
     public function bus()
     {
-        return $this->belongsTo(Bus::class, 'bus_id', 'id');
+        return $this->belongsTo(Bus::class);
     }
 
     public function tickets()
@@ -47,112 +45,72 @@ class Trip extends Model
         return $this->hasMany(Ticket::class);
     }
 
-    public function reviews()
+    // Scopes
+    public function scopeActive($query)
     {
-        return $this->hasMany(Review::class);
+        return $query->where('status', 1);
     }
 
-    public function bookings()
+    // Helper: count available seats
+    public function availableSeats(): int
     {
-        return $this->hasMany(Booking::class);
+        if (!$this->bus) return 0;
+
+        $bookedSeats = $this->tickets->flatMap(fn($t) => $t->passengers ?? collect())
+                                     ->pluck('seat_code')
+                                     ->filter()
+                                     ->map(fn($s) => strtoupper(trim($s)))
+                                     ->all();
+
+        $allSeats = range(1, $this->bus->seat_count); // assume seats are 1..N
+        $available = array_diff($allSeats, $bookedSeats);
+
+        return count($available);
     }
 
-    public function passengers()
+    // Helper: available seats in rows
+    public function availableSeatsInRows(array $rows): int
     {
-        // Trip(id) -> Ticket(trip_id) -> Passenger(ticket_id)
-        return $this->hasManyThrough(Passenger::class, Ticket::class);
-    }
+        // Example mapping
+        $seatRows = [
+            'front'  => ['A01','A02','A03','A04','B01','B02','B03','B04'],
+            'middle' => ['A05','A06','A07','A08','B05','B06','B07','B08'],
+            'back'   => ['A09','A10','A11','A12','B09','B10','B11','B12'],
+        ];
 
-    // ========== SCOPES ==========
-
-    public function scopeActive(Builder $query): Builder
-    {
-        return $query->where('trang_thai', 1);
-    }
-
-    // ========== BOOT ==========
-
-    protected static function booted()
-    {
-        static::creating(function ($trip) {
-            // Lấy id lớn nhất, kể cả đã soft delete
-            $lastId = Trip::withTrashed()->max('id') ?? 0;
-            $number = $lastId + 1;
-
-            $trip->ma_chuyen = 'TRIP_' . str_pad($number, 5, '0', STR_PAD_LEFT);
-        });
-    }
-
-    // ========== ACCESSORS GIỜ ==========
-
-    public function getGioKhoiHanhFormattedAttribute(): ?string
-    {
-        return $this->gio_khoi_hanh
-            ? date('H:i', strtotime($this->gio_khoi_hanh))
-            : null;
-    }
-
-    public function getGioDenFormattedAttribute(): ?string
-    {
-        return $this->gio_den
-            ? date('H:i', strtotime($this->gio_den))
-            : null;
-    }
-
-    // ========== GHẾ ==========
-
-    // GHẾ ĐÃ ĐẶT (mã ghế) -> ['A01', 'A02', ...]
-    public function getBookedSeatsAttribute(): array
-    {
-        return $this->passengers->pluck('seat_number')->toArray();
-    }
-
-    // GHẾ CÒN TRỐNG (mã ghế)
-    public function getAvailableSeatsAttribute(): array
-    {
-        $bus = $this->bus;
-
-        if (!$bus || !is_numeric($bus->so_ghe) || $bus->so_ghe <= 0 || $bus->so_ghe > 100) {
-            return [];
-        }
-
-        // bạn đang giả định 4 hàng A,B,C,D
-        $rows = ['A', 'B', 'C', 'D'];
-        $cols = range(1, ceil($bus->so_ghe / count($rows)));
-
-        $allSeats = [];
-        $count = 0;
-
+        $allowedSeats = [];
         foreach ($rows as $r) {
-            foreach ($cols as $c) {
-                $seat = $r . $c;
-                $allSeats[] = $seat;
-                $count++;
-                if ($count >= $bus->so_ghe) break 2;
-            }
+            $allowedSeats = array_merge($allowedSeats, $seatRows[$r] ?? []);
         }
 
-        // 🔥 Lưu ý: dùng booked_seats (snake_case), không phải bookedSeats
-        $booked = $this->booked_seats ?? [];
+        $bookedSeats = $this->tickets->flatMap(fn($t) => $t->passengers ?? collect())
+                                     ->pluck('seat_code')
+                                     ->filter()
+                                     ->map(fn($s) => strtoupper(trim($s)))
+                                     ->all();
 
-        return array_values(array_diff($allSeats, $booked));
+        $availableInRows = array_diff($allowedSeats, $bookedSeats);
+        return count($availableInRows);
     }
 
-    // Tổng số ghế của xe chạy chuyến này
-    public function getTongSoGheAttribute(): int
+    // Helper: booked seats
+    public function getBookedSeats(): array
     {
-        return (int) ($this->bus->so_ghe ?? 0);
+        return $this->tickets->flatMap(fn($t) => $t->passengers ?? collect())
+                             ->pluck('seat_code')
+                             ->filter()
+                             ->map(fn($s) => strtoupper(trim($s)))
+                             ->all();
     }
 
-    // Số ghế đã bán (theo passengers)
-    public function getSoGheDaBanAttribute(): int
+    // Accessor formatted times
+    public function getDepartureTimeFormattedAttribute()
     {
-        return count($this->booked_seats);
+        return $this->departure_time?->format('H:i');
     }
 
-    // Ghế trống (số lượng)
-    public function getSoGheTrongAttribute(): int
+    public function getArrivalTimeFormattedAttribute()
     {
-        return max(0, $this->tong_so_ghe - $this->so_ghe_da_ban);
+        return $this->arrival_time?->format('H:i');
     }
 }

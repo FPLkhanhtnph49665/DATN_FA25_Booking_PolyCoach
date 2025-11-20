@@ -13,13 +13,25 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
+
+            // Quan hệ
             $table->foreignId('ticket_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->decimal('so_tien', 10, 2);
-            $table->string('phuong_thuc', 50);
-            $table->enum('trang_thai', ['pending', 'success', 'failed'])->default('pending');
+
+            // Số tiền
+            $table->decimal('amount', 10, 2);
+
+            // Phương thức thanh toán
+            $table->string('payment_method', 50); // e.g., cash, momo
+
+            // Trạng thái thanh toán
+            $table->enum('status', ['pending', 'success', 'failed'])->default('pending');
+
             $table->timestamps();
             $table->softDeletes();
+
+            // Index tối ưu tìm theo ticket hoặc user
+            $table->index(['ticket_id', 'user_id']);
         });
     }
 

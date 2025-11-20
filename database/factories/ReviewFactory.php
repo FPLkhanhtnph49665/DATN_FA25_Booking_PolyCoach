@@ -17,10 +17,11 @@ class ReviewFactory extends Factory
         $trip = Trip::inRandomOrder()->first() ?? Trip::factory()->create();
 
         return [
-            'user_id' => $user->id,
-            'trip_id' => $trip->id,
-            'rating' => $this->faker->numberBetween(1,5),
-            'noi_dung' => $this->faker->paragraph(),
+            'user_id'  => $user->id,
+            'trip_id'  => $trip->id,
+            'rating'   => $this->faker->numberBetween(1,5),
+            'content'  => $this->faker->paragraph(),
+            'status'   => $this->faker->randomElement(['pending','approved','rejected']),
         ];
     }
 }

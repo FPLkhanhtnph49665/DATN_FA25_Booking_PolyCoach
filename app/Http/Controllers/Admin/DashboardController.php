@@ -8,26 +8,29 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    /**
+     * Display admin dashboard with statistics.
+     */
     public function index()
     {
-        // 🔢 Thống kê cơ bản
-        $totalUsers = User::count();
-        $totalBuses = Bus::count();
-        $activeBuses = Bus::where('trang_thai', 1)->count();
-        $totalTrips = Trip::count();
-        $activeTrips = Trip::where('trang_thai', 1)->count();
+        // 🔢 Basic statistics
+        $totalUsers   = User::count();
+        $totalBuses   = Bus::count();
+        $activeBuses  = Bus::where('status', 1)->count();
+        $totalTrips   = Trip::count();
+        $activeTrips  = Trip::where('status', 1)->count();
 
-        // 💰 Thống kê thanh toán
-        $totalPayments = Payment::sum('so_tien');
-        $totalCash = Payment::where('phuong_thuc', 'Tiền mặt')->sum('so_tien');
-        $totalMomo = Payment::where('phuong_thuc', 'MoMo')->sum('so_tien');
+        // 💰 Payment statistics
+        $totalPayments = Payment::sum('amount');
+        $totalCash     = Payment::where('payment_method', 'cash')->sum('amount');
+        $totalMomo     = Payment::where('payment_method', 'momo')->sum('amount');
 
-        // 📈 Biểu đồ thanh toán theo tháng/năm
+        // 📈 Payments by month/year
         $paymentsByMonth = Payment::select(
             DB::raw('YEAR(created_at) as year'),
             DB::raw('MONTH(created_at) as month'),
-            DB::raw("SUM(CASE WHEN phuong_thuc = 'Tiền mặt' THEN so_tien ELSE 0 END) as cash_total"),
-            DB::raw("SUM(CASE WHEN phuong_thuc = 'MoMo' THEN so_tien ELSE 0 END) as momo_total")
+            DB::raw("SUM(CASE WHEN payment_method = 'cash' THEN amount ELSE 0 END) as cash_total"),
+            DB::raw("SUM(CASE WHEN payment_method = 'momo' THEN amount ELSE 0 END) as momo_total")
         )
         ->groupBy('year', 'month')
         ->orderBy('year')

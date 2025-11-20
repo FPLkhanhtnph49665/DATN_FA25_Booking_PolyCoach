@@ -11,16 +11,16 @@ use Illuminate\Http\Request;
 class PaymentController extends Controller
 {
     /**
-     * Hiển thị danh sách thanh toán.
+     * Display a list of payments.
      */
     public function index(Request $request)
     {
         $query = Payment::with(['user', 'ticket']);
 
-        // Tìm kiếm theo mã thanh toán hoặc người dùng
+        // Search by transaction code or user
         if ($request->filled('keyword')) {
             $keyword = $request->keyword;
-            $query->where('ma_giao_dich', 'like', "%$keyword%")
+            $query->where('transaction_code', 'like', "%$keyword%")
                 ->orWhereHas('user', function ($q) use ($keyword) {
                     $q->where('first_name', 'like', "%$keyword%")
                       ->orWhere('last_name', 'like', "%$keyword%");
@@ -32,7 +32,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * Hiển thị form tạo mới thanh toán.
+     * Show form to create a new payment.
      */
     public function create()
     {
@@ -42,28 +42,29 @@ class PaymentController extends Controller
     }
 
     /**
-     * Lưu thanh toán mới.
+     * Store a newly created payment.
      */
     public function store(Request $request)
     {
         $data = $request->validate([
-            'user_id'       => 'required|exists:users,id',
-            'ticket_id'     => 'required|exists:tickets,id',
-            'ma_giao_dich'  => 'required|string|max:50|unique:payments,ma_giao_dich',
-            'so_tien'       => 'required|numeric|min:0',
-            'phuong_thuc'   => 'required|in:cash,momo,bank',
-            'trang_thai'    => 'required|in:0,1',
+            'user_id'          => 'required|exists:users,id',
+            'ticket_id'        => 'required|exists:tickets,id',
+            'transaction_code' => 'required|string|max:50|unique:payments,transaction_code',
+            'amount'           => 'required|numeric|min:0',
+            'method'           => 'required|in:cash,momo,bank',
+            'status'           => 'required|in:0,1',
         ], [
-            'ma_giao_dich.unique' => 'Mã giao dịch này đã tồn tại!',
+            'transaction_code.unique' => 'This transaction code already exists!',
         ]);
 
         Payment::create($data);
 
-        return redirect()->route('admin.payments.index')->with('success', 'Thêm thanh toán thành công!');
+        return redirect()->route('admin.payments.index')
+                         ->with('success', 'Payment created successfully!');
     }
 
     /**
-     * Hiển thị chi tiết thanh toán.
+     * Display a specific payment.
      */
     public function show(Payment $payment)
     {
@@ -72,7 +73,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * Hiển thị form chỉnh sửa thanh toán.
+     * Show form to edit a payment.
      */
     public function edit(Payment $payment)
     {
@@ -82,28 +83,65 @@ class PaymentController extends Controller
     }
 
     /**
-     * Cập nhật thông tin thanh toán.
+     * Update a payment.
      */
     public function update(Request $request, Payment $payment)
     {
         $data = $request->validate([
-            'user_id'       => 'required|exists:users,id',
-            'ticket_id'     => 'required|exists:tickets,id',
-            'ma_giao_dich'  => 'required|string|max:50|unique:payments,ma_giao_dich,' . $payment->id,
-            'so_tien'       => 'required|numeric|min:0',
-            'phuong_thuc'   => 'required|in:cash,momo,bank',
-            'trang_thai'    => 'required|in:0,1',
+            'user_id'          => 'required|exists:users,id',
+            'ticket_id'        => 'required|exists:tickets,id',
+            'transaction_code' => 'required|string|max:50|unique:payments,transaction_code,' . $payment->id,
+            'amount'           => 'required|numeric|min:0',
+            'method'           => 'required|in:cash,momo,bank',
+            'status'           => 'required|in:0,1',
         ]);
 
         $payment->update($data);
 
-        return redirect()->route('admin.payments.index')->with('success', 'Cập nhật thanh toán thành công!');
+        return redirect()->route('admin.payments.index')
+                         ->with('success', 'Payment updated successfully!');
     }
 
     /**
-     * Xóa mềm thanh toán.
+     * Soft delete a payment.
      */
     public function destroy(Payment $payment)
     {
+        $payment->delete();
+        return redirect()->route('admin.payments.index')
+                         ->with('success', 'Payment deleted successfully!');
+    }
+
+    /**
+     * Display soft-deleted payments (trash).
+     */
+    public function trash()
+    {
+        $payments = Payment::onlyTrashed()->paginate(25);
+        return view('admin.payments.trash', compact('payments'));
+    }
+
+    /**
+     * Restore a soft-deleted payment.
+     */
+    public function restore($id)
+    {
+        $payment = Payment::onlyTrashed()->findOrFail($id);
+        $payment->restore();
+
+        return redirect()->route('admin.payments.index')
+                         ->with('success', 'Payment restored successfully!');
+    }
+
+    /**
+     * Permanently delete a payment.
+     */
+    public function forceDelete($id)
+    {
+        $payment = Payment::onlyTrashed()->findOrFail($id);
+        $payment->forceDelete();
+
+        return redirect()->route('admin.payments.trash')
+                         ->with('success', 'Payment permanently deleted!');
     }
 }

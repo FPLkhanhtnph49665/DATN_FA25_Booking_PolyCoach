@@ -2,69 +2,77 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Models\City;
 use App\Models\Route;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
 
 class RouteController extends Controller
 {
     /**
-     * Hiển thị danh sách tuyến.
+     * Display a listing of routes.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $routes = Route::latest()->paginate(25);
+        $query = Route::with(['fromCity', 'toCity']);
+
+        if ($search = $request->string('search')->trim()) {
+            $query->whereHas('fromCity', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            })
+                ->orWhereHas('toCity', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                });
+        }
+
+        if ($request->filled('status') && $request->status !== '') {
+            $query->where('status', (int) $request->status);
+        }
+
+        $routes = $query
+            ->orderBy('id', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+
         return view('admin.routes.index', compact('routes'));
     }
 
     /**
-     * Form tạo mới tuyến.
+     * Show the form for creating a new route.
      */
     public function create()
-    {
-        return view('admin.routes.create');
-    }
+{
+    $cities = City::orderBy('name')->get();
+
+    return view('admin.routes.create', compact('cities'));
+}
 
     /**
-     * Lưu tuyến mới vào database.
+     * Store a newly created route in storage.
      */
- public function store(Request $request)
+    public function store(Request $request)
 {
     $data = $request->validate([
-        'diem_di' => 'required|string|max:100',
-        'diem_den' => 'required|string|max:100',
-        'quang_duong' => 'required|integer|min:1',
-        'thoi_gian_du_kien' => 'required|string|max:50', // Để string, không phải time
-        'trang_thai' => 'required|in:0,1',
+        'from_city_id'    => ['required', 'exists:cities,id', 'different:to_city_id'],
+        'to_city_id'      => ['required', 'exists:cities,id'],
+        'distance'        => ['required', 'numeric', 'min:1'],
+        'estimated_time'  => ['nullable', 'string', 'max:50'],
+        'status'          => ['nullable', 'boolean'],
     ]);
+
+    $data['status'] = $request->boolean('status');
 
     Route::create($data);
 
-    return redirect()->route('admin.routes.index')->with('success', 'Đã tạo tuyến thành công!');
+    return redirect()
+        ->route('admin.routes.index')
+        ->with('success', 'Thêm tuyến đường thành công');
 }
 
-public function update(Request $request, Route $route)
-{
-    $data = $request->validate([
-        'diem_di' => 'required|string|max:100',
-        'diem_den' => 'required|string|max:100',
-        'quang_duong' => 'required|integer|min:1',
-        'thoi_gian_du_kien' => 'required|string|max:50',
-        'trang_thai' => 'required|in:0,1',
-    ]);
-
-    $route->update($data);
-
-    return redirect()->route('admin.routes.index')->with('success', 'Cập nhật tuyến thành công!');
-}
-
-    public function show(Route $route)
-    {
-        return view('admin.routes.show', compact('route'));
-    }
 
     /**
-     * Form chỉnh sửa tuyến.
+     * Show the form for editing the specified route.
      */
     public function edit(Route $route)
     {
@@ -72,21 +80,78 @@ public function update(Request $request, Route $route)
     }
 
     /**
-     * Cập nhật tuyến.
+     * Update the specified route in storage.
      */
+    public function update(Request $request, Route $route): RedirectResponse
+    {
+        $data = $request->validate([
+            'from_city_id'       => 'required|integer|exists:cities,id',
+            'to_city_id'         => 'required|integer|exists:cities,id',
+            'distance'           => 'required|integer|min:1',
+            'estimated_time'     => 'required|string|max:50',
+            'status'             => 'required|in:0,1',
+        ]);
+
+        $route->update($data);
+
+        return redirect()->route('admin.routes.index')->with('success', 'Route updated successfully!');
+    }
 
     /**
-     * Xóa tuyến.
+     * Display the specified route.
      */
-    public function destroy(Route $route)
+    public function show(Route $route)
     {
-         if ($route->trips()->count() > 0) {
-        return redirect()->route('admin.routes.index')
-            ->withErrors('Không thể xóa tuyến này vì đang có chuyến đi sử dụng!');
+        return view('admin.routes.show', compact('route'));
     }
-    
-    $route->delete();
-    return redirect()->route('admin.routes.index')
-        ->with('success', 'Đã xóa tuyến thành công!');
+
+    /**
+     * Remove the specified route from storage.
+     */
+    public function destroy(Route $route): RedirectResponse
+    {
+        if ($route->trips()->count() > 0) {
+            return redirect()->route('admin.routes.index')
+                ->withErrors('Cannot delete this route because there are trips using it.');
+        }
+
+        $route->delete();
+
+        return redirect()->route('admin.routes.index')->with('success', 'Route deleted successfully!');
+    }
+
+    /**
+     * Display soft-deleted routes (trash).
+     */
+    public function trash()
+    {
+        $routes = Route::onlyTrashed()->paginate(25);
+        return view('admin.routes.trash', compact('routes'));
+    }
+
+    /**
+     * Restore a soft-deleted route.
+     */
+    public function restore($id): RedirectResponse
+    {
+        $route = Route::onlyTrashed()->findOrFail($id);
+        $route->restore();
+        return redirect()->route('admin.routes.index')->with('success', 'Route restored successfully!');
+    }
+
+    /**
+     * Permanently delete a route.
+     */
+    public function forceDelete($id): RedirectResponse
+    {
+        $route = Route::onlyTrashed()->findOrFail($id);
+
+        if ($route->trips()->count() > 0) {
+            return redirect()->route('admin.routes.trash')
+                ->withErrors('Cannot permanently delete this route because there are trips using it.');
+        }
+
+        $route->forceDelete();
+        return redirect()->route('admin.routes.trash')->with('success', 'Route permanently deleted!');
     }
 }

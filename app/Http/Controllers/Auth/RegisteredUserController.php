@@ -70,6 +70,6 @@ class RegisteredUserController extends Controller
 
         // Nếu mày có route dashboard admin riêng thì giữ như này,
         // còn nếu client thì có thể đổi thành route('client.home')
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('login', absolute: false));
     }
 }
