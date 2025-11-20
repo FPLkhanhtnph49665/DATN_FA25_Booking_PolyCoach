@@ -103,7 +103,7 @@
                 <div class="col-md-6 mb-3">
                     <label for="estimated_time" class="form-label">
                         Thời gian dự kiến
-                        <small class="text-muted">(VD: 05:30 hoặc 5 giờ 30 phút)</small>
+                        <small class="text-light">(VD: 05:30 hoặc 5 giờ 30 phút)</small>
                     </label>
                     <input
                         type="text"
@@ -127,8 +127,8 @@
                     id="status"
                     class="form-select @error('status') is-invalid @enderror"
                 >
-                    <option value="1" {{ old('status', 1) == 1 ? 'selected' : '' }}>Active</option>
-                    <option value="0" {{ old('status') == 0 ? 'selected' : '' }}>Inactive</option>
+                    <option value="1" {{ old('status', 1) == 1 ? 'selected' : '' }}>Hoạt động</option>
+                    <option value="0" {{ old('status') == 0 ? 'selected' : '' }}>Dừng hoạt động</option>
                 </select>
                 @error('status')
                     <div class="invalid-feedback">{{ $message }}</div>

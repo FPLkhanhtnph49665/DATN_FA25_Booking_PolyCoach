@@ -3,78 +3,186 @@
 @section('title', 'Thêm User mới')
 
 @section('content')
-    <div class="card">
-        <div class="card-header">
-            <h4>Thêm User mới</h4>
+<div class="mb-4">
+    {{-- Header --}}
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h2 class="mb-1 fw-semibold text-light d-flex align-items-center gap-2">
+                <i class="bi bi-person-plus-fill"></i>
+                Thêm User mới
+            </h2>
+            <p class="text-muted small mb-0">
+                Tạo tài khoản người dùng mới cho hệ thống PolyCoach.
+            </p>
         </div>
+
+        <a href="{{ route('admin.users.index') }}"
+           class="btn btn-outline-light d-flex align-items-center gap-1">
+            <i class="bi bi-arrow-left"></i>
+            <span>Quay lại danh sách</span>
+        </a>
+    </div>
+
+    {{-- Form --}}
+    <div class="card border-0">
         <div class="card-body">
-            {{-- Thêm enctype để upload ảnh --}}
             <form action="{{ route('admin.users.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label>Họ</label>
-                        <input type="text" name="first_name" class="form-control" value="{{ old('first_name') }}" required>
-                        @error('first_name') <span class="text-danger">{{ $message }}</span> @enderror
+
+                {{-- Hàng 1: Họ / Tên --}}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Họ</label>
+                        <input type="text"
+                               name="first_name"
+                               class="form-control @error('first_name') is-invalid @enderror"
+                               value="{{ old('first_name') }}"
+                               placeholder="VD: Nguyễn"
+                               required>
+                        @error('first_name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label>Tên</label>
-                        <input type="text" name="last_name" class="form-control" value="{{ old('last_name') }}" required>
-                        @error('last_name') <span class="text-danger">{{ $message }}</span> @enderror
+
+                    <div class="col-md-6">
+                        <label class="form-label">Tên</label>
+                        <input type="text"
+                               name="last_name"
+                               class="form-control @error('last_name') is-invalid @enderror"
+                               value="{{ old('last_name') }}"
+                               placeholder="VD: Văn A"
+                               required>
+                        @error('last_name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label>Email</label>
-                    <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
-                    @error('email') <span class="text-danger">{{ $message }}</span> @enderror
+                {{-- Hàng 2: Email / Phone --}}
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <label class="form-label mt-2">Email</label>
+                        <input type="email"
+                               name="email"
+                               class="form-control @error('email') is-invalid @enderror"
+                               value="{{ old('email') }}"
+                               placeholder="name@example.com"
+                               required>
+                        @error('email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label mt-2">Số điện thoại</label>
+                        <input type="text"
+                               name="phone"
+                               class="form-control @error('phone') is-invalid @enderror"
+                               value="{{ old('phone') }}"
+                               placeholder="VD: 0901234567">
+                        @error('phone')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label>Số điện thoại</label>
-                    <input type="text" name="phone" class="form-control" value="{{ old('phone') }}">
+                {{-- Hàng 3: Mật khẩu / Nhập lại --}}
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <label class="form-label mt-2">Mật khẩu</label>
+                        <input type="password"
+                               name="password"
+                               class="form-control @error('password') is-invalid @enderror"
+                               required>
+                        @error('password')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <small class="text-muted">
+                            Tối thiểu 8 ký tự, nên có chữ hoa, chữ thường, số và ký tự đặc biệt.
+                        </small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label mt-2">Nhập lại mật khẩu</label>
+                        <input type="password"
+                               name="password_confirmation"
+                               class="form-control @error('password_confirmation') is-invalid @enderror"
+                               required>
+                        @error('password_confirmation')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label>Mật khẩu</label>
-                    <input type="password" name="password" class="form-control" required>
-                    @error('password') <span class="text-danger">{{ $message }}</span> @enderror
+                {{-- Hàng 4: Role / Status --}}
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <label class="form-label mt-2">Vai trò</label>
+                        <select name="role"
+                                class="form-select @error('role') is-invalid @enderror">
+                            {{-- value phải trùng enum: admin | user | staff | checker --}}
+                            <option value="user" {{ old('role', 'user') === 'user' ? 'selected' : '' }}>
+                                Người dùng
+                            </option>
+                            <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>
+                                Quản trị viên
+                            </option>
+                            <option value="staff" {{ old('role') === 'staff' ? 'selected' : '' }}>
+                                Nhân viên
+                            </option>
+                            <option value="checker" {{ old('role') === 'checker' ? 'selected' : '' }}>
+                                Kiểm soát viên
+                            </option>
+                        </select>
+                        @error('role')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label mt-2">Trạng thái</label>
+                        <select name="status"
+                                class="form-select @error('status') is-invalid @enderror">
+                            <option value="1" {{ old('status', '1') === '1' ? 'selected' : '' }}>
+                                Kích hoạt
+                            </option>
+                            <option value="0" {{ old('status') === '0' ? 'selected' : '' }}>
+                                Khóa tài khoản
+                            </option>
+                        </select>
+                        @error('status')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label>Nhập lại mật khẩu</label>
-                    <input type="password" name="password_confirmation" class="form-control" required>
-                    @error('password_confirmation')
-                        <span class="text-danger">{{ $message }}</span>
-                    @enderror
+                {{-- Hàng 5: Ảnh đại diện --}}
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <label class="form-label mt-2">Ảnh đại diện</label>
+                        <input type="file"
+                               name="image"
+                               class="form-control @error('image') is-invalid @enderror"
+                               accept="image/*">
+                        @error('image')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <small class="text-muted">
+                            Định dạng: JPG, PNG, WEBP. Kích thước tối đa khoảng 2MB (tuỳ cấu hình).
+                        </small>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label>Vai trò</label>
-                    <select name="role" class="form-select">
-                        <option value="customer">Người dùng</option>
-                        <option value="admin">Quản trị viên</option>
-                    </select>
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i> Lưu User
+                    </button>
+                    <a href="{{ route('admin.users.index') }}" class="btn btn-outline-light">
+                        Hủy bỏ
+                    </a>
                 </div>
-
-                <div class="mb-3">
-                    <label>Trạng thái</label>
-                    <select name="status" class="form-select">
-                        <option value="1" selected>Kích hoạt</option>
-                        <option value="0">Khóa tài khoản</option>
-                    </select>
-                </div>
-
-                {{-- Thêm input để upload ảnh đại diện --}}
-                <div class="mb-3">
-                    <label>Ảnh đại diện</label>
-                    <input type="file" name="image" class="form-control">
-                    @error('image') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
-                <button type="submit" class="btn btn-success">Lưu</button>
-                <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Quay lại</a>
             </form>
         </div>
     </div>
+</div>
 @endsection

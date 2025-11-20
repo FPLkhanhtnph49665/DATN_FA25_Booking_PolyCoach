@@ -29,7 +29,7 @@
                 <a href="{{ route('admin.dashboard') }}"
                     class="d-flex flex-column align-items-center text-decoration-none">
                     <div class="sidebar-logo-wrapper mb-2">
-                        <img src="{{ asset('PolyCoach.gif') }}" alt="Logo PolyCoach" class="sidebar-logo img-fluid">
+                        <img src="{{ asset('logoPoLyCoach.png') }}" alt="Logo PolyCoach" class="sidebar-logo img-fluid">
                     </div>
                     <span class="sidebar-brand">PolyCoach Admin</span>
                 </a>

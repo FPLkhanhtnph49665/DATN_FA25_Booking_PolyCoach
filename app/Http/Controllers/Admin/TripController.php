@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Models\Bus;
 use App\Models\Trip;
 use App\Models\Route;
-use App\Models\Bus;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use DragonCode\Support\Facades\Helpers\Str;
 
 class TripController extends Controller
 {
@@ -49,31 +50,46 @@ class TripController extends Controller
      */
     public function create()
     {
-        $routes = Route::where('status', 1)->orderBy('departure_date')->get();
-        $buses  = Bus::where('status', 1)->orderBy('license_plate')->get();
+        $routes = Route::where('status', 1)
+            ->with(['fromCity', 'toCity'])
+            ->orderBy('id') // hoặc cột khác có thật trong routes
+            ->get();
+
+        $buses  = Bus::where('status', 1)
+            ->orderBy('plate_number')
+            ->get();
 
         return view('admin.trips.create', compact('routes', 'buses'));
     }
+
+
 
     /**
      * Store a newly created trip.
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $data = $request->validate([
             'route_id'       => 'required|exists:routes,id',
             'bus_id'         => 'required|exists:buses,id',
             'departure_date' => 'required|date',
-            'departure_time' => 'required',
-            'ticket_price'   => 'required|numeric|min:0',
-            'status'         => 'required|in:0,1',
-            'arrival_time'   => 'nullable',
+            'departure_time' => 'required|date_format:H:i',
+            'arrival_time'   => 'required|date_format:H:i',
+            'ticket_price'   => 'required|integer|min:0',
+            'status'         => 'nullable|in:0,1',
         ]);
 
-        Trip::create($validated);
+        // Nếu status không gửi, mặc định là 1
+        $data['status'] = $data['status'] ?? 1;
 
-        return redirect()->route('admin.trips.index')
-                         ->with('success', 'Trip created successfully!');
+        // Generate mã chuyến (ông thích format nào thì tự chỉnh)
+        $data['trip_code'] = 'TRIP-' . now()->format('Ymd') . '-' . Str::upper(Str::random(4));
+
+        Trip::create($data);
+
+        return redirect()
+            ->route('admin.trips.index')
+            ->with('success', 'Tạo chuyến thành công!');
     }
 
     /**
@@ -91,11 +107,18 @@ class TripController extends Controller
      */
     public function edit(Trip $trip)
     {
-        $routes = Route::where('status', 1)->orderBy('departure_date')->get();
-        $buses  = Bus::where('status', 1)->orderBy('license_plate')->get();
+        $routes = Route::where('status', 1)
+            ->with(['fromCity', 'toCity'])
+            ->orderBy('id')
+            ->get();
+
+        $buses = Bus::where('status', 1)
+            ->orderBy('plate_number')
+            ->get();
 
         return view('admin.trips.edit', compact('trip', 'routes', 'buses'));
     }
+
 
     /**
      * Update a trip.
@@ -115,7 +138,7 @@ class TripController extends Controller
         $trip->update($validated);
 
         return redirect()->route('admin.trips.index')
-                         ->with('success', 'Trip updated successfully!');
+            ->with('success', 'Chuyến đi đã được cập nhật thành công!');
     }
 
     /**
@@ -126,13 +149,13 @@ class TripController extends Controller
         // Prevent deletion if there are booked tickets
         if ($trip->tickets()->count() > 0) {
             return redirect()->route('admin.trips.index')
-                             ->withErrors('Cannot delete this trip because tickets have been booked!');
+                ->withErrors('Không thể xóa chuyến đi này vì vé đã được đặt!');
         }
 
         $trip->delete();
 
         return redirect()->route('admin.trips.index')
-                         ->with('success', 'Trip deleted successfully!');
+            ->with('success', 'Chuyến đi đã được xóa thành công!');
     }
 
     /**
@@ -145,10 +168,10 @@ class TripController extends Controller
         $trips = Trip::with('route', 'bus')
             ->when($keyword, function ($query) use ($keyword) {
                 $query->where('trip_code', 'like', "%{$keyword}%")
-                      ->orWhereHas('route', function ($q) use ($keyword) {
-                          $q->where('departure_date', 'like', "%{$keyword}%")
+                    ->orWhereHas('route', function ($q) use ($keyword) {
+                        $q->where('departure_date', 'like', "%{$keyword}%")
                             ->orWhere('destination_point', 'like', "%{$keyword}%");
-                      });
+                    });
             })
             ->orderBy('departure_date', 'desc')
             ->paginate(10)
@@ -178,7 +201,7 @@ class TripController extends Controller
         $trip->restore();
 
         return redirect()->route('admin.trips.index')
-                         ->with('success', 'Trip restored successfully!');
+            ->with('success', 'Trip restored successfully!');
     }
 
     /**
@@ -190,6 +213,6 @@ class TripController extends Controller
         $trip->forceDelete();
 
         return redirect()->route('admin.trips.trash')
-                         ->with('success', 'Trip permanently deleted!');
+            ->with('success', 'Trip permanently deleted!');
     }
 }

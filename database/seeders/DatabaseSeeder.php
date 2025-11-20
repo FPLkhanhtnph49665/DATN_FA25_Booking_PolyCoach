@@ -51,11 +51,11 @@ class DatabaseSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'admin@polycoach.test'],
             [
-                'user_code'  => 'DATN_FA25_PoLyCoach_Admin_0001',
+                'user_code'  => 'DATN_FA25_PoLyCoach_Admin_4953',
                 'first_name' => 'Super',
                 'last_name'  => 'Admin',
                 'full_name'  => 'Super Admin',
-                'password'   => Hash::make('password'), // 🔐
+                'password'   => Hash::make('1'), // 🔐
                 'role'       => 'admin',
                 'status'     => 1,
             ]
@@ -65,25 +65,49 @@ class DatabaseSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'user@polycoach.test'],
             [
-                'user_code'  => 'DATN_FA25_PoLyCoach_User_0001',
+                'user_code'  => 'DATN_FA25_PoLyCoach_User_4953',
                 'first_name' => 'Test',
                 'last_name'  => 'User',
                 'full_name'  => 'Test User',
-                'password'   => Hash::make('password'),
+                'password'   => Hash::make('1'),
                 'role'       => 'user',
+                'status'     => 1,
+            ]
+        );
+        User::updateOrCreate(
+            ['email' => 'staff@polycoach.test'],
+            [
+                'user_code'  => 'DATN_FA25_PoLyCoach_Staff_4953',
+                'first_name' => 'Test',
+                'last_name'  => 'Staff',
+                'full_name'  => 'Test Staff',
+                'password'   => Hash::make('1'),
+                'role'       => 'staff',
+                'status'     => 1,
+            ]
+        );
+         User::updateOrCreate(
+            ['email' => 'checker@polycoach.test'],
+            [
+                'user_code'  => 'DATN_FA25_PoLyCoach_Checker_4953',
+                'first_name' => 'Test',
+                'last_name'  => 'Checker',
+                'full_name'  => 'Test Checker',
+                'password'   => Hash::make('1'),
+                'role'       => 'checker',
                 'status'     => 1,
             ]
         );
 
         // Thêm 3 admin random (factory của ông đang dùng field gì thì giữ nguyên)
         User::factory()
-            ->count(3)
+            ->count(1)
             ->state(['role' => 'admin'])
             ->create();
 
         // Thêm 5 user random
         User::factory()
-            ->count(5)
+            ->count(1)
             ->state(['role' => 'user'])
             ->create();
         // =====================================
@@ -212,7 +236,7 @@ class DatabaseSeeder extends Seeder
         // =====================================
         $busData = [
             [
-                'plate_number' => '29B-00001',
+                'plate_number' => '29B-88888',
                 'seat_count'   => 32,
                 'type'         => 'Giường nằm',
                 'status'       => 1,
@@ -224,19 +248,19 @@ class DatabaseSeeder extends Seeder
                 'status'       => 1,
             ],
             [
-                'plate_number' => '43B-67890',
+                'plate_number' => '43B-54953',
                 'seat_count'   => 32,
                 'type'         => 'Limousine',
                 'status'       => 1,
             ],
             [
-                'plate_number' => '65B-11223',
+                'plate_number' => '29A-34953',
                 'seat_count'   => 32,
                 'type'         => 'Ghế ngồi',
                 'status'       => 1,
             ],
             [
-                'plate_number' => '47B-44556',
+                'plate_number' => '29A-44953',
                 'seat_count'   => 32,
                 'type'         => 'Giường nằm',
                 'status'       => 0, // đang bảo trì

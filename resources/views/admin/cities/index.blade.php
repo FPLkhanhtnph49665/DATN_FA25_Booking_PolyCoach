@@ -31,7 +31,7 @@
             <form method="GET" action="{{ route('admin.cities.index') }}" class="row g-3 align-items-end">
                 {{-- Ô tìm kiếm --}}
                 <div class="col-md-5">
-                    <label for="search" class="form-label text-muted small mb-1">Tìm kiếm</label>
+                    <label for="search" class="form-label text-light small mb-1">Tìm kiếm</label>
                     <input
                         type="text"
                         name="search"
