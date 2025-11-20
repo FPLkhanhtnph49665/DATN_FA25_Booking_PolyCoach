@@ -33,11 +33,11 @@ class BusController extends Controller
         $request->validate([
             'plate_number' => 'required|string|max:20|unique:buses,plate_number',
             'seat_count'   => 'required|integer|min:4|max:100',
-            'bus_type'     => 'required|in:Seating,Bunk,Limousine',
+            'type'     => 'required|in:Seat,Sleeper,Limousine',
             'status'       => 'nullable|in:0,1',
         ]);
 
-        Bus::create($request->only(['plate_number', 'seat_count', 'bus_type', 'status']));
+        Bus::create($request->only(['plate_number', 'seat_count', 'type', 'status']));
 
         return redirect()->route('admin.buses.index')
             ->with('success', 'Bus created successfully!');
@@ -67,11 +67,11 @@ class BusController extends Controller
         $request->validate([
             'plate_number' => 'required|string|max:20|unique:buses,plate_number,' . $bus->id,
             'seat_count'   => 'required|integer|min:4|max:100',
-            'bus_type'     => 'required|in:Seating,Bunk,Limousine',
+            'type'     => 'required|in:Seat,Sleeper,Limousine',
             'status'       => 'nullable|in:0,1',
         ]);
 
-        $bus->update($request->only(['plate_number', 'seat_count', 'bus_type', 'status']));
+        $bus->update($request->only(['plate_number', 'seat_count', 'type', 'status']));
 
         return redirect()->route('admin.buses.index')
             ->with('success', 'Bus updated successfully!');
