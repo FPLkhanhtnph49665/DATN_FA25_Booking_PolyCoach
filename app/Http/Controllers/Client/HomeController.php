@@ -15,8 +15,8 @@ class HomeController extends Controller
     {
         // Lấy 5 chuyến sắp tới
         $trips = Trip::with(['route', 'bus'])
-                     ->where('ngay_khoi_hanh', '>=', now())
-                     ->orderBy('ngay_khoi_hanh', 'asc')
+                     ->where('departure_date', '>=', now())
+                     ->orderBy('departure_time', 'asc')
                      ->take(5)
                      ->get();
 

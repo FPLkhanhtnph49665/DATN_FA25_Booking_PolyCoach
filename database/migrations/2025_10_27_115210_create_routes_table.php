@@ -13,13 +13,26 @@ return new class extends Migration
     {
         Schema::create('routes', function (Blueprint $table) {
             $table->id();
-            $table->string('diem_di', 100);
-            $table->string('diem_den', 100);
-            $table->integer('quang_duong');
-            $table->time('thoi_gian_du_kien');
-            $table->tinyInteger('trang_thai')->default(1);
+
+            // Thành phố đi – thành phố đến
+            $table->unsignedBigInteger('from_city_id');
+            $table->unsignedBigInteger('to_city_id');
+
+            // Quãng đường (km)
+            $table->integer('distance')->nullable();
+
+            // Thời gian dự kiến (ví dụ 02:30)
+            $table->time('estimated_time')->nullable();
+
+            // 1 = active, 0 = inactive
+            $table->tinyInteger('status')->default(1);
+
             $table->timestamps();
             $table->softDeletes();
+
+            // Khóa ngoại liên kết cities
+            $table->foreign('from_city_id')->references('id')->on('cities')->cascadeOnDelete();
+            $table->foreign('to_city_id')->references('id')->on('cities')->cascadeOnDelete();
         });
     }
 

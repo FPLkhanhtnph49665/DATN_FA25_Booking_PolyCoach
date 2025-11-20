@@ -13,10 +13,19 @@ return new class extends Migration
     {
         Schema::create('buses', function (Blueprint $table) {
             $table->id();
-            $table->string('bien_so', 20);
-            $table->integer('so_ghe');
-            $table->string('loai_xe', 50);
-            $table->tinyInteger('trang_thai')->default(1);
+
+            // Biển số xe
+            $table->string('plate_number', 20);
+
+            // Số ghế
+            $table->integer('seat_count');
+
+            // Loại xe
+            $table->string('type', 50);
+
+            // Trạng thái: 1 = active, 0 = inactive
+            $table->tinyInteger('status')->default(1);
+
             $table->timestamps();
             $table->softDeletes();
         });

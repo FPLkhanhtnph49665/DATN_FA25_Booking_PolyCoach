@@ -13,13 +13,23 @@ return new class extends Migration
     {
         Schema::create('passengers', function (Blueprint $table) {
             $table->id();
+
+            // Quan hệ với vé
             $table->foreignId('ticket_id')->constrained()->onDelete('cascade');
+
+            // Thông tin hành khách
             $table->string('name', 150);
             $table->string('phone', 20)->nullable();
             $table->integer('age')->nullable();
-            $table->string('seat_number', 5); // lưu A1, B2… tối đa 5 ký tự là đủ
+
+            // Số ghế (vd: A1, B2…)
+            $table->string('seat_number', 5);
+
             $table->timestamps();
             $table->softDeletes();
+
+            // Index để tìm nhanh theo vé / số ghế
+            $table->index(['ticket_id', 'seat_number']);
         });
     }
 

@@ -11,19 +11,22 @@ class Payment extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'ticket_id',
-        'user_id',
-        'so_tien',
-        'phuong_thuc',
-        'trang_thai',
-        'ma_giao_dich'
+        'ticket_id',       // FK to tickets
+        'user_id',         // FK to users
+        'amount',          // payment amount
+        'method',          // payment method: cash / momo / bank / etc.
+        'status',          // paid / pending / failed
+        'transaction_code' // unique transaction identifier
     ];
 
     protected $casts = [
-        'so_tien' => 'float',
+        'amount' => 'float',
     ];
 
-    // Mối quan hệ
+    // -------------------------------
+    // 🔗 RELATIONSHIPS
+    // -------------------------------
+
     public function ticket()
     {
         return $this->belongsTo(Ticket::class);
@@ -34,15 +37,36 @@ class Payment extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Scope: lọc theo trạng thái
+    // -------------------------------
+    // 🔍 SCOPES
+    // -------------------------------
+
     public function scopePaid($query)
     {
-        return $query->where('trang_thai', 'paid');
+        return $query->where('status', 'paid');
     }
 
-    // Accessor: định dạng số tiền
-    public function getSoTienFormattedAttribute()
+    public function scopePending($query)
     {
-        return number_format($this->so_tien, 0, ',', '.') . ' VNĐ';
+        return $query->where('status', 'pending');
+    }
+
+    // -------------------------------
+    // 🧮 ACCESSORS / HELPERS
+    // -------------------------------
+
+    public function getAmountFormattedAttribute(): string
+    {
+        return number_format($this->amount, 0, ',', '.') . ' VND';
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->status === 'paid';
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
     }
 }

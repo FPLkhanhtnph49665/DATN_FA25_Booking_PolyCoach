@@ -11,20 +11,19 @@ class Bus extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'bien_so',     // Biển số xe
-        'so_ghe',      // Tổng số ghế trên xe
-        'loai_xe',     // ghe_ngoi | giuong_nam (hoặc giá trị bạn quy ước)
-        'trang_thai',  // 1: hoạt động, 0: bảo trì/ngưng
+        'plate_number', // license plate
+        'seat_count',   // total seats
+        'type',         // seat | sleeper | limousine
+        'status',       // 1: active, 0: inactive
     ];
 
     protected $casts = [
-        'trang_thai' => 'boolean',
+        'status' => 'boolean',
     ];
 
     // -------------------------------
     // 🔗 RELATIONSHIPS
     // -------------------------------
-
     public function trips()
     {
         return $this->hasMany(Trip::class);
@@ -34,27 +33,38 @@ class Bus extends Model
     // 🧮 ACCESSORS / HELPERS
     // -------------------------------
 
-    // Hiển thị loại xe rõ ràng hơn
-    public function getLoaiXeLabelAttribute(): string
+    public function getTypeLabelAttribute(): string
     {
-        return match ($this->loai_xe) {
-            'giuong_nam' => 'Giường nằm',
-            'ghe_ngoi'   => 'Ghế ngồi',
-            default      => ucfirst(str_replace('_', ' ', $this->loai_xe ?? 'Không rõ')),
+        return match ($this->type) {
+            'sleeper' => 'Sleeper',
+            'seat'    => 'Seat',
+            'limousine' => 'Limousine',
+            default   => ucfirst(str_replace('_', ' ', $this->type ?? 'Unknown')),
         };
     }
 
-    // Hiển thị trạng thái dạng text
-    public function getTrangThaiLabelAttribute(): string
+    public function getStatusLabelAttribute(): string
     {
-        return $this->trang_thai
-            ? 'Đang hoạt động'
-            : 'Bảo trì / Ngưng hoạt động';
+        return $this->status
+            ? 'Active'
+            : 'Inactive / Maintenance';
     }
 
-    // Tổng số chuyến mà xe này đã/đang được gán
-    public function getTongChuyenAttribute(): int
+    public function getTotalTripsAttribute(): int
     {
         return $this->trips()->count();
+    }
+
+    // -------------------------------
+    // 🔍 SCOPES
+    // -------------------------------
+    public function scopeActive($query)
+    {
+        return $query->where('status', 1);
+    }
+
+    public function scopeInactive($query)
+    {
+        return $query->where('status', 0);
     }
 }

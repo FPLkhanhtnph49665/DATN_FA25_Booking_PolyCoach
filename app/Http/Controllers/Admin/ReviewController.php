@@ -7,11 +7,12 @@ use App\Models\Review;
 use App\Models\Trip;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 
 class ReviewController extends Controller
 {
     /**
-     * Hiển thị danh sách đánh giá.
+     * Display a listing of reviews.
      */
     public function index()
     {
@@ -23,38 +24,39 @@ class ReviewController extends Controller
     }
 
     /**
-     * Hiển thị form tạo mới đánh giá.
+     * Show the form for creating a new review.
      */
     public function create()
     {
         $trips = Trip::all();
         $users = User::all();
+
         return view('admin.reviews.create', compact('trips', 'users'));
     }
 
     /**
-     * Lưu đánh giá mới vào database.
+     * Store a newly created review in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'user_id'        => 'required|exists:users,id',
-            'trip_id'        => 'required|exists:trips,id',
-            'noi_dung'       => 'required|string|max:1000',
-            'diem_danh_gia'  => 'required|integer|min:1|max:5',
-            'trang_thai'     => 'required|in:0,1',
+            'user_id'       => 'required|exists:users,id',
+            'trip_id'       => 'required|exists:trips,id',
+            'content'       => 'required|string|max:1000',
+            'rating'        => 'required|integer|min:1|max:5',
+            'status'        => 'required|in:pending,approved,rejected',
         ], [
-            'noi_dung.required' => 'Vui lòng nhập nội dung đánh giá',
-            'diem_danh_gia.required' => 'Vui lòng chọn điểm đánh giá',
+            'content.required' => 'Please enter review content.',
+            'rating.required'  => 'Please select a rating.',
         ]);
 
         Review::create($data);
 
-        return redirect()->route('admin.reviews.index')->with('success', 'Thêm đánh giá thành công!');
+        return redirect()->route('admin.reviews.index')->with('success', 'Review created successfully!');
     }
 
     /**
-     * Xem chi tiết một đánh giá.
+     * Display the specified review.
      */
     public function show(Review $review)
     {
@@ -63,7 +65,7 @@ class ReviewController extends Controller
     }
 
     /**
-     * Hiển thị form sửa đánh giá.
+     * Show the form for editing the specified review.
      */
     public function edit(Review $review)
     {
@@ -73,27 +75,58 @@ class ReviewController extends Controller
     }
 
     /**
-     * Cập nhật thông tin đánh giá.
+     * Update the specified review in storage.
      */
-    public function update(Request $request, Review $review)
+    public function update(Request $request, Review $review): RedirectResponse
     {
         $data = $request->validate([
-            'user_id'        => 'required|exists:users,id',
-            'trip_id'        => 'required|exists:trips,id',
-            'noi_dung'       => 'required|string|max:1000',
-            'diem_danh_gia'  => 'required|integer|min:1|max:5',
-            'trang_thai'     => 'required|in:0,1',
+            'user_id'       => 'required|exists:users,id',
+            'trip_id'       => 'required|exists:trips,id',
+            'content'       => 'required|string|max:1000',
+            'rating'        => 'required|integer|min:1|max:5',
+            'status'        => 'required|in:pending,approved,rejected',
         ]);
 
         $review->update($data);
 
-        return redirect()->route('admin.reviews.index')->with('success', 'Cập nhật đánh giá thành công!');
+        return redirect()->route('admin.reviews.index')->with('success', 'Review updated successfully!');
     }
 
     /**
-     * Xóa mềm đánh giá.
+     * Soft delete the review.
      */
-    public function destroy(Review $review)
+    public function destroy(Review $review): RedirectResponse
     {
+        $review->delete();
+        return redirect()->route('admin.reviews.index')->with('success', 'Review deleted successfully!');
+    }
+
+    /**
+     * Display soft-deleted reviews (trash).
+     */
+    public function trash()
+    {
+        $reviews = Review::onlyTrashed()->with(['trip', 'user'])->paginate(25);
+        return view('admin.reviews.trash', compact('reviews'));
+    }
+
+    /**
+     * Restore a soft-deleted review.
+     */
+    public function restore($id): RedirectResponse
+    {
+        $review = Review::onlyTrashed()->findOrFail($id);
+        $review->restore();
+        return redirect()->route('admin.reviews.index')->with('success', 'Review restored successfully!');
+    }
+
+    /**
+     * Permanently delete a review.
+     */
+    public function forceDelete($id): RedirectResponse
+    {
+        $review = Review::onlyTrashed()->findOrFail($id);
+        $review->forceDelete();
+        return redirect()->route('admin.reviews.trash')->with('success', 'Review permanently deleted!');
     }
 }

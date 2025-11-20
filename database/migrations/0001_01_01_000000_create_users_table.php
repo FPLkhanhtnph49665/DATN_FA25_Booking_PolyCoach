@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('phone', 20)->nullable();
             $table->string('password'); // mật khẩu đã hash
             $table->string('image')->nullable();
-            $table->enum('role', ['admin','user'])->default('user'); // phân quyền
+            $table->enum('role', ['admin','user', 'staff', 'checker'])->default('user'); // phân quyền
             $table->tinyInteger('status')->default(1); // 1: active, 0: blocked
             $table->rememberToken(); // từ Laravel mặc định
             $table->timestamps();

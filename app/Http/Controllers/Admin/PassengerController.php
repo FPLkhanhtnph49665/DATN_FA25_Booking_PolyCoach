@@ -10,19 +10,19 @@ use Illuminate\Http\Request;
 class PassengerController extends Controller
 {
     /**
-     * Hiển thị danh sách hành khách.
+     * Display a list of passengers.
      */
     public function index(Request $request)
     {
-        $query = Passenger::query()->with('ticket');
+        $query = Passenger::with('ticket');
 
-        // Tìm kiếm theo tên, email hoặc số điện thoại
+        // Search by name, email, or phone
         if ($request->filled('keyword')) {
             $keyword = $request->keyword;
             $query->where(function ($q) use ($keyword) {
-                $q->where('ten_hanh_khach', 'like', "%$keyword%")
-                    ->orWhere('email', 'like', "%$keyword%")
-                    ->orWhere('so_dien_thoai', 'like', "%$keyword%");
+                $q->where('name', 'like', "%$keyword%")
+                  ->orWhere('email', 'like', "%$keyword%")
+                  ->orWhere('phone', 'like', "%$keyword%");
             });
         }
 
@@ -31,7 +31,7 @@ class PassengerController extends Controller
     }
 
     /**
-     * Hiển thị form thêm hành khách mới.
+     * Show form to create a new passenger.
      */
     public function create()
     {
@@ -40,27 +40,27 @@ class PassengerController extends Controller
     }
 
     /**
-     * Lưu hành khách mới.
+     * Store a newly created passenger.
      */
     public function store(Request $request)
     {
         $data = $request->validate([
-            'ten_hanh_khach' => 'required|string|max:255',
-            'email'          => 'nullable|email|max:255',
-            'so_dien_thoai'  => 'required|string|max:15',
-            'gioi_tinh'      => 'required|in:nam,nu,khac',
-            'tuoi'           => 'nullable|integer|min:0|max:120',
-            'ticket_id'      => 'required|exists:tickets,id',
+            'name'      => 'required|string|max:255',
+            'email'     => 'nullable|email|max:255',
+            'phone'     => 'required|string|max:15',
+            'gender'    => 'required|in:male,female,other',
+            'age'       => 'nullable|integer|min:0|max:120',
+            'ticket_id' => 'required|exists:tickets,id',
         ]);
 
         Passenger::create($data);
 
         return redirect()->route('admin.passengers.index')
-            ->with('success', 'Thêm hành khách thành công!');
+                         ->with('success', 'Passenger created successfully!');
     }
 
     /**
-     * Hiển thị chi tiết hành khách.
+     * Display the specified passenger.
      */
     public function show(Passenger $passenger)
     {
@@ -69,7 +69,7 @@ class PassengerController extends Controller
     }
 
     /**
-     * Hiển thị form chỉnh sửa hành khách.
+     * Show form to edit a passenger.
      */
     public function edit(Passenger $passenger)
     {
@@ -78,29 +78,66 @@ class PassengerController extends Controller
     }
 
     /**
-     * Cập nhật thông tin hành khách.
+     * Update the specified passenger.
      */
     public function update(Request $request, Passenger $passenger)
     {
         $data = $request->validate([
-            'ten_hanh_khach' => 'required|string|max:255',
-            'email'          => 'nullable|email|max:255',
-            'so_dien_thoai'  => 'required|string|max:15',
-            'gioi_tinh'      => 'required|in:nam,nu,khac',
-            'tuoi'           => 'nullable|integer|min:0|max:120',
-            'ticket_id'      => 'required|exists:tickets,id',
+            'name'      => 'required|string|max:255',
+            'email'     => 'nullable|email|max:255',
+            'phone'     => 'required|string|max:15',
+            'gender'    => 'required|in:male,female,other',
+            'age'       => 'nullable|integer|min:0|max:120',
+            'ticket_id' => 'required|exists:tickets,id',
         ]);
 
         $passenger->update($data);
 
         return redirect()->route('admin.passengers.index')
-            ->with('success', 'Cập nhật hành khách thành công!');
+                         ->with('success', 'Passenger updated successfully!');
     }
 
     /**
-     * Xóa mềm hành khách.
+     * Soft delete the specified passenger.
      */
     public function destroy(Passenger $passenger)
     {
+        $passenger->delete();
+
+        return redirect()->route('admin.passengers.index')
+                         ->with('success', 'Passenger deleted successfully!');
+    }
+
+    /**
+     * Display soft-deleted passengers.
+     */
+    public function trash()
+    {
+        $passengers = Passenger::onlyTrashed()->paginate(25);
+        return view('admin.passengers.trash', compact('passengers'));
+    }
+
+    /**
+     * Restore a soft-deleted passenger.
+     */
+    public function restore($id)
+    {
+        $passenger = Passenger::onlyTrashed()->findOrFail($id);
+        $passenger->restore();
+
+        return redirect()->route('admin.passengers.index')
+                         ->with('success', 'Passenger restored successfully!');
+    }
+
+    /**
+     * Permanently delete a passenger.
+     */
+    public function forceDelete($id)
+    {
+        $passenger = Passenger::onlyTrashed()->findOrFail($id);
+        $passenger->forceDelete();
+
+        return redirect()->route('admin.passengers.trash')
+                         ->with('success', 'Passenger permanently deleted!');
     }
 }

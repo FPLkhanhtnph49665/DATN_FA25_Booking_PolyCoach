@@ -13,13 +13,25 @@ return new class extends Migration
     {
         Schema::create('tickets', function (Blueprint $table) {
             $table->id();
+
+            // Quan hệ
             $table->foreignId('trip_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->integer('so_ghe');
-            $table->enum('trang_thai', ['pending', 'paid', 'canceled'])->default('pending');
-            $table->string('phuong_thuc_thanh_toan', 50);
+
+            // Số ghế
+            $table->integer('seat_number');
+
+            // Trạng thái vé
+            $table->enum('status', ['pending', 'paid', 'cancelled'])->default('pending');
+
+            // Phương thức thanh toán
+            $table->string('payment_method', 50)->nullable(); // e.g., cash, momo
+
             $table->timestamps();
             $table->softDeletes();
+
+            // Index tối ưu tìm vé theo trip và user
+            $table->index(['trip_id', 'user_id']);
         });
     }
 
