@@ -13,7 +13,8 @@ class Ticket extends Model
     protected $fillable = [
         'trip_id',
         'user_id',           // who booked the ticket
-        'seat_count',        // number of seats in this ticket (1,2,3,...)
+        'seat_number',        // number of seats in this ticket (1,2,3,...)
+        'seat_code',
         'status',            // pending | paid | canceled
         'payment_method',    // cash | momo | bank
     ];

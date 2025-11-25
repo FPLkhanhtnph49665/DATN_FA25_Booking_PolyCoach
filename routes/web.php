@@ -48,6 +48,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/da-dat-ve/{booking}', [ClientBookingController::class, 'show'])
         ->name('client.bookings.show');
+    Route::get('trips/{trip}/select-seat', [TripController::class, 'selectSeat'])
+        ->name('client.trips.select-seat');
+
 });
 
 

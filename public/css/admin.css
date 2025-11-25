@@ -21,7 +21,7 @@ a {
     width: 260px;
     background: linear-gradient(160deg, rgba(8, 17, 40, 0.95), rgba(15, 23, 42, 0.98));
     backdrop-filter: blur(20px);
-    border-right: 1px solid rgba(251, 39, 255, 0.36);
+    border-right: 1px solid rgba(255, 89, 94, 0.36);
     box-shadow: 0 0 40px rgba(15, 23, 42, 0.9);
     position: sticky;
     top: 0;
@@ -29,7 +29,7 @@ a {
 }
 
 .sidebar-header {
-    border-bottom: 1px solid rgba(251, 39, 255, 0.36);
+    border-bottom: 1px solid rgba(255, 89, 94, 0.36);
 }
 
 .sidebar-logo-wrapper {
@@ -104,7 +104,7 @@ a {
 
 /* Footer */
 .sidebar-footer {
-    border-top: 1px solid rgba(251, 39, 255, 0.36);
+    border-top: 1px solid rgba(255, 89, 94, 0.36);
 }
 
 /* =============== SIDEBAR COLLAPSED =============== */
@@ -137,7 +137,7 @@ a {
                 radial-gradient(circle at 90% -10%, rgba(244, 63, 94, 0.18), transparent 55%),
                 rgba(15, 23, 42, 0.88);
     backdrop-filter: blur(18px);
-    border-bottom: 1px solid rgba(251, 39, 255, 0.36);
+    border-bottom: 1px solid rgba(255, 89, 94, 0.36);
     color: #e5e7eb;
 
     /* phần quan trọng thêm để dropdown không bị che */

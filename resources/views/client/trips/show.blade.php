@@ -3,9 +3,7 @@
 @section('content')
 
 <style>
-    body {
-        background-color: #f5f5f5;
-    }
+    body { background-color: #f5f5f5; }
 
     /* ===== HEADER CAM ===== */
     .booking-hero {
@@ -14,26 +12,17 @@
         padding: 24px 0 70px;
         margin-bottom: -40px;
     }
-
-    .booking-hero-title {
-        font-size: 22px;
-        font-weight: 700;
-    }
-
-    .booking-hero-sub {
-        font-size: 14px;
-        opacity: 0.9;
-    }
+    .booking-hero-title { font-size: 22px; font-weight: 700; }
+    .booking-hero-sub { font-size: 14px; opacity: 0.9; }
 
     /* ===== CARD TRẮNG CHÍNH ===== */
     .booking-main-card {
         border-radius: 12px;
         background: #fff;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.06);
         border: 1px solid #eee;
         padding: 20px 24px;
     }
-
     .section-title {
         font-size: 16px;
         font-weight: 600;
@@ -44,13 +33,12 @@
     .booking-side-card {
         border-radius: 12px;
         background: #fff;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.06);
         border: 1px solid #eee;
         padding: 16px 18px;
         margin-bottom: 16px;
         font-size: 14px;
     }
-
     .booking-side-card h6 {
         font-size: 15px;
         font-weight: 600;
@@ -62,48 +50,36 @@
         justify-content: space-between;
         margin-bottom: 6px;
     }
+    .price-row span:last-child { font-weight: 500; }
+    .price-total { font-weight: 700; color: #ff0000; }
 
-    .price-row span:last-child {
-        font-weight: 500;
-    }
-
-    .price-total {
-        font-weight: 700;
-        color: #ff0000;
-    }
-
-    /* ===== GHẾ: layout tầng dưới / tầng trên + legend ===== */
+    /* ===== GHẾ ===== */
     .seat-select-wrap {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
         gap: 32px;
     }
-
     .seat-floors {
         display: flex;
         gap: 40px;
     }
-
     .seat-floor-title {
         text-align: center;
         font-size: 14px;
         font-weight: 500;
         margin-bottom: 8px;
     }
-
     .seat-floor-body {
         display: flex;
         gap: 10px;
     }
-
     .seat-column {
         display: flex;
         flex-direction: column;
         gap: 6px;
     }
 
-    /* Icon ghế */
     .seat {
         position: relative;
         width: 32px;
@@ -119,7 +95,6 @@
         cursor: pointer;
         user-select: none;
     }
-
     .seat::before {
         content: '';
         position: absolute;
@@ -131,26 +106,22 @@
         background: #e5e7eb;
     }
 
-    /* TRẠNG THÁI GHẾ */
     .seat.available {
         background: #e6f4ff;
         border-color: #4b9cff;
         color: #2563eb;
     }
-
     .seat.selected {
         background: #ffe6d8;
-        border-color: #ff7a00;
+        border-color: rgb(255, 89, 94);
         color: #c2410c;
     }
-
     .seat.booked {
         background: #e5e7eb;
         border-color: #cbd5e1;
         color: #9ca3af;
         cursor: not-allowed;
     }
-
     .seat.booked::before {
         background: #d4d4d4;
     }
@@ -160,55 +131,46 @@
         min-width: 120px;
         font-size: 13px;
     }
-
     .seat-legend-item {
         display: flex;
         align-items: center;
         gap: 6px;
         margin-bottom: 6px;
     }
-
     .seat-legend-box {
         width: 16px;
         height: 16px;
         border-radius: 4px;
         border: 1px solid #d4d4d4;
     }
+    .legend-booked { background: #e5e7eb; }
+    .legend-available { background: #e6f4ff; border-color: #4b9cff; }
+    .legend-selected { background: #ffe6d8; border-color: rgb(255, 89, 94); }
 
-    .legend-booked {
-        background: #e5e7eb;
-    }
-
-    .legend-available {
-        background: #e6f4ff;
-        border-color: #4b9cff;
-    }
-
-    .legend-selected {
-        background: #ffe6d8;
-        border-color: #ff7a00;
-    }
-
-    /* ===== Nút chính ===== */
+    /* Nút chính */
     .btn-main {
-        background-color: #ff7a00;
-        border-color: #ff7a00;
+        background-color: rgb(255, 89, 94);
+        border-color: rgba(255, 89, 94);
         color: #fff;
         border-radius: 999px;
         padding: 8px 24px;
         font-weight: 600;
     }
-
     .btn-main:hover {
-        background-color: #ff8f26;
-        border-color: #ff8f26;
+        background-color: rgba(255, 89, 94, 0.36);
+        border-color: rgba(255, 89, 94, 0.36);
         color: #fff;
     }
 </style>
 
 @php
-    $route = optional($trip->route);
-    $date  = \Carbon\Carbon::parse($trip->ngay_khoi_hanh);
+    $route    = optional($trip->route);
+    $fromCity = optional($route->fromCity);
+    $toCity   = optional($route->toCity);
+
+    $rawDate  = $trip->departure_date ?? now();
+    $date     = \Carbon\Carbon::parse($rawDate);
+
     $weekdayMap = [
         1 => 'Thứ 2',
         2 => 'Thứ 3',
@@ -220,11 +182,27 @@
     ];
     $weekday = $weekdayMap[$date->dayOfWeek] ?? '';
 
-    // đảm bảo giá vé là số, tránh phá JS
-    $price = (int) ($trip->gia_ve ?? 0);
+    // giá vé theo field ticket_price
+    $price = (int) ($trip->ticket_price ?? 0);
 
-    // nếu controller chưa truyền thì cho rỗng
-    $bookedSeats = $bookedSeats ?? [];
+    $bookedSeats   = $bookedSeats   ?? [];
+    $pickupPoints  = $pickupPoints  ?? collect();
+    $dropoffPoints = $dropoffPoints ?? collect();
+
+    // layout ghế cố định
+    $floor1Columns = [
+        ['A01', 'A02', 'A03', 'A04'],
+        ['A05', 'A06', 'A07', 'A08'],
+        ['A09', 'A10', 'A11', 'A12'],
+        ['A13', 'A14', 'A15', 'A16'],
+    ];
+
+    $floor2Columns = [
+        ['B01', 'B02', 'B03', 'B04'],
+        ['B05', 'B06', 'B07', 'B08'],
+        ['B09', 'B10', 'B11', 'B12'],
+        ['B13', 'B14', 'B15', 'B16'],
+    ];
 @endphp
 
 {{-- HEADER CAM --}}
@@ -233,7 +211,7 @@
         <div class="d-flex justify-content-between align-items-center">
             <div>
                 <div class="booking-hero-title">
-                    {{ $route->diem_di ?? '—' }} - {{ $route->diem_den ?? '—' }}
+                    {{ $fromCity->name ?? '—' }} - {{ $toCity->name ?? '—' }}
                 </div>
                 <div class="booking-hero-sub">
                     {{ $weekday }}, {{ $date->format('d/m') }}
@@ -251,7 +229,7 @@
 <div class="container mb-5" style="margin-top: 50px;">
 
     <div class="row">
-        {{-- LEFT: card lớn chọn ghế + form --}}
+        {{-- LEFT: Chọn ghế + form --}}
         <div class="col-lg-8 mb-4">
             <form action="{{ route('client.bookings.store') }}" method="POST" id="booking-form">
                 @csrf
@@ -277,23 +255,14 @@
                             <div class="seat-floor">
                                 <div class="seat-floor-title">Tầng dưới</div>
                                 <div class="seat-floor-body">
-                                    @php
-                                        $floor1Columns = [
-                                            ['A01', 'A02', 'A03', 'A04'],
-                                            ['A05', 'A06', 'A07', 'A08'],
-                                            ['A09', 'A10', 'A11', 'A12'],
-                                            ['A13', 'A14', 'A15', 'A16'],
-                                        ];
-                                    @endphp
-
                                     @foreach($floor1Columns as $column)
                                         <div class="seat-column">
                                             @foreach($column as $code)
                                                 @php
-                                                    $isBooked = in_array($code, $bookedSeats);
+                                                    $isBooked  = in_array($code, $bookedSeats);
+                                                    $seatClass = $isBooked ? 'booked' : 'available';
                                                 @endphp
-                                                <div class="seat {{ $isBooked ? 'booked' : 'available' }}"
-                                                     data-code="{{ $code }}">
+                                                <div class="seat {{ $seatClass }}" data-code="{{ $code }}">
                                                     {{ $code }}
                                                 </div>
                                             @endforeach
@@ -306,23 +275,14 @@
                             <div class="seat-floor">
                                 <div class="seat-floor-title">Tầng trên</div>
                                 <div class="seat-floor-body">
-                                    @php
-                                        $floor2Columns = [
-                                            ['B01', 'B02', 'B03', 'B04'],
-                                            ['B05', 'B06', 'B07', 'B08'],
-                                            ['B09', 'B10', 'B11', 'B12'],
-                                            ['B13', 'B14', 'B15', 'B16'],
-                                        ];
-                                    @endphp
-
                                     @foreach($floor2Columns as $column)
                                         <div class="seat-column">
                                             @foreach($column as $code)
                                                 @php
-                                                    $isBooked = in_array($code, $bookedSeats);
+                                                    $isBooked  = in_array($code, $bookedSeats);
+                                                    $seatClass = $isBooked ? 'booked' : 'available';
                                                 @endphp
-                                                <div class="seat {{ $isBooked ? 'booked' : 'available' }}"
-                                                     data-code="{{ $code }}">
+                                                <div class="seat {{ $seatClass }}" data-code="{{ $code }}">
                                                     {{ $code }}
                                                 </div>
                                             @endforeach
@@ -330,9 +290,10 @@
                                     @endforeach
                                 </div>
                             </div>
+
                         </div>
 
-                        {{-- Bên phải: legend --}}
+                        {{-- Bên phải: Legend --}}
                         <div class="seat-legend-right">
                             <div class="seat-legend-item">
                                 <span class="seat-legend-box legend-booked"></span>
@@ -393,6 +354,7 @@
                         <div class="section-title">Thông tin đón trả</div>
 
                         <div class="row">
+                            {{-- ĐIỂM ĐÓN --}}
                             <div class="col-md-6 mb-3">
                                 <div class="small fw-semibold mb-1">
                                     ĐIỂM ĐÓN <span class="text-danger">*</span>
@@ -407,10 +369,19 @@
                                         Trung chuyển
                                     </span>
                                 </div>
-                                <select name="pickup_point" class="form-select mb-2">
-                                    <option value="{{ $route->diem_di ?? '' }}">
-                                        {{ $route->diem_di ?? 'Chọn điểm đón' }}
-                                    </option>
+                                <select name="pickup_point_id" class="form-select mb-2" required>
+                                    <option value="">-- Chọn điểm đón --</option>
+                                    @forelse($pickupPoints as $point)
+                                        <option value="{{ $point->id }}">
+                                            {{ $point->name ?? $point->check_point ?? 'Điểm đón #'.$point->id }}
+                                        </option>
+                                    @empty
+                                        @if($fromCity?->name)
+                                            <option value="{{ $fromCity->name }}" selected>
+                                                {{ $fromCity->name }}
+                                            </option>
+                                        @endif
+                                    @endforelse
                                 </select>
                                 <div class="small text-danger">
                                     Vui lòng có mặt tại bến/VP trước giờ xuất bến
@@ -418,6 +389,7 @@
                                 </div>
                             </div>
 
+                            {{-- ĐIỂM TRẢ --}}
                             <div class="col-md-6 mb-3">
                                 <div class="small fw-semibold mb-1">
                                     ĐIỂM TRẢ <span class="text-danger">*</span>
@@ -432,10 +404,19 @@
                                         Trung chuyển
                                     </span>
                                 </div>
-                                <select name="drop_point" class="form-select mb-2">
-                                    <option value="{{ $route->diem_den ?? '' }}">
-                                        {{ $route->diem_den ?? 'Chọn điểm trả' }}
-                                    </option>
+                                <select name="drop_point_id" class="form-select mb-2" required>
+                                    <option value="">-- Chọn điểm trả --</option>
+                                    @forelse($dropoffPoints as $point)
+                                        <option value="{{ $point->id }}">
+                                            {{ $point->name ?? $point->check_point ?? 'Điểm trả #'.$point->id }}
+                                        </option>
+                                    @empty
+                                        @if($toCity?->name)
+                                            <option value="{{ $toCity->name }}" selected>
+                                                {{ $toCity->name }}
+                                            </option>
+                                        @endif
+                                    @endforelse
                                 </select>
                             </div>
                         </div>
@@ -454,17 +435,24 @@
             </form>
         </div>
 
-        {{-- RIGHT: thông tin lượt đi + chi tiết giá --}}
+        {{-- RIGHT: Thông tin lượt đi + Chi tiết giá --}}
         <div class="col-lg-4">
             <div class="booking-side-card">
                 <h6>Thông tin lượt đi</h6>
                 <div class="price-row">
                     <span>Tuyến xe</span>
-                    <span>{{ $route->diem_di ?? '' }} - {{ $route->diem_den ?? '' }}</span>
+                    <span>{{ $fromCity->name ?? '' }} - {{ $toCity->name ?? '' }}</span>
                 </div>
                 <div class="price-row">
                     <span>Thời gian xuất bến</span>
-                    <span>{{ $trip->gio_khoi_hanh }} {{ $date->format('d/m/Y') }}</span>
+                    <span>
+                        @if($trip->departure_time)
+                            {{ \Carbon\Carbon::parse($trip->departure_time)->format('H:i') }}
+                        @else
+                            —
+                        @endif
+                        {{ $date->format('d/m/Y') }}
+                    </span>
                 </div>
                 <div class="price-row">
                     <span>Số lượng ghế</span>
@@ -485,7 +473,7 @@
                 <div class="price-row">
                     <span>Giá vé lượt đi</span>
                     <span id="sidebar-price-per-seat">
-                        {{ number_format($trip->gia_ve, 0, '.', '.') }}đ
+                        {{ number_format($trip->ticket_price, 0, '.', '.') }}đ
                     </span>
                 </div>
                 <div class="price-row">
@@ -504,7 +492,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Giá vé (đã ép sang int ở PHP)
         const price = {{ $price }};
 
         const seatsEls        = document.querySelectorAll('.seat');
@@ -531,7 +518,6 @@
             if (inputSeatCount) inputSeatCount.value = count;
             if (inputSeatCodes) inputSeatCodes.value = selected.join(',');
 
-            // Không cho bấm thanh toán khi chưa chọn ghế
             if (btnSubmit) btnSubmit.disabled = (count === 0);
 
             if (sidebarSeatQty)   sidebarSeatQty.textContent   = count + ' ghế';
@@ -546,17 +532,14 @@
 
         seatsEls.forEach(el => {
             el.addEventListener('click', function () {
-                // GHẾ ĐÃ BÁN: có class "booked" thì không cho chọn
                 if (this.classList.contains('booked')) {
                     return;
                 }
-
                 this.classList.toggle('selected');
                 updateSummary();
             });
         });
 
-        // Khởi tạo lần đầu
         updateSummary();
     });
 </script>

@@ -48,7 +48,6 @@ class AuthenticatedSessionController extends Controller
         }
 
         // User bình thường → giữ URL trước khi login nếu có
-        // return redirect()->intended(route('dashboard', absolute: false));
         return redirect()->intended(route('client.home'));
     }
 
@@ -58,6 +57,7 @@ class AuthenticatedSessionController extends Controller
 
         return view('client.account.show', compact('user'));
     }
+
     public function update(Request $request)
     {
         $user = Auth::user();
@@ -88,39 +88,50 @@ class AuthenticatedSessionController extends Controller
 
         return back()->with('success', 'Cập nhật thông tin tài khoản thành công.');
     }
+
     public function ticketHistory(Request $request)
     {
         $user = Auth::user();
 
-        $code   = trim($request->input('code'));      // mã vé
-        $date   = $request->input('date');            // ngày đi
-        $routeQ = trim($request->input('route'));     // tuyến đường
-        $status = $request->input('status');          // trạng thái
+        $code   = trim($request->input('code'));      // mã vé (id hoặc code)
+        $date   = $request->input('date');            // ngày đi (Y-m-d)
+        $routeQ = trim($request->input('route'));     // tuyến đường (tên TP)
+        $status = $request->input('status');          // trạng thái vé
 
         $query = $user->tickets()
-            ->with(['trip.route'])
+            ->with([
+                'trip.route.fromCity',
+                'trip.route.toCity',
+            ])
             ->orderByDesc('created_at');
 
+        // Lọc theo mã vé
         if ($code !== '') {
-            // tạm thời lọc theo id vé
+            // tạm thời lọc theo id vé, sau này nếu có cột code riêng thì đổi sang where('code', $code)
             $query->where('id', $code);
         }
 
+        // Lọc theo ngày đi -> dùng departure_date (đúng với migration trips)
         if (!empty($date)) {
             $query->whereHas('trip', function ($q) use ($date) {
-                $q->whereDate('ngay_khoi_hanh', $date);
+                $q->whereDate('departure_date', $date);
             });
         }
 
+        // Lọc theo tuyến -> tìm theo tên thành phố fromCity hoặc toCity
         if ($routeQ !== '') {
-            $query->whereHas('trip.route', function ($q) use ($routeQ) {
-                $q->where('diem_di', 'like', "%{$routeQ}%")
-                    ->orWhere('diem_den', 'like', "%{$routeQ}%");
+            $query->where(function ($q) use ($routeQ) {
+                $q->whereHas('trip.route.fromCity', function ($q2) use ($routeQ) {
+                    $q2->where('name', 'like', "%{$routeQ}%");
+                })->orWhereHas('trip.route.toCity', function ($q2) use ($routeQ) {
+                    $q2->where('name', 'like', "%{$routeQ}%");
+                });
             });
         }
 
+        // Lọc theo trạng thái (cột 'status' trong bảng tickets)
         if ($status !== '') {
-            $query->where('trang_thai', $status);
+            $query->where('status', $status);
         }
 
         $tickets = $query->paginate(10)->withQueryString();
