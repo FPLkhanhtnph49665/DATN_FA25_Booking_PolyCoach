@@ -20,6 +20,7 @@ return new class extends Migration
 
             // Số ghế
             $table->integer('seat_number');
+            $table->string('seat_code', 10)->nullable();
 
             // Trạng thái vé
             $table->enum('status', ['pending', 'paid', 'cancelled'])->default('pending');

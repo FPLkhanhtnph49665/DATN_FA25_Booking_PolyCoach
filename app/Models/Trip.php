@@ -39,10 +39,17 @@ class Trip extends Model
     {
         return $this->belongsTo(Bus::class);
     }
-
+    public function passengers()
+    {
+        return $this->hasMany(Booking::class, 'trip_id');
+    }
     public function tickets()
     {
         return $this->hasMany(Ticket::class);
+    }
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class, 'trip_id');
     }
 
     // Scopes

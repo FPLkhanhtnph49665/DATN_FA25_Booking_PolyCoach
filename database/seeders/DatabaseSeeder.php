@@ -238,31 +238,31 @@ class DatabaseSeeder extends Seeder
             [
                 'plate_number' => '29B-88888',
                 'seat_count'   => 32,
-                'type'         => 'Giường nằm',
+                'type'         => 'sleeper',
                 'status'       => 1,
             ],
             [
                 'plate_number' => '51B-12345',
                 'seat_count'   => 32,
-                'type'         => 'Giường nằm cao cấp',
+                'type'         => 'sleeper',
                 'status'       => 1,
             ],
             [
                 'plate_number' => '43B-54953',
                 'seat_count'   => 32,
-                'type'         => 'Limousine',
+                'type'         => 'limousine',
                 'status'       => 1,
             ],
             [
                 'plate_number' => '29A-34953',
                 'seat_count'   => 32,
-                'type'         => 'Ghế ngồi',
+                'type'         => 'seat',
                 'status'       => 1,
             ],
             [
                 'plate_number' => '29A-44953',
                 'seat_count'   => 32,
-                'type'         => 'Giường nằm',
+                'type'         => 'seat',
                 'status'       => 0, // đang bảo trì
             ],
         ];

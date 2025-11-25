@@ -8,7 +8,7 @@
     }
 
     .account-hero {
-        background: linear-gradient(135deg, #ff6a00 0%, #ff9933 50%, #ff6a00 100%);
+        background: linear-gradient(135deg, #ff595e 0%, #ff9933 50%, #ff595e 100%);
         color: #fff;
         padding: 24px 0 70px;
         margin-bottom: -40px;
@@ -58,7 +58,7 @@
         color: #fff;
     }
     .icon-green { background: #00b14f; }
-    .icon-orange{ background: #ff7a00; }
+    .icon-orange{ background: #ff595e; }
     .icon-blue  { background: #1e88e5; }
     .icon-red   { background: #f44336; }
     .icon-gray  { background: #9e9e9e; }
@@ -78,16 +78,16 @@
     }
 
     .btn-main {
-        background-color: #ff7a00;
-        border-color: # ;
+        background-color: rgba(255, 89, 94);
+        border-color: rgba(255, 89, 94);
         color: #fff;
         border-radius: 999px;
         padding: 6px 20px;
         font-weight: 600;
     }
     .btn-main:hover {
-        background-color: #ff8f26;
-        border-color: #ff8f26;
+        background-color: rgba(255, 89, 94);
+        border-color: rgba(255, 89, 94);
         color: #fff;
     }
 
@@ -112,6 +112,7 @@
     /** @var \App\Models\User $user */
     $user = $user ?? auth()->user();
 @endphp
+
 <div class="container account-wrapper">
     <div class="row">
         {{-- SIDEBAR --}}
@@ -191,9 +192,9 @@
                         <div class="col-md-2">
                             <select name="status" class="form-select">
                                 <option value="">Trạng thái</option>
-                                <option value="pending"  {{ request('status')=='pending'  ? 'selected' : '' }}>Chờ thanh toán</option>
-                                <option value="paid"     {{ request('status')=='paid'     ? 'selected' : '' }}>Đã thanh toán</option>
-                                <option value="canceled" {{ request('status')=='canceled' ? 'selected' : '' }}>Đã hủy</option>
+                                <option value="pending"   {{ request('status')=='pending'   ? 'selected' : '' }}>Chờ thanh toán</option>
+                                <option value="paid"      {{ request('status')=='paid'      ? 'selected' : '' }}>Đã thanh toán</option>
+                                <option value="cancelled" {{ request('status')=='cancelled' ? 'selected' : '' }}>Đã hủy</option>
                             </select>
                         </div>
                         <div class="col-md-2 text-end">
@@ -213,7 +214,7 @@
                         <thead>
                             <tr class="text-center">
                                 <th style="width: 80px;">Mã vé</th>
-                                <th style="width: 80px;">Số vé</th>
+                                <th style="width: 80px;">Số ghế</th>
                                 <th>Tuyến đường</th>
                                 <th style="width: 120px;">Ngày đi</th>
                                 <th style="width: 120px;">Số tiền</th>
@@ -223,10 +224,15 @@
                         <tbody>
                             @forelse($tickets as $ticket)
                                 @php
-                                    $trip  = $ticket->trip;
-                                    $route = $trip?->route;
-                                    $qty   = (int) $ticket->so_ghe;
-                                    $price = $trip ? (float) $trip->gia_ve : 0;
+                                    $trip     = $ticket->trip;
+                                    $route    = $trip?->route;
+                                    $fromCity = $route?->fromCity;
+                                    $toCity   = $route?->toCity;
+
+                                    // Số ghế trong ticket
+                                    $qty   = (int)($ticket->seat_number ?? 0);
+                                    // Giá vé 1 ghế
+                                    $price = $trip ? (float)($trip->ticket_price ?? 0) : 0;
                                     $total = $qty * $price;
                                 @endphp
                                 <tr>
@@ -234,21 +240,21 @@
                                         #{{ $ticket->id }}
                                     </td>
                                     <td class="text-center">
-                                        {{ $ticket->so_ghe }}
+                                        {{ $qty }}
                                     </td>
                                     <td>
                                         @if($route)
-                                            {{ $route->diem_di }} → {{ $route->diem_den }}
+                                            {{ $fromCity?->name }} → {{ $toCity?->name }}
                                         @else
                                             —
                                         @endif
                                     </td>
                                     <td class="text-center">
                                         @if($trip)
-                                            {{ \Carbon\Carbon::parse($trip->ngay_khoi_hanh)->format('d/m/Y') }}
+                                            {{ \Carbon\Carbon::parse($trip->departure_date)->format('d/m/Y') }}
                                             <br>
                                             <span class="text-muted small">
-                                                {{ $trip->gio_khoi_hanh }}
+                                                {{ \Carbon\Carbon::parse($trip->departure_time)->format('H:i') }}
                                             </span>
                                         @else
                                             —
@@ -258,7 +264,7 @@
                                         {{ number_format($total, 0, ',', '.') }}đ
                                     </td>
                                     <td class="text-center">
-                                        {!! $ticket->trang_thai_label ?? ucfirst($ticket->trang_thai) !!}
+                                        {!! $ticket->status_label ?? ucfirst($ticket->status) !!}
                                     </td>
                                 </tr>
                             @empty
@@ -266,7 +272,6 @@
                                     <td colspan="6">
                                         <div class="no-data">
                                             <div class="mb-2">
-                                                {{-- icon đơn giản, bạn có thể thay bằng SVG đẹp hơn --}}
                                                 🪑
                                             </div>
                                             <div>Hiện chưa có lịch sử mua vé.</div>
