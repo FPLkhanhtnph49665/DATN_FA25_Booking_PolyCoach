@@ -27,7 +27,12 @@ class TripController extends Controller
         $busTypes    = (array) $request->input('bus_type', []); // ['ghe','giuong','limousine']
 
         // ====== BUILD QUERY CƠ BẢN (KHÔNG ĐỤNG so_ghe_trong) ======
-        $query = Trip::with(['route', 'bus', 'tickets.passengers'])
+        $query = Trip::with([
+                'route.pickupPoints',  // Load điểm đón
+                'route.dropoffPoints', // Load điểm trả
+                'bus', 
+                'tickets.passengers'
+            ])
             ->active()
 
             // 1. Điểm đi
@@ -94,7 +99,14 @@ class TripController extends Controller
 
     public function show(Trip $trip)
     {
-        $trip->load('route', 'bus', 'tickets.passengers');
+        // ====== UPDATE 2: Load dữ liệu cho trang Chi tiết/Đặt vé ======
+        // Load route kèm theo danh sách điểm đón/trả để hiển thị vào Select box
+        $trip->load([
+            'route.pickupPoints', 
+            'route.dropoffPoints', 
+            'bus', 
+            'tickets.passengers'
+        ]);
 
         return view('client.trips.show', compact('trip'));
     }

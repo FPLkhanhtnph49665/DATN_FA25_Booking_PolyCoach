@@ -31,6 +31,18 @@ class Route extends Model
         return $this->hasMany(Trip::class);
     }
 
+    // Một Route có nhiều điểm đón
+    public function pickupPoints()
+    {
+        return $this->hasMany(PickupPoint::class)->orderBy('order');
+    }
+
+    // Một Route có nhiều điểm trả
+    public function dropoffPoints()
+    {
+        return $this->hasMany(DropoffPoint::class)->orderBy('order');
+    }
+    
     // =====================
     // 💡 Accessors
     // =====================
