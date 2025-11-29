@@ -203,6 +203,41 @@
             border-color: #ff8f26;
             color: #fff;
         }
+        /* ===== PHƯƠNG THỨC THANH TOÁN ===== */
+        .payment-option {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .payment-option:hover {
+            border-color: #ff7a00;
+            background-color: #fff8f5;
+        }
+
+        /* Khi radio được check, label cha sẽ đổi màu (xử lý bằng JS bên dưới hoặc :has nếu trình duyệt hỗ trợ) */
+        .payment-option.active {
+            border-color: #ff7a00;
+            background-color: #fff8f5;
+            box-shadow: 0 0 0 1px #ff7a00;
+        }
+
+        .payment-option .form-check-input {
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .payment-icon {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            margin-right: 12px;
+        }
     </style>
 
     @php
@@ -305,7 +340,7 @@
                                                 ['B01', 'B02', 'B03', 'B04'],
                                                 ['B05', 'B06', 'B07', 'B08'],
                                                 ['B09', 'B10', 'B11', 'B12'],
-                                                ['B13', 'B14', 'B15', 'B16', 'B17'],
+                                                ['B13', 'B14', 'B15', 'B16'],
                                             ];
                                         @endphp
 
@@ -451,7 +486,36 @@
                                     </select>
                                 </div>
                             </div>
+                            {{-- PHƯƠNG THỨC THANH TOÁN --}}
+                            <div class="border-top pt-3 mb-4 mt-3">
+                                <div class="section-title">Phương thức thanh toán</div>
 
+                                <div class="row g-3">
+                                    {{-- Option 1: Thanh toán Online --}}
+                                    <div class="col-md-6">
+                                        <label class="payment-option active" id="pay-online-label">
+                                            <input class="form-check-input" type="radio" name="payment_method"
+                                                value="vnpay" checked>
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-semibold text-dark">Thanh toán Online (VNPAY)</span>
+                                                <span class="small text-muted">Thẻ ATM, Internet Banking, QR Code</span>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    {{-- Option 2: Thanh toán Tiền mặt --}}
+                                    <div class="col-md-6">
+                                        <label class="payment-option" id="pay-cash-label">
+                                            <input class="form-check-input" type="radio" name="payment_method"
+                                                value="cash">
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-semibold text-dark">Thanh toán Tiền mặt</span>
+                                                <span class="small text-muted">Thanh toán tại quầy hoặc khi lên xe</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="d-flex justify-content-end mt-3">
                                 <a href="{{ route('client.trips') }}" class="btn btn-outline-secondary me-2">
                                     Hủy
@@ -473,6 +537,10 @@
                     <div class="price-row">
                         <span>Tuyến xe</span>
                         <span>{{ $route->diem_di ?? '' }} - {{ $route->diem_den ?? '' }}</span>
+                    </div>
+                    <div class="price-row">
+                        <span>biển số xe</span>
+                        <span>{{ $trip->bus->bien_so ?? '' }}</span>
                     </div>
                     <div class="price-row">
                         <span>Thời gian xuất bến</span>
@@ -534,7 +602,7 @@
             const sidebarTripTotal = document.getElementById('sidebar-trip-total');
             const sidebarTotalAll = document.getElementById('sidebar-total-all');
             const sidebarPricePerSeat = document.getElementById(
-            'sidebar-price-per-seat'); // Element hiển thị đơn giá
+                'sidebar-price-per-seat'); // Element hiển thị đơn giá
 
             // Select Inputs
             const pickupSelect = document.getElementById('pickup-select');
@@ -647,8 +715,37 @@
             // --- 6. LẮNG NGHE SỰ KIỆN THAY ĐỔI ĐIỂM ĐÓN/TRẢ ---
             if (pickupSelect) pickupSelect.addEventListener('change', fetchFare);
             if (dropoffSelect) dropoffSelect.addEventListener('change', fetchFare);
-
+            
             // Chạy lần đầu
+            // --- 7. XỬ LÝ CHỌN PHƯƠNG THỨC THANH TOÁN ---
+            const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+            const payOnlineLabel = document.getElementById('pay-online-label');
+            const payCashLabel = document.getElementById('pay-cash-label');
+            
+            function updatePaymentUI() {
+                // Reset active class
+                payOnlineLabel.classList.remove('active');
+                payCashLabel.classList.remove('active');
+
+                // Check cái nào đang checked
+                const selected = document.querySelector('input[name="payment_method"]:checked').value;
+
+                if (selected === 'vnpay') {
+                    payOnlineLabel.classList.add('active');
+                    btnSubmit.innerHTML = 'Thanh toán ngay'; // Đổi text nút
+                } else {
+                    payCashLabel.classList.add('active');
+                    btnSubmit.innerHTML = 'Hoàn tất đặt vé'; // Đổi text nút
+                }
+            }
+
+            // Lắng nghe sự kiện change
+            paymentRadios.forEach(radio => {
+                radio.addEventListener('change', updatePaymentUI);
+            });
+
+            // Gọi 1 lần khi load trang để set trạng thái mặc định
+            updatePaymentUI();
             updateSummary();
         });
     </script>

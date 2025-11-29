@@ -247,16 +247,16 @@
     </div>
 
     <div class="row g-4">
-        @isset($routes)
-            @forelse($routes->take(8) as $route)
+        @isset($popularTrips)
+            @forelse($popularTrips->take(8) as $trip)
             <div class="col-6 col-md-3">
                 <div class="route-card">
-                    <div class="route-from">{{ $route->from }}</div>
+                    <div class="route-from">{{ $trip->route->diem_di }}</div>
                     <i class="fas fa-arrow-right text-muted my-1"></i>
-                    <div class="route-to">{{ $route->to }}</div>
-                    <div class="route-price mt-2">{{ number_format($route->price ?? 250000) }}đ</div>
-                    <div class="route-time">{{ $route->duration ?? '6h' }}</div>
-                    <a href="{{ route('client.searchTrips', ['from' => $route->from, 'to' => $route->to]) }}"
+                    <div class="route-to">{{ $trip->route->diem_den }}</div>
+                    <div class="route-price mt-2">{{ number_format($trip->gia_ve ?? 250000) }}đ</div>
+                    <div class="route-time">{{ $trip->gio_khoi_hanh ?? '6h' }}</div>
+                    <a href="{{ route('client.searchTrips', ['from' => $trip->route->diem_di, 'to' => $trip->route->diem_den]) }}"
                        class="btn btn-outline-danger btn-sm w-100 mt-3 rounded-pill">
                        Đặt ngay
                     </a>
