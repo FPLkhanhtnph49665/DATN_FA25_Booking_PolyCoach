@@ -1,122 +1,206 @@
+{{-- resources/views/admin/trips/create.blade.php --}}
 @extends('layouts.admin')
 
-@section('title', 'Thêm chuyến xe mới')
+@section('title', 'Thêm Chuyến')
 
 @section('content')
-<div class="card">
-    <div class="card-header">
-        <h4>Thêm chuyến xe mới</h4>
+<div class="mb-4">
+    {{-- Header --}}
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h2 class="mb-1 fw-semibold text-light d-flex align-items-center gap-2">
+                <i class="bi bi-calendar2-week-fill"></i>
+                Thêm chuyến mới
+            </h2>
+            <p class="text-muted small mb-0">
+                Tạo mới chuyến xe theo tuyến, xe, ngày giờ khởi hành và giá vé.
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="{{ route('admin.trips.index') }}"
+               class="btn btn-outline-light d-flex align-items-center gap-1">
+                <i class="bi bi-arrow-left"></i>
+                <span>Quay lại danh sách</span>
+            </a>
+        </div>
     </div>
-    <div class="card-body">
-        <form action="{{ route('admin.trips.store') }}" method="POST">
-            @csrf
 
-            <div class="row">
+    {{-- Thông báo lỗi --}}
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <div class="fw-semibold mb-1">Đã có lỗi xảy ra:</div>
+            <ul class="mb-0 small">
+                @foreach($errors->all() as $error)
+                    <li>- {{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    {{-- Form tạo chuyến --}}
+    <div class="card border-0">
+        <div class="card-body">
+            <form action="{{ route('admin.trips.store') }}" method="POST" class="row g-3">
+                @csrf
+
+                {{-- Tuyến --}}
                 <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Tuyến đường <span class="text-danger">*</span></label>
-                        <select name="route_id" class="form-select" required>
-                            <option value="">-- Chọn tuyến --</option>
-                            @foreach($routes as $route)
-                                <option value="{{ $route->id }}" {{ old('route_id') == $route->id ? 'selected' : '' }}>
-                                    {{ $route->diem_di }} - {{ $route->diem_den }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('route_id') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
+                    <label for="route_id" class="form-label small text-muted mb-1">
+                        Tuyến <span class="text-danger">*</span>
+                    </label>
+                    <select
+                        name="route_id"
+                        id="route_id"
+                        class="form-select @error('route_id') is-invalid @enderror"
+                        required
+                    >
+                        <option value="" disabled {{ old('route_id') ? '' : 'selected' }}>-- Chọn tuyến --</option>
+                        @foreach($routes as $route)
+                            <option value="{{ $route->id }}" {{ old('route_id') == $route->id ? 'selected' : '' }}>
+                                {{ $route->fromCity?->name }} → {{ $route->toCity?->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('route_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
+                {{-- Xe --}}
                 <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Xe <span class="text-danger">*</span></label>
-                        <select name="bus_id" class="form-select" required>
-                            <option value="">-- Chọn xe --</option>
-                            @foreach($buses as $bus)
-                                <option value="{{ $bus->id }}" {{ old('bus_id') == $bus->id ? 'selected' : '' }}>
-                                    {{ $bus->bien_so }} ({{ $bus->loai_xe }} - {{ $bus->so_ghe }} ghế)
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('bus_id') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Ngày khởi hành <span class="text-danger">*</span></label>
-                        <input type="date" name="ngay_khoi_hanh" class="form-control" value="{{ old('ngay_khoi_hanh') }}" required>
-                        @error('ngay_khoi_hanh') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
+                    <label for="bus_id" class="form-label small text-muted mb-1">
+                        Xe <span class="text-danger">*</span>
+                    </label>
+                    <select
+                        name="bus_id"
+                        id="bus_id"
+                        class="form-select @error('bus_id') is-invalid @enderror"
+                        required
+                    >
+                        <option value="" disabled {{ old('bus_id') ? '' : 'selected' }}>-- Chọn xe --</option>
+                        @foreach($buses as $bus)
+                            <option value="{{ $bus->id }}" {{ old('bus_id') == $bus->id ? 'selected' : '' }}>
+                                {{ $bus->plate_number }} ({{ $bus->seat_count }} ghế - {{ $bus->type }})
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('bus_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Giờ khởi hành (0-23h) <span class="text-danger">*</span></label>
-                        <select name="gio_khoi_hanh" class="form-select" required>
-                            <option value="">-- Chọn giờ --</option>
-                            @for($i = 0; $i < 24; $i++)
-                                <option value="{{ sprintf('%02d:00', $i) }}" {{ old('gio_khoi_hanh') == sprintf('%02d:00', $i) ? 'selected' : '' }}>
-                                    {{ sprintf('%02d:00', $i) }}
-                                </option>
-                                <option value="{{ sprintf('%02d:30', $i) }}" {{ old('gio_khoi_hanh') == sprintf('%02d:30', $i) ? 'selected' : '' }}>
-                                    {{ sprintf('%02d:30', $i) }}
-                                </option>
-                            @endfor
-                        </select>
-                        @error('gio_khoi_hanh') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Giờ đến dự kiến (0-23h)</label>
-                        <select name="gio_den" class="form-select">
-                            <option value="">-- Chọn giờ --</option>
-                            @for($i = 0; $i < 24; $i++)
-                                <option value="{{ sprintf('%02d:00', $i) }}" {{ old('gio_den') == sprintf('%02d:00', $i) ? 'selected' : '' }}>
-                                    {{ sprintf('%02d:00', $i) }}
-                                </option>
-                                <option value="{{ sprintf('%02d:30', $i) }}" {{ old('gio_den') == sprintf('%02d:30', $i) ? 'selected' : '' }}>
-                                    {{ sprintf('%02d:30', $i) }}
-                                </option>
-                            @endfor
-                        </select>
-                        @error('gio_den') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
+                {{-- Ngày khởi hành --}}
+                <div class="col-md-4">
+                    <label for="departure_date" class="form-label small text-muted mb-1">
+                        Ngày khởi hành <span class="text-danger">*</span>
+                    </label>
+                    <input
+                        type="date"
+                        name="departure_date"
+                        id="departure_date"
+                        class="form-control @error('departure_date') is-invalid @enderror"
+                        value="{{ old('departure_date') }}"
+                        required
+                    >
+                    @error('departure_date')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Giá vé (VNĐ) <span class="text-danger">*</span></label>
-                        <input type="number" name="gia_ve" class="form-control" value="{{ old('gia_ve') }}" min="0" step="1000" required>
-                        @error('gia_ve') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
+                {{-- Giờ khởi hành --}}
+                <div class="col-md-4">
+                    <label for="departure_time" class="form-label small text-muted mb-1">
+                        Giờ khởi hành <span class="text-danger">*</span>
+                    </label>
+                    <input
+                        type="time"
+                        name="departure_time"
+                        id="departure_time"
+                        class="form-control @error('departure_time') is-invalid @enderror"
+                        value="{{ old('departure_time') }}"
+                        step="60" {{-- đảm bảo format H:i, không có giây --}}
+                        required
+                    >
+                    @error('departure_time')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Trạng thái <span class="text-danger">*</span></label>
-                        <select name="trang_thai" class="form-select" required>
-                            <option value="1" {{ old('trang_thai', 1) == 1 ? 'selected' : '' }}>Hoạt động</option>
-                            <option value="0" {{ old('trang_thai') == 0 ? 'selected' : '' }}>Tạm ngưng</option>
-                        </select>
-                        @error('trang_thai') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
+                {{-- Giờ đến dự kiến --}}
+                <div class="col-md-4">
+                    <label for="arrival_time" class="form-label small text-muted mb-1">
+                        Giờ đến dự kiến <span class="text-danger">*</span>
+                    </label>
+                    <input
+                        type="time"
+                        name="arrival_time"
+                        id="arrival_time"
+                        class="form-control @error('arrival_time') is-invalid @enderror"
+                        value="{{ old('arrival_time') }}"
+                        step="60"
+                        required
+                    >
+                    @error('arrival_time')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
-            </div>
 
-            <div class="mt-3">
-                <button type="submit" class="btn btn-success">Lưu chuyến xe</button>
-                <a href="{{ route('admin.trips.index') }}" class="btn btn-secondary">Hủy</a>
-            </div>
-        </form>
+                {{-- Giá vé --}}
+                <div class="col-md-4">
+                    <label for="ticket_price" class="form-label small text-muted mb-1">
+                        Giá vé (VND) <span class="text-danger">*</span>
+                    </label>
+                    <input
+                        type="number"
+                        name="ticket_price"
+                        id="ticket_price"
+                        class="form-control @error('ticket_price') is-invalid @enderror"
+                        value="{{ old('ticket_price') }}"
+                        min="0"
+                        step="1000"
+                        placeholder="VD: 150000"
+                        required
+                    >
+                    @error('ticket_price')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                {{-- Trạng thái --}}
+                <div class="col-md-4">
+                    <label for="status" class="form-label small text-muted mb-1">
+                        Trạng thái
+                    </label>
+                    <select
+                        name="status"
+                        id="status"
+                        class="form-select @error('status') is-invalid @enderror"
+                    >
+                        <option value="1" {{ old('status', 1) == 1 ? 'selected' : '' }}>
+                            Hoạt động
+                        </option>
+                        <option value="0" {{ old('status', 1) == 0 ? 'selected' : '' }}>
+                            Khóa
+                        </option>
+                    </select>
+                    @error('status')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                {{-- Nút --}}
+                <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+                    <a href="{{ route('admin.trips.index') }}" class="btn btn-outline-light">
+                        Hủy
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i>
+                        Lưu chuyến
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 @endsection

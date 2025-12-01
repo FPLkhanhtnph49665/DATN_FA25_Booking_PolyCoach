@@ -8,6 +8,7 @@ class PickupPoint extends Model
 {
     protected $fillable = [
         'route_id',
+        'city_id',
         'ten_diem_don',
         'dia_chi',
         'order',
@@ -16,5 +17,10 @@ class PickupPoint extends Model
     public function route()
     {
         return $this->belongsTo(Route::class);
+    }
+    // Quan hệ: Một điểm đón thuộc về một City
+    public function city()
+    {
+        return $this->belongsTo(City::class);
     }
 }

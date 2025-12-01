@@ -1,7 +1,7 @@
-{{-- resources/views/admin/trips/index.blade.php --}}
+{{-- resources/views/admin/cities/index.blade.php --}}
 @extends('layouts.admin')
 
-@section('title', 'Quản lý Chuyến')
+@section('title', 'Quản lý thành phố')
 
 @section('content')
 <div class="mb-4">
@@ -9,44 +9,36 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
         <div>
             <h2 class="mb-1 fw-semibold text-light d-flex align-items-center gap-2">
-                <i class="bi bi-calendar2-week-fill"></i>
-                Danh sách chuyến
+                <i class="bi bi-geo-alt-fill"></i>
+                Danh sách thành phố
             </h2>
             <p class="text-muted small mb-0">
-                Quản lý các chuyến xe theo tuyến, xe, ngày giờ khởi hành và tình trạng ghế.
+                Quản lý danh sách thành phố phục vụ cho việc cấu hình tuyến xe, điểm đón/trả trong hệ thống PolyCoach.
             </p>
         </div>
 
         <div class="d-flex gap-2">
-            <a href="{{ route('admin.trips.create') }}"
-               class="btn btn-primary d-flex align-items-center gap-1">
+            <a href="{{ route('admin.cities.create') }}" class="btn btn-primary d-flex align-items-center gap-1">
                 <i class="bi bi-plus-circle"></i>
-                <span>Thêm chuyến mới</span>
+                <span>Thêm thành phố</span>
             </a>
         </div>
     </div>
 
-    {{-- Thông báo lỗi nhanh --}}
-    @if($errors->any())
-        <div class="alert alert-danger py-2 small">
-            {{ $errors->first() }}
-        </div>
-    @endif
-
-    {{-- Bộ lọc / tìm kiếm --}}
+    {{-- Bộ lọc / Tìm kiếm --}}
     <div class="card border-0 mb-4">
         <div class="card-body">
-            <form action="{{ route('admin.trips.index') }}" method="GET" class="row g-3 align-items-end">
-                {{-- Tìm theo tuyến (thành phố đi / đến) --}}
+            <form method="GET" action="{{ route('admin.cities.index') }}" class="row g-3 align-items-end">
+                {{-- Ô tìm kiếm --}}
                 <div class="col-md-5">
-                    <label for="search" class="form-label text-muted small mb-1">Tìm kiếm</label>
+                    <label for="search" class="form-label text-light small mb-1">Tìm kiếm</label>
                     <input
                         type="text"
                         name="search"
                         id="search"
                         value="{{ request('search') }}"
                         class="form-control"
-                        placeholder="Tuyến, thành phố đi / đến..."
+                        placeholder="Nhập tên hoặc mã thành phố..."
                     >
                 </div>
 
@@ -56,17 +48,18 @@
                     <select name="status" id="status" class="form-select">
                         <option value="">-- Tất cả --</option>
                         <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Hoạt động</option>
-                        <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Khóa</option>
+                        <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Ngưng hoạt động</option>
                     </select>
                 </div>
 
+                {{-- Nút --}}
                 <div class="col-md-4 d-flex gap-2">
                     <button type="submit"
                             class="btn btn-primary flex-grow-1 d-flex align-items-center justify-content-center gap-1">
                         <i class="bi bi-search"></i>
                         <span>Lọc</span>
                     </button>
-                    <a href="{{ route('admin.trips.index') }}"
+                    <a href="{{ route('admin.cities.index') }}"
                        class="btn btn-outline-light flex-grow-1 d-flex align-items-center justify-content-center gap-1">
                         <i class="bi bi-arrow-repeat"></i>
                         <span>Đặt lại</span>
@@ -84,95 +77,56 @@
                     <thead>
                         <tr>
                             <th class="text-muted small">#</th>
-                            <th class="text-muted small">Tuyến</th>
-                            <th class="text-muted small">Xe</th>
-                            <th class="text-muted small">Ngày khởi hành</th>
-                            <th class="text-muted small">Giờ khởi hành</th>
-                            <th class="text-muted small">Giờ đến dự kiến</th>
-                            <th class="text-muted small">Giá vé</th>
-                            <th class="text-muted small">Ghế còn trống</th>
+                            <th class="text-muted small">Tên thành phố</th>
+                            <th class="text-muted small">Mã</th>
                             <th class="text-muted small">Trạng thái</th>
-                            <th class="text-muted small text-center">Hành động</th>
+                            <th class="text-muted small">Ngày tạo</th>
+                            <th class="text-muted small text-end">Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($trips as $trip)
+                        @forelse ($cities as $city)
                             <tr>
-                                {{-- đánh số theo phân trang --}}
                                 <td class="text-muted small">
-                                    {{ $trips->firstItem() + $loop->index }}
+                                    {{ $cities->firstItem() + $loop->index }}
                                 </td>
-
-                                {{-- Tuyến: dùng quan hệ fromCity / toCity trong Route model --}}
                                 <td class="fw-semibold">
-                                    {{ $trip->route?->fromCity?->name ?? '-' }}
-                                    <span class="text-muted">→</span>
-                                    {{ $trip->route?->toCity?->name ?? '-' }}
+                                    {{ $city->name }}
                                 </td>
-
-                                {{-- Xe: dùng plate_number (theo Bus model mới) --}}
                                 <td>
-                                    {{ $trip->bus?->plate_number ?? '-' }}
+                                    @if($city->code)
+                                        <span class="badge bg-secondary-subtle text-dark border border-primary-subtle">
+                                            {{ $city->code }}
+                                        </span>
+                                    @else
+                                        <span class="text-muted small">—</span>
+                                    @endif
                                 </td>
-
-                                {{-- Ngày khởi hành --}}
-                                <td class="text-muted small">
-                                    {{ $trip->departure_date?->format('d/m/Y') ?? '-' }}
-                                </td>
-
-                                {{-- Giờ khởi hành & giờ đến dự kiến --}}
-                                <td class="text-muted small">
-                                    {{ $trip->departure_time_formatted ?? $trip->departure_time ?? '-' }}
-                                </td>
-
-                                <td class="text-muted small">
-                                    {{ $trip->arrival_time_formatted ?? $trip->arrival_time ?? '-' }}
-                                </td>
-
-                                {{-- Giá vé --}}
                                 <td>
-                                    <span class="badge bg-secondary-subtle text-dark border border-primary-subtle">
-                                        {{ number_format($trip->ticket_price ?? 0, 0, ',', '.') }}₫
-                                    </span>
-                                </td>
-
-                                {{-- Ghế còn trống --}}
-                                <td>
-                                    @php
-                                        $availableSeats = $trip->available_seats ?? null;
-                                        $availableCount = is_array($availableSeats) ? count($availableSeats) : ($trip->available_seats_count ?? 0);
-                                        $totalSeats = $trip->bus?->seat_count ?? 0;
-                                    @endphp
-                                    <span class="badge bg-info-subtle text-info border border-info-subtle">
-                                        {{ $availableCount }} / {{ $totalSeats }}
-                                    </span>
-                                </td>
-
-                                {{-- Trạng thái --}}
-                                <td>
-                                    @if($trip->status == 1)
+                                    @if ($city->status == 1)
                                         <span class="badge bg-success-subtle text-success border border-success-subtle">
                                             <i class="bi bi-circle-fill me-1" style="font-size: 0.55rem;"></i>
                                             Hoạt động
                                         </span>
                                     @else
-                                        <span class="badge bg-secondary-subtle text-light border border-secondary-subtle">
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
                                             <i class="bi bi-slash-circle me-1"></i>
-                                            Khóa
+                                            Ngưng hoạt động
                                         </span>
                                     @endif
                                 </td>
-
-                                {{-- Hành động --}}
-                                <td class="text-center">
-                                    <a href="{{ route('admin.trips.edit', $trip->id) }}"
-                                       class="btn btn-sm btn-outline-warning me-1">
+                                <td class="text-muted small">
+                                    {{ $city->created_at?->format('d/m/Y H:i') ?? '—' }}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{{ route('admin.cities.edit', $city->id) }}"
+                                       class="btn btn-sm btn-outline-info me-1">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
 
-                                    <form action="{{ route('admin.trips.destroy', $trip->id) }}"
+                                    <form action="{{ route('admin.cities.destroy', $city->id) }}"
                                           method="POST"
-                                          class="d-inline-block delete-trip-form">
+                                          class="d-inline-block delete-city-form">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit"
@@ -184,8 +138,8 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="text-center py-4 text-muted">
-                                    Chưa có chuyến nào.
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    Không có thành phố nào.
                                 </td>
                             </tr>
                         @endforelse
@@ -193,9 +147,9 @@
                 </table>
             </div>
 
-            {{-- Pagination --}}
+            {{-- Phân trang --}}
             <div class="d-flex justify-content-end mt-3 px-3 pb-3">
-                {{ $trips->links('pagination::bootstrap-4') }}
+                {{ $cities->links('pagination::bootstrap-4') }}
             </div>
         </div>
     </div>
@@ -229,12 +183,12 @@
     @endif
 
     <script>
-        // SweetAlert2 confirm xóa chuyến
-        document.querySelectorAll('.delete-trip-form').forEach(form => {
-            form.addEventListener('submit', function (e) {
+        // SweetAlert2 confirm xóa
+        document.querySelectorAll('.delete-city-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 Swal.fire({
-                    title: 'Bạn có chắc muốn xóa chuyến này?',
+                    title: 'Bạn có chắc muốn xóa thành phố này?',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',

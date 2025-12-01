@@ -8,31 +8,52 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    /**
+     * Display admin dashboard with statistics.
+     */
     public function index()
     {
-        // 🔢 Thống kê cơ bản
-        $totalUsers = User::count();
-        $totalBuses = Bus::count();
-        $activeBuses = Bus::where('trang_thai', 1)->count();
-        $totalTrips = Trip::count();
-        $activeTrips = Trip::where('trang_thai', 1)->count();
+        // Ghi chú: Sử dụng withTrashed() để vô hiệu hóa điều kiện WHERE deleted_at IS NULL.
+        // Điều này cho phép tính toán trên TẤT CẢ các bản ghi (kể cả đã xóa mềm).
 
-        // 💰 Thống kê thanh toán
-        $totalPayments = Payment::sum('so_tien');
-        $totalCash = Payment::where('phuong_thuc', 'Tiền mặt')->sum('so_tien');
-        $totalMomo = Payment::where('phuong_thuc', 'MoMo')->sum('so_tien');
+        // 🔢 Basic statistics
+        // Đếm tổng số Users (bao gồm cả đã xóa mềm)
+        $totalUsers = User::withTrashed()->count();
 
-        // 📈 Biểu đồ thanh toán theo tháng/năm
-        $paymentsByMonth = Payment::select(
+        // Đếm tổng số Buses (bao gồm cả đã xóa mềm)
+        $totalBuses = Bus::withTrashed()->count();
+
+        // Đếm số lượng Buses đang hoạt động (trang_thai = 1), bao gồm cả đã xóa mềm
+        $activeBuses = Bus::withTrashed()->where('trang_thai', 1)->count();
+
+        // Đếm tổng số Trips (bao gồm cả đã xóa mềm)
+        $totalTrips = Trip::withTrashed()->count();
+
+        // Đếm số lượng Trips đang hoạt động (trang_thai = 1), bao gồm cả đã xóa mềm
+        $activeTrips = Trip::withTrashed()->where('trang_thai', 1)->count();
+
+        // 💰 Payment statistics
+        // Tính tổng số tiền Payments (bao gồm cả đã xóa mềm)
+        $totalPayments = Payment::withTrashed()->sum('so_tien');
+
+        // Tính tổng tiền mặt (Cash), bao gồm cả đã xóa mềm
+        $totalCash = Payment::withTrashed()->where('phuong_thuc', 'cash')->sum('so_tien');
+
+        // Tính tổng tiền Momo, bao gồm cả đã xóa mềm
+        $totalMomo = Payment::withTrashed()->where('phuong_thuc', 'momo')->sum('so_tien');
+
+        // 📈 Payments by month/year
+        // Thống kê thanh toán theo tháng/năm, bao gồm cả đã xóa mềm
+        $paymentsByMonth = Payment::withTrashed()->select(
             DB::raw('YEAR(created_at) as year'),
             DB::raw('MONTH(created_at) as month'),
-            DB::raw("SUM(CASE WHEN phuong_thuc = 'Tiền mặt' THEN so_tien ELSE 0 END) as cash_total"),
-            DB::raw("SUM(CASE WHEN phuong_thuc = 'MoMo' THEN so_tien ELSE 0 END) as momo_total")
+            DB::raw("SUM(CASE WHEN phuong_thuc = 'cash' THEN so_tien ELSE 0 END) as cash_total"),
+            DB::raw("SUM(CASE WHEN phuong_thuc = 'momo' THEN so_tien ELSE 0 END) as momo_total")
         )
-        ->groupBy('year', 'month')
-        ->orderBy('year')
-        ->orderBy('month')
-        ->get();
+            ->groupBy('year', 'month')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get();
 
         return view('admin.dashboard', compact(
             'totalUsers',

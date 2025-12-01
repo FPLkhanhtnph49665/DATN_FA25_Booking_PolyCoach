@@ -18,4 +18,9 @@ class PointFare extends Model
     {
         return $this->belongsTo(DropoffPoint::class);
     }
+    // Liên kết với Tuyến đường
+    public function route()
+    {
+        return $this->belongsTo(Route::class);
+    }
 }

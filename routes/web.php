@@ -15,6 +15,8 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\PassengerController;
 use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\Admin\CityController;
+use App\Http\Controllers\Admin\PointFareController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 use App\Http\Controllers\Client\TripController as ClientTripController;
@@ -55,6 +57,8 @@ Route::middleware('auth')->group(function () {
 Route::prefix('admin')->name('admin.')->middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', UserController::class);
+    route::resource('cities', CityController::class);
+    route::resource('point_fares', PointFareController::class);
     Route::resource('routes', RouteController::class);
     Route::resource('buses', BusController::class);
     Route::resource('trips', TripController::class);
