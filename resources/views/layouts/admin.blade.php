@@ -62,10 +62,11 @@
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('admin.pickup-dropoff-points.index') }}"
-                            class="nav-link admin-nav-link {{ request()->routeIs('admin.pickup-dropoff-points.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.point_fares.index') }}"
+                            class="nav-link admin-nav-link {{ request()->routeIs(patterns: 'admin.point_fares.*') ? 'active' : '' }}">
                             <i class="bi bi-pin-map me-2"></i>
-                            <span>Điểm đón / trả</span>
+                            {{-- Sửa tên hiển thị --}}
+                            <span>Giá vé chặng</span>
                         </a>
                     </li>
 
@@ -173,46 +174,59 @@
                         @endphp
 
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-light" href="#"
-                                id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <<<<<<< HEAD <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-light"
+                                href="#" id="userDropdown" role="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
 
                                 {{-- Avatar tròn --}}
                                 <div class="avatar-circle">
-                                    <span>{{ strtoupper(mb_substr($user->first_name ?? $user->name ?? 'A', 0, 1)) }}</span>
-                                </div>
+                                    <span>{{ strtoupper(mb_substr($user->first_name ?? ($user->name ?? 'A'), 0, 1)) }}</span>
+                                    =======
+                                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-light"
+                                        href="#" id="userDropdown" role="button" data-bs-toggle="dropdown"
+                                        aria-expanded="false">
 
-                                {{-- Tên & Role --}}
-                                <div class="d-flex flex-column text-start">
-                                    <span class="user-name fw-semibold">
-                                        {{ $user->full_name ?? $user->name ?? 'Admin' }}
-                                    </span>
-                                    <span class="user-role small text-capitalize opacity-75">
-                                        {{ $user->role ?? 'admin' }}
-                                    </span>
-                                </div>
-                            </a>
+                                        {{-- Avatar tròn --}}
+                                        <div class="avatar-circle">
+                                            <span>{{ strtoupper(mb_substr($user->first_name ?? ($user->name ?? 'A'), 0, 1)) }}</span>
+                                            >>>>>>> 8b2d99e384608832df1c473dc5dbf415fe251c7f
+                                        </div>
 
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li>
-                                    <a class="dropdown-item" href="#">
-                                        <i class="bi bi-gear me-2"></i> Hồ sơ
+                                        {{-- Tên & Role --}}
+                                        <div class="d-flex flex-column text-start">
+                                            <span class="user-name fw-semibold">
+                                                <<<<<<< HEAD
+                                                    {{ $user->full_name ?? ($user->name ?? 'Admin') }}======={{ $user->full_name ?? ($user->name ?? 'Admin') }}>
+                                                    >>>>>> 8b2d99e384608832df1c473dc5dbf415fe251c7f
+                                            </span>
+                                            <span class="user-role small text-capitalize opacity-75">
+                                                {{ $user->role ?? 'admin' }}
+                                            </span>
+                                        </div>
                                     </a>
-                                </li>
 
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                        <li>
+                                            <a class="dropdown-item" href="#">
+                                                <i class="bi bi-gear me-2"></i> Hồ sơ
+                                            </a>
+                                        </li>
 
-                                <li>
-                                    {{-- KHÔNG JS, KHÔNG FORM ẨN, GỬI THẲNG POST --}}
-                                    <form action="{{ route('logout') }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="dropdown-item text-danger w-100 text-start">
-                                            <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+
+                                        <li>
+                                            {{-- KHÔNG JS, KHÔNG FORM ẨN, GỬI THẲNG POST --}}
+                                            <form action="{{ route('logout') }}" method="POST">
+                                                @csrf
+                                                <button type="submit"
+                                                    class="dropdown-item text-danger w-100 text-start">
+                                                    <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
                         </li>
                     </ul>
 

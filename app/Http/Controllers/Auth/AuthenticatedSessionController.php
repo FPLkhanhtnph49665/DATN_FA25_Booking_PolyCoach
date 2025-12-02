@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\Ticket;
+use App\Models\User;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -64,13 +66,13 @@ class AuthenticatedSessionController extends Controller
 
         $data = $request->validate([
             'full_name' => 'required|string|max:255',
-            'phone'     => 'nullable|string|max:20',
-            'image'     => 'nullable|image|mimes:jpeg,png,jpg|max:1024', // 1MB
+            'phone' => 'nullable|string|max:20',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:1024', // 1MB
         ], [
             'full_name.required' => 'Vui lòng nhập họ và tên.',
-            'image.image'        => 'File tải lên phải là hình ảnh.',
-            'image.mimes'        => 'Chỉ chấp nhận JPEG, JPG, PNG.',
-            'image.max'          => 'Dung lượng ảnh tối đa 1MB.',
+            'image.image' => 'File tải lên phải là hình ảnh.',
+            'image.mimes' => 'Chỉ chấp nhận JPEG, JPG, PNG.',
+            'image.max' => 'Dung lượng ảnh tối đa 1MB.',
         ]);
 
         // Xử lý upload avatar
@@ -93,8 +95,8 @@ class AuthenticatedSessionController extends Controller
     {
         $user = Auth::user();
 
-        $code   = trim($request->input('code'));      // mã vé (id hoặc code)
-        $date   = $request->input('date');            // ngày đi (Y-m-d)
+        $code = trim($request->input('code'));      // mã vé (id hoặc code)
+        $date = $request->input('date');            // ngày đi (Y-m-d)
         $routeQ = trim($request->input('route'));     // tuyến đường (tên TP)
         $status = $request->input('status');          // trạng thái vé
 
@@ -105,33 +107,26 @@ class AuthenticatedSessionController extends Controller
             ])
             ->orderByDesc('created_at');
 
-        // Lọc theo mã vé
-        if ($code !== '') {
-            // tạm thời lọc theo id vé, sau này nếu có cột code riêng thì đổi sang where('code', $code)
+        if ($request->filled('code')) {
+            // tạm thời lọc theo id vé
             $query->where('id', $code);
         }
 
-        // Lọc theo ngày đi -> dùng departure_date (đúng với migration trips)
-        if (!empty($date)) {
+        if ($request->filled('date')) {
             $query->whereHas('trip', function ($q) use ($date) {
                 $q->whereDate('departure_date', $date);
             });
         }
 
-        // Lọc theo tuyến -> tìm theo tên thành phố fromCity hoặc toCity
-        if ($routeQ !== '') {
-            $query->where(function ($q) use ($routeQ) {
-                $q->whereHas('trip.route.fromCity', function ($q2) use ($routeQ) {
-                    $q2->where('name', 'like', "%{$routeQ}%");
-                })->orWhereHas('trip.route.toCity', function ($q2) use ($routeQ) {
-                    $q2->where('name', 'like', "%{$routeQ}%");
-                });
+        if ($request->filled('route')) {
+            $query->whereHas('trip.route', function ($q) use ($routeQ) {
+                $q->where('diem_di', 'like', "%{$routeQ}%")
+                    ->orWhere('diem_den', 'like', "%{$routeQ}%");
             });
         }
 
-        // Lọc theo trạng thái (cột 'status' trong bảng tickets)
-        if ($status !== '') {
-            $query->where('status', $status);
+        if ($request->filled('status')) {
+            $query->where('trang_thai', $status);
         }
 
         $tickets = $query->paginate(10)->withQueryString();

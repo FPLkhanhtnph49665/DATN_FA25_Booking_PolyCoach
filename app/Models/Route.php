@@ -30,17 +30,17 @@ class Route extends Model
     {
         return $this->hasMany(Trip::class);
     }
-
-    public function fromCity()
+    // Một Route có nhiều điểm đón
+    public function pickupPoints()
     {
-        return $this->belongsTo(City::class, 'from_city_id');
+        return $this->hasMany(PickupPoint::class)->orderBy('order');
     }
 
-    public function toCity()
+    // Một Route có nhiều điểm trả
+    public function dropoffPoints()
     {
-        return $this->belongsTo(City::class, 'to_city_id');
+        return $this->hasMany(DropoffPoint::class)->orderBy('order');
     }
-
     // =====================
     // 💡 Accessors
     // =====================
@@ -51,7 +51,7 @@ class Route extends Model
 
     public function getTrangThaiLabelAttribute(): string
     {
-        return match ((int)$this->status) {
+        return match ((int) $this->status) {
             1 => '<span class="badge bg-success">Active</span>',
             0 => '<span class="badge bg-secondary">Inactive</span>',
             default => '<span class="badge bg-dark">Unknown</span>',

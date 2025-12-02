@@ -20,7 +20,7 @@ class CityController extends Controller
         if ($search = $request->string('search')->trim()) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('code', 'like', '%' . $search . '%');
+                    ->orWhere('code', 'like', '%' . $search . '%');
             });
         }
 
@@ -44,9 +44,9 @@ class CityController extends Controller
                 'data' => $cities->items(),
                 'meta' => [
                     'current_page' => $cities->currentPage(),
-                    'last_page'    => $cities->lastPage(),
-                    'per_page'     => $cities->perPage(),
-                    'total'        => $cities->total(),
+                    'last_page' => $cities->lastPage(),
+                    'per_page' => $cities->perPage(),
+                    'total' => $cities->total(),
                 ],
             ]);
         }
@@ -92,7 +92,7 @@ class CityController extends Controller
         if ($request->wantsJson()) {
             return response()->json([
                 'message' => 'Tạo thành phố thành công',
-                'data'    => $city,
+                'data' => $city,
             ], 201);
         }
 
@@ -149,7 +149,7 @@ class CityController extends Controller
         if ($request->wantsJson()) {
             return response()->json([
                 'message' => 'Cập nhật thành phố thành công',
-                'data'    => $city,
+                'data' => $city,
             ]);
         }
 
@@ -219,3 +219,4 @@ class CityController extends Controller
             ->with('success', 'Đã xoá vĩnh viễn thành phố');
     }
 }
+

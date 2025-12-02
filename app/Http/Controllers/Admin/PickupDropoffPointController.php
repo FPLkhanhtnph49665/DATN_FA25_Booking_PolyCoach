@@ -85,7 +85,7 @@ class PickupDropoffPointController extends Controller
         $routes = Route::orderBy('id')->get();
 
         return view('admin.pickup-dropoff-points.edit', [
-            'point'  => $pickupDropoffPoint,
+            'point' => $pickupDropoffPoint,
             'cities' => $cities,
             'routes' => $routes,
         ]);
@@ -116,3 +116,4 @@ class PickupDropoffPointController extends Controller
         return redirect()->route('admin.pickup-dropoff-points.index')->with('success', 'Đã xóa điểm đón/trả!');
     }
 }
+

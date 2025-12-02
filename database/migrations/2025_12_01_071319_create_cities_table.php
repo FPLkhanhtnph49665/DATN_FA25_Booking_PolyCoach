@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('passengers', function (Blueprint $table) {
+        Schema::create('cities', function (Blueprint $table) {
             $table->id();
-
             // Quan hệ với vé
             $table->foreignId('ticket_id')->constrained()->onDelete('cascade');
 
@@ -24,7 +23,7 @@ return new class extends Migration
 
             // Số ghế (vd: A1, B2…)
             $table->string('seat_number', 5);
-
+            
             $table->timestamps();
             $table->softDeletes();
 
@@ -38,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('passengers');
+        Schema::dropIfExists('cities');
     }
 };

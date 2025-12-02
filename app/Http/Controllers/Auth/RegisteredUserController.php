@@ -31,9 +31,9 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'first_name' => ['required', 'string', 'max:100'],
-            'last_name'  => ['required', 'string', 'max:100'],
-            'email'      => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
-            'password'   => ['required', 'confirmed', Rules\Password::defaults()],
+            'last_name' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         // ----- Generate user_code: DATN_FA25_PoLyCoach_0001, 0002, ...
@@ -57,19 +57,16 @@ class RegisteredUserController extends Controller
 
         $user = User::create([
             'first_name' => $request->first_name,
-            'last_name'  => $request->last_name,
-            'full_name'  => trim($request->first_name . ' ' . $request->last_name),
-            'email'      => $request->email,
-            'password'   => Hash::make($request->password),
-            'user_code'  => $userCode,
+            'last_name' => $request->last_name,
+            'full_name' => trim($request->first_name . ' ' . $request->last_name),
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'user_code' => $userCode,
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
-
-        // Nếu mày có route dashboard admin riêng thì giữ như này,
-        // còn nếu client thì có thể đổi thành route('client.home')
-        return redirect(route('login', absolute: false));
+        return redirect(route('client.bookings.show', absolute: false));
     }
 }

@@ -9,15 +9,7 @@ use App\Http\Controllers\Admin\TripController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RouteController;
 use App\Http\Controllers\Client\HomeController;
-use App\Http\Controllers\Admin\ReviewController;
-use App\Http\Controllers\Admin\TicketController;
-use App\Http\Controllers\Admin\BookingController;
-use App\Http\Controllers\Admin\ContactController;
-use App\Http\Controllers\Admin\PaymentController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\PassengerController;
-use App\Http\Controllers\Admin\PickupDropoffPointController;
-
+use App\Http\Controllers\Admin\PointFareController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Client\TripController as ClientTripController;
 use App\Http\Controllers\Client\BookingController as ClientBookingController;
@@ -48,9 +40,12 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/da-dat-ve/{booking}', [ClientBookingController::class, 'show'])
         ->name('client.bookings.show');
+
+    Route::get('/api/get-fare', [ClientBookingController::class, 'getFare'])
+        ->name('client.bookings.getFare');
+
     Route::get('trips/{trip}/select-seat', [TripController::class, 'selectSeat'])
         ->name('client.trips.select-seat');
-
 });
 
 
@@ -58,7 +53,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', AdminMiddleware::cla
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', UserController::class);
     route::resource('cities', CityController::class);
-    route::resource('pickup-dropoff-points', PickupDropoffPointController::class);
+    route::resource('point_fares', PointFareController::class);
     Route::resource('routes', RouteController::class);
     Route::resource('buses', BusController::class);
     Route::resource('trips', TripController::class);

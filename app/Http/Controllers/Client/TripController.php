@@ -26,7 +26,17 @@ class TripController extends Controller
         $busTypes    = (array) $request->input('bus_type', []);
         $rows        = (array) $request->input('row', []);
 
+<<<<<<< HEAD
+        // ====== BUILD QUERY CƠ BẢN (KHÔNG ĐỤNG so_ghe_trong) ======
+        $query = Trip::with([
+                'route.pickupPoints',  // Load điểm đón
+                'route.dropoffPoints', // Load điểm trả
+                'bus', 
+                'tickets.passengers'
+            ])
+=======
         $query = Trip::with(['route.fromCity', 'route.toCity', 'bus', 'tickets.passengers'])
+>>>>>>> 8b2d99e384608832df1c473dc5dbf415fe251c7f
             ->active()
             ->when($from, fn($q) =>
                 $q->whereHas('route.fromCity', fn($qr) =>
@@ -84,10 +94,15 @@ class TripController extends Controller
      */
     public function show(Request $request)
     {
-        $tripId = $request->query('trip_id');
-        if (!$tripId) {
-            abort(404, 'Missing trip_id');
-        }
+<<<<<<< HEAD
+        // ====== UPDATE 2: Load dữ liệu cho trang Chi tiết/Đặt vé ======
+        // Load route kèm theo danh sách điểm đón/trả để hiển thị vào Select box
+        $trip->load([
+            'route.pickupPoints', 
+            'route.dropoffPoints', 
+            'bus', 
+            'tickets.passengers'
+        ]);
 
         // Dùng lại logic của selectSeat cho đồng nhất
         return $this->selectSeat($tripId);
