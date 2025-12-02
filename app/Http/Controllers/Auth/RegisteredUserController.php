@@ -30,21 +30,43 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'first_name' => ['required', 'string', 'max:100'],
+            'last_name' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // ----- Generate user_code: DATN_FA25_PoLyCoach_0001, 0002, ...
+        $prefix = 'DATN_FA25_PoLyCoach_';
+
+        $lastUser = User::where('user_code', 'like', $prefix . '%')
+            ->orderByDesc('id')
+            ->first();
+
+        $number = 1;
+
+        if ($lastUser && $lastUser->user_code) {
+            $lastNumber = (int) substr($lastUser->user_code, strlen($prefix));
+            if ($lastNumber > 0) {
+                $number = $lastNumber + 1;
+            }
+        }
+
+        $userCode = $prefix . str_pad($number, 4, '0', STR_PAD_LEFT);
+        // ----- End generate user_code
+
         $user = User::create([
-            'name' => $request->name,
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'full_name' => trim($request->first_name . ' ' . $request->last_name),
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'user_code' => $userCode,
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
-
         return redirect(route('client.bookings.show', absolute: false));
     }
 }

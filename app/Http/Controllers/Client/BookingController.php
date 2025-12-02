@@ -16,24 +16,22 @@ class BookingController extends Controller
 {
     public function store(Request $request)
     {
-        // 🔒 Bắt buộc đăng nhập
+        // Bắt buộc đăng nhập
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Bạn cần đăng nhập để đặt vé.');
         }
-
         // ✅ FIX 1: Validate đúng tên trường gửi từ Form (UI)
         $request->validate([
-            'trip_id'          => 'required|exists:trips,id',
-            'seat_codes'       => 'required|string',
-            'customer_name'    => 'required|string|max:255',
-            'customer_phone'   => 'required|string|max:20',
-            'customer_email'   => 'nullable|email',
-            'pickup_point_id'  => 'required|exists:pickup_points,id', // Sửa tên và thêm exists
+            'trip_id' => 'required|exists:trips,id',
+            'seat_codes' => 'required|string',
+            'customer_name' => 'required|string|max:255',
+            'customer_phone' => 'required|string|max:20',
+            'customer_email' => 'nullable|email',
+            'pickup_point_id' => 'required|exists:pickup_points,id', // Sửa tên và thêm exists
             'dropoff_point_id' => 'required|exists:dropoff_points,id', // Sửa tên và thêm exists
         ]);
 
         $trip = Trip::with(['bus', 'passengers'])->findOrFail($request->trip_id);
-
         // Xử lý danh sách ghế
         $seatCodes = array_filter(array_map('trim', explode(',', $request->seat_codes)));
         $seatCodes = array_unique($seatCodes);
@@ -63,6 +61,33 @@ class BookingController extends Controller
         // ✅ FIX 2: Logic tính giá (QUAN TRỌNG)
         // Gọi hàm private để tính đơn giá chính xác theo điểm đón trả
         $unitPrice = $this->calculateUnitPrice($trip, $request->pickup_point_id, $request->dropoff_point_id);
+        // Chuẩn hoá danh sách ghế
+        $seatCodes = collect(explode(',', $request->seat_codes))
+            ->map(fn($v) => trim($v))
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($seatCodes->isEmpty()) {
+            return back()
+                ->withErrors(['seat_codes' => 'Bạn chưa chọn ghế nào.'])
+                ->withInput();
+        }
+
+        // Lấy danh sách ghế đã đặt (tuỳ bạn implement trong Trip)
+        $booked = $trip->booked_seats ?? [];
+
+        // Kiểm tra trùng ghế
+        $conflict = $seatCodes->intersect($booked);
+        if ($conflict->isNotEmpty()) {
+            return back()
+                ->withErrors(['seat_codes' => 'Ghế ' . $conflict->implode(', ') . ' đã có người đặt.'])
+                ->withInput();
+        }
+
+        // Tính giá theo ticket_price (đúng với migration trips mới)
+        $seatCount = $seatCodes->count();
+        $unitPrice = (int) ($trip->ticket_price ?? 0);
         $totalPrice = $seatCount * $unitPrice;
 
         DB::beginTransaction();

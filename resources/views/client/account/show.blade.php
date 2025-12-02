@@ -8,7 +8,7 @@
     }
 
     .account-hero {
-        background: linear-gradient(135deg, #ff6a00 0%, #ff9933 50%, #ff6a00 100%);
+        background: linear-gradient(135deg, #ff595e 0%, #ff9933 50%, #ff595e 100%);
         color: #fff;
         padding: 24px 0 70px;
         margin-bottom: -40px;
@@ -45,7 +45,7 @@
     .account-menu-item.active {
         background: #ffe0cc;
         font-weight: 600;
-        border-left: 3px solid #ff7a00;
+        border-left: 3px solid #ff595e;
     }
     .account-menu-icon {
         width: 28px;
@@ -58,7 +58,7 @@
         color: #fff;
     }
     .icon-green { background: #00b14f; }
-    .icon-orange{ background: #ff7a00; }
+    .icon-orange{ background: #ff595e; }
     .icon-blue  { background: #1e88e5; }
     .icon-red   { background: #f44336; }
     .icon-gray  { background: #9e9e9e; }
@@ -88,13 +88,13 @@
         display: inline-block;
         padding: 6px 18px;
         border-radius: 999px;
-        border: 1px solid #ff7a00;
-        color: #ff7a00;
+        border: 1px solid #ff595e;
+        color: #ff595e;
         font-size: 13px;
         cursor: pointer;
     }
     .avatar-upload-btn:hover {
-        background: #ff7a00;
+        background: #ff595e;
         color: #fff;
     }
 
@@ -108,8 +108,8 @@
     }
 
     .btn-main {
-        background-color: #ff7a00;
-        border-color: #ff7a00;
+        background-color: #ff595e;
+        border-color: #ff595e;
         color: #fff;
         border-radius: 999px;
         padding: 8px 28px;

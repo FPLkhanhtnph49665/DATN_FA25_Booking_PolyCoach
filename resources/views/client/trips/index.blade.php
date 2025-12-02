@@ -104,6 +104,7 @@
         @endif
     </div>
 @endsection
+
 <style>
     .futa-trip-card {
         border-radius: 12px;

@@ -1,24 +1,26 @@
-<div class="trip-search-wrapper mb-5">
-    {{-- Tabs chọn loại vé --}}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="d-flex gap-3">
-            <label class="trip-type-pill active mb-0">
-                <input type="radio" name="trip_type" value="one_way" checked class="d-none">
-                <span>Một chiều</span>
-            </label>
-            <label class="trip-type-pill mb-0">
-                <input type="radio" name="trip_type" value="round_trip" class="d-none">
-                <span>Khứ hồi</span>
-            </label>
-        </div>
-        <a href="#" class="small text-danger fw-medium text-decoration-none">Hướng dẫn mua vé</a>
-    </div>
+{{-- resources/views/client/trips/_search-form.blade.php --}}
 
-    {{-- Khung form tìm kiếm --}}
-    <div class="search-form-container">
-        <h4 class="mb-4 text-center fw-bold text-primary">
-            Tìm chuyến xe ngay
-        </h4>
+<div class="pc-search-form-wrapper">
+    <form action="{{ route('client.searchTrips') }}" method="GET" class="pc-search-form">
+        {{-- Nơi xuất phát --}}
+        <div class="pc-field">
+            <span class="pc-field-label">Nơi xuất phát</span>
+            <span class="pc-field-icon">
+                <i class="fas fa-location-dot"></i>
+            </span>
+            <input type="text" name="from" class="pc-field-input" placeholder="VD: Hà Nội"
+                value="{{ request('from') }}" required>
+        </div>
+
+        {{-- Nơi đến --}}
+        <div class="pc-field">
+            <span class="pc-field-label">Nơi đến</span>
+            <span class="pc-field-icon">
+                <i class="fas fa-map-marker-alt"></i>
+            </span>
+            <input type="text" name="to" class="pc-field-input" placeholder="VD: Đà Nẵng"
+                value="{{ request('to') }}" required>
+        </div>
 
         <form action="{{ route('client.searchTrips') }}" method="GET" class="row g-3 align-items-end">
             {{-- Điểm đi --}}
@@ -82,9 +84,10 @@
                 </button>
             </div>
         </form>
-    </div>
+</div>
 </div>
 
+{{-- ================== CSS ================== --}}
 <style>
     .trip-search-wrapper {
         border-radius: 24px;
@@ -121,8 +124,30 @@
         border-color: #ff7043;
     }
 
-    .search-form-container {
-        margin-top: 10px;
+    .pc-field-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #848c96;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0;
+        line-height: 1.1;
+    }
+
+    .pc-field-input {
+        border: none;
+        padding: 0;
+        margin-top: 4px;
+        font-size: 0.96rem;
+        font-weight: 600;
+        color: #222;
+        background: transparent;
+        outline: none;
+    }
+
+    .pc-field-input::placeholder {
+        color: #9ca3af;
+        font-weight: 500;
     }
 
     /* Ô input giống style FUTA */
@@ -191,3 +216,48 @@
         pointer-events: none;
     }
 </style>
+
+{{-- ========== Flatpickr (nếu chưa include ở layout thì giữ 2 dòng này) ========== --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const departureInput = document.getElementById('pc_departure_date');
+        const returnInput = document.getElementById('pc_return_date');
+        const btnReturn = document.getElementById('pc_btn_add_return');
+        const btnReturnText = btnReturn.querySelector('.pc-return-text');
+        const defaultText = btnReturnText.textContent;
+
+        // Lịch ngày đi
+        flatpickr(departureInput, {
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            showMonths: 2,
+            disableMobile: true
+        });
+
+        // Lịch ngày về
+        const returnPicker = flatpickr(returnInput, {
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            showMonths: 2,
+            disableMobile: true,
+            onChange: function(selectedDates) {
+                if (selectedDates.length) {
+                    const d = selectedDates[0];
+                    const dd = String(d.getDate()).padStart(2, '0');
+                    const mm = String(d.getMonth() + 1).padStart(2, '0');
+                    btnReturnText.textContent = `Ngày về: ${dd}/${mm}`;
+                } else {
+                    btnReturnText.textContent = defaultText;
+                }
+            }
+        });
+
+        // Bấm "Thêm ngày về" → mở lịch
+        btnReturn.addEventListener('click', function() {
+            returnPicker.open();
+        });
+    });
+</script>

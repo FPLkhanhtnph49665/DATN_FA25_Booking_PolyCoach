@@ -3,185 +3,372 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\City;
 use App\Models\Route;
 use App\Models\Bus;
 use App\Models\Trip;
-use App\Models\Ticket;
-use App\Models\Passenger;
-use App\Models\Payment;
-use App\Models\Review;
-use App\Models\Contact;
+use App\Models\PickupDropoffPoint;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // --------------------------
-        // 1. Tạo Users
-        // --------------------------
-        $admins = User::factory()
-            ->count(5)
+        // =====================================
+        // 0. Seed Cities (thành phố cố định)
+        // =====================================
+        $cityData = [
+            ['name' => 'Hà Nội',          'code' => 'HN',   'status' => 1],
+            ['name' => 'TP. Hồ Chí Minh', 'code' => 'HCM',  'status' => 1],
+            ['name' => 'Đà Nẵng',         'code' => 'DN',   'status' => 1],
+            ['name' => 'Hải Phòng',       'code' => 'HP',   'status' => 1],
+            ['name' => 'Cần Thơ',         'code' => 'CT',   'status' => 1],
+            ['name' => 'Nha Trang',       'code' => 'NT',   'status' => 1],
+            ['name' => 'Huế',             'code' => 'HUE',  'status' => 1],
+            ['name' => 'Vinh',            'code' => 'VINH', 'status' => 1],
+            ['name' => 'Buôn Ma Thuột',   'code' => 'BMT',  'status' => 1],
+            ['name' => 'Đà Lạt',          'code' => 'DL',   'status' => 1],
+        ];
+
+        $cities = collect();
+
+        foreach ($cityData as $data) {
+            $cities[$data['code']] = City::updateOrCreate(
+                ['code' => $data['code']],
+                [
+                    'name'   => $data['name'],
+                    'status' => $data['status'],
+                ]
+            );
+        }
+
+        // =====================================
+        // 1. Seed Users (admin + user + factory)
+        // =====================================
+
+        // Admin cố định
+        User::updateOrCreate(
+            ['email' => 'admin@polycoach.test'],
+            [
+                'user_code'  => 'DATN_FA25_PoLyCoach_Admin_4953',
+                'first_name' => 'Super',
+                'last_name'  => 'Admin',
+                'full_name'  => 'Super Admin',
+                'password'   => Hash::make('1'), // 🔐
+                'role'       => 'admin',
+                'status'     => 1,
+            ]
+        );
+
+        // User cố định
+        User::updateOrCreate(
+            ['email' => 'user@polycoach.test'],
+            [
+                'user_code'  => 'DATN_FA25_PoLyCoach_User_4953',
+                'first_name' => 'Test',
+                'last_name'  => 'User',
+                'full_name'  => 'Test User',
+                'password'   => Hash::make('1'),
+                'role'       => 'user',
+                'status'     => 1,
+            ]
+        );
+        User::updateOrCreate(
+            ['email' => 'staff@polycoach.test'],
+            [
+                'user_code'  => 'DATN_FA25_PoLyCoach_Staff_4953',
+                'first_name' => 'Test',
+                'last_name'  => 'Staff',
+                'full_name'  => 'Test Staff',
+                'password'   => Hash::make('1'),
+                'role'       => 'staff',
+                'status'     => 1,
+            ]
+        );
+         User::updateOrCreate(
+            ['email' => 'checker@polycoach.test'],
+            [
+                'user_code'  => 'DATN_FA25_PoLyCoach_Checker_4953',
+                'first_name' => 'Test',
+                'last_name'  => 'Checker',
+                'full_name'  => 'Test Checker',
+                'password'   => Hash::make('1'),
+                'role'       => 'checker',
+                'status'     => 1,
+            ]
+        );
+
+        // Thêm 3 admin random (factory của ông đang dùng field gì thì giữ nguyên)
+        User::factory()
+            ->count(1)
             ->state(['role' => 'admin'])
-            ->sequence(fn ($seq) => [
-                'user_code' => 'DATN_FA25_PoLyCoach_Admin_' . str_pad($seq->index + 1, 4, '0', STR_PAD_LEFT)
-            ])
             ->create();
 
-        $customers = User::factory()
-            ->count(8)
-            ->state(['role' => 'user']) // ⚠ khớp enum('admin','user')
-            ->sequence(fn ($seq) => [
-                'user_code' => 'DATN_FA25_PoLyCoach_User_' . str_pad($seq->index + 6, 4, '0', STR_PAD_LEFT)
-            ])
+        // Thêm 5 user random
+        User::factory()
+            ->count(1)
+            ->state(['role' => 'user'])
             ->create();
+        // =====================================
+        // 2. Seed Routes (from_city_id / to_city_id)
+        // =====================================
+        $routeData = [
+            // Hà Nội <-> TP. HCM
+            [
+                'from_code'      => 'HN',
+                'to_code'        => 'HCM',
+                'distance'       => 1700,
+                'estimated_time' => '22:00:00', // 30 giờ
+                'status'         => 1,
+            ],
+            [
+                'from_code'      => 'HCM',
+                'to_code'        => 'HN',
+                'distance'       => 1700,
+                'estimated_time' => '23:00:00',
+                'status'         => 1,
+            ],
 
-        // --------------------------
-        // 2. Tạo Routes
-        // --------------------------
-        $routes = Route::factory()->count(20)->create();
+            // Hà Nội -> Đà Nẵng
+            [
+                'from_code'      => 'HN',
+                'to_code'        => 'DN',
+                'distance'       => 800,
+                'estimated_time' => '15:00:00',
+                'status'         => 1,
+            ],
 
-        // --------------------------
-        // 3. Tạo Buses
-        // --------------------------
-        $buses = Bus::factory()->count(50)->create();
+            // Đà Nẵng -> TP. HCM
+            [
+                'from_code'      => 'DN',
+                'to_code'        => 'HCM',
+                'distance'       => 960,
+                'estimated_time' => '18:00:00',
+                'status'         => 1,
+            ],
 
-        // --------------------------
-        // 4. Tạo Trips
-        // --------------------------
-        $trips = Trip::factory()
-            ->count(20)
-            ->state(fn () => [
-                'route_id' => $routes->random()->id,
-                'bus_id'   => $buses->random()->id,
-            ])
-            ->create();
+            // TP. HCM -> Cần Thơ
+            [
+                'from_code'      => 'HCM',
+                'to_code'        => 'CT',
+                'distance'       => 170,
+                'estimated_time' => '04:00:00',
+                'status'         => 1,
+            ],
 
-        // --------------------------
-        // 5. Tạo Tickets và Passengers
-        // --------------------------
-        $tickets = collect();
+            // TP. HCM -> Nha Trang
+            [
+                'from_code'      => 'HCM',
+                'to_code'        => 'NT',
+                'distance'       => 430,
+                'estimated_time' => '09:00:00',
+                'status'         => 1,
+            ],
 
-        foreach ($trips as $trip) {
-            $bus = $trip->bus;
-            // fallback 40 ghế nếu factory bus không set so_ghe
-            $totalSeats = $bus && $bus->so_ghe ? (int) $bus->so_ghe : 40;
+            // TP. HCM -> Đà Lạt
+            [
+                'from_code'      => 'HCM',
+                'to_code'        => 'DL',
+                'distance'       => 300,
+                'estimated_time' => '08:00:00',
+                'status'         => 1,
+            ],
 
-            // ====== SINH DANH SÁCH MÃ GHẾ A01, A02,... ======
-            $allSeatCodes = [];
-            $rows = ['A', 'B', 'C', 'D']; // giống Trip::getAvailableSeatsAttribute
-            $cols = range(1, ceil($totalSeats / count($rows)));
+            // Hà Nội -> Hải Phòng
+            [
+                'from_code'      => 'HN',
+                'to_code'        => 'HP',
+                'distance'       => 120,
+                'estimated_time' => '03:00:00',
+                'status'         => 1,
+            ],
 
-            $count = 0;
-            foreach ($rows as $r) {
-                foreach ($cols as $c) {
-                    $code = $r . str_pad($c, 2, '0', STR_PAD_LEFT); // A01, A02,...
-                    $allSeatCodes[] = $code;
-                    $count++;
-                    if ($count >= $totalSeats) {
-                        break 2;
-                    }
-                }
+            // Hà Nội -> Vinh
+            [
+                'from_code'      => 'HN',
+                'to_code'        => 'VINH',
+                'distance'       => 300,
+                'estimated_time' => '06:00:00',
+                'status'         => 1,
+            ],
+
+            // Huế -> Đà Nẵng
+            [
+                'from_code'      => 'HUE',
+                'to_code'        => 'DN',
+                'distance'       => 100,
+                'estimated_time' => '02:30:00',
+                'status'         => 1,
+            ],
+        ];
+
+        $routes = collect();
+
+        foreach ($routeData as $data) {
+            $fromCity = $cities[$data['from_code']] ?? null;
+            $toCity   = $cities[$data['to_code']] ?? null;
+
+            if (!$fromCity || !$toCity) {
+                continue;
             }
 
-            $usedSeatCodes = []; // lưu mã ghế đã đặt cho trip này
+            $route = Route::updateOrCreate(
+                [
+                    'from_city_id' => $fromCity->id,
+                    'to_city_id'   => $toCity->id,
+                ],
+                [
+                    'distance'       => $data['distance'],
+                    'estimated_time' => $data['estimated_time'],
+                    'status'         => $data['status'],
+                ]
+            );
 
-            // mỗi trip có 1–3 ticket, nhưng sẽ KHÔNG lấp full ghế
-            $numTickets = rand(1, 3);
+            $routes->push($route);
+        }
 
-            for ($i = 0; $i < $numTickets; $i++) {
-                // nếu còn <= 1 ghế thì dừng (đảm bảo còn ghế trống)
-                if (count($usedSeatCodes) >= $totalSeats - 1) {
-                    break;
+        // Load lại routes kèm quan hệ city cho chắc
+        $routes = Route::with(['fromCity', 'toCity'])->get();
+
+        // =====================================
+        // 3. Seed Buses (xe cụ thể)
+        // =====================================
+        $busData = [
+            [
+                'plate_number' => '29B-88888',
+                'seat_count'   => 32,
+                'type'         => 'sleeper',
+                'status'       => 1,
+            ],
+            [
+                'plate_number' => '51B-12345',
+                'seat_count'   => 32,
+                'type'         => 'sleeper',
+                'status'       => 1,
+            ],
+            [
+                'plate_number' => '43B-54953',
+                'seat_count'   => 32,
+                'type'         => 'limousine',
+                'status'       => 1,
+            ],
+            [
+                'plate_number' => '29A-34953',
+                'seat_count'   => 32,
+                'type'         => 'seat',
+                'status'       => 1,
+            ],
+            [
+                'plate_number' => '29A-44953',
+                'seat_count'   => 32,
+                'type'         => 'seat',
+                'status'       => 0, // đang bảo trì
+            ],
+        ];
+
+        $buses = collect();
+
+        foreach ($busData as $data) {
+            $buses->push(
+                Bus::updateOrCreate(
+                    ['plate_number' => $data['plate_number']],
+                    [
+                        'seat_count' => $data['seat_count'],
+                        'type'       => $data['type'],
+                        'status'     => $data['status'],
+                    ]
+                )
+            );
+        }
+
+        // =====================================
+        // 4. Seed Trips (dùng factory, gắn route + bus)
+        // =====================================
+        if ($routes->isNotEmpty() && $buses->isNotEmpty()) {
+            Trip::factory()
+                ->count(20)
+                ->state(function () use ($routes, $buses) {
+                    return [
+                        'route_id' => $routes->random()->id,
+                        'bus_id'   => $buses->random()->id,
+                    ];
+                })
+                ->create();
+        }
+
+        // =====================================
+        // 5. Seed Pickup / Dropoff Points
+        // =====================================
+        if ($routes->isNotEmpty()) {
+            foreach ($routes as $route) {
+                $fromCity = $route->fromCity;
+                $toCity   = $route->toCity;
+
+                if (!$fromCity || !$toCity) {
+                    continue;
                 }
 
-                $user = $customers->random();
-
-                // ghế còn lại chưa dùng
-                $remainingSeatCodes = array_values(array_diff($allSeatCodes, $usedSeatCodes));
-                if (empty($remainingSeatCodes)) {
-                    break;
-                }
-
-                // số ghế tối đa ticket này được đặt
-                $maxSeatsThisTicket = min(
-                    5,                                     // 1 vé max 5 ghế
-                    count($remainingSeatCodes),            // không vượt ghế còn
-                    ($totalSeats - 1) - count($usedSeatCodes) // chừa ít nhất 1 ghế
+                // Điểm đón tại thành phố đi
+                PickupDropoffPoint::updateOrCreate(
+                    [
+                        'city_id'  => $fromCity->id,
+                        'route_id' => $route->id,
+                        'name'     => 'Bến xe ' . $fromCity->name,
+                        'type'     => 'pickup',
+                    ],
+                    [
+                        'address' => 'Bến xe trung tâm ' . $fromCity->name,
+                        'time'    => '06:00',
+                        'active'  => 1,
+                    ]
                 );
 
-                if ($maxSeatsThisTicket <= 0) {
-                    break;
-                }
+                // Điểm đón phụ tại thành phố đi
+                PickupDropoffPoint::updateOrCreate(
+                    [
+                        'city_id'  => $fromCity->id,
+                        'route_id' => $route->id,
+                        'name'     => 'Văn phòng ' . $fromCity->name,
+                        'type'     => 'pickup',
+                    ],
+                    [
+                        'address' => 'Văn phòng PoLyCoach tại ' . $fromCity->name,
+                        'time'    => '06:30',
+                        'active'  => 1,
+                    ]
+                );
 
-                $numSeatsTicket = rand(1, $maxSeatsThisTicket);
+                // Điểm trả tại thành phố đến
+                PickupDropoffPoint::updateOrCreate(
+                    [
+                        'city_id'  => $toCity->id,
+                        'route_id' => $route->id,
+                        'name'     => 'Bến xe ' . $toCity->name,
+                        'type'     => 'dropoff',
+                    ],
+                    [
+                        'address' => 'Bến xe trung tâm ' . $toCity->name,
+                        'time'    => '20:00',
+                        'active'  => 1,
+                    ]
+                );
 
-                // lấy ngẫu nhiên N ghế
-                shuffle($remainingSeatCodes);
-                $ticketSeatCodes = array_slice($remainingSeatCodes, 0, $numSeatsTicket);
-
-                // Tạo ticket
-                $methods = ['cash', 'momo', 'bank']; // khớp Ticket::getPhuongThucThanhToanLabelAttribute
-                $ticket = Ticket::factory()->state([
-                    'trip_id'                => $trip->id,
-                    'user_id'                => $user->id,
-                    'so_ghe'                 => $numSeatsTicket,
-                    'trang_thai'             => 'paid',
-                    'phuong_thuc_thanh_toan' => $methods[array_rand($methods)],
-                ])->create();
-
-                // Tạo passengers cho ticket
-                foreach ($ticketSeatCodes as $code) {
-                    Passenger::factory()->state([
-                        'ticket_id'   => $ticket->id,
-                        'seat_number' => $code,               // A01, A02...
-                        'name'        => $user->full_name,
-                        'phone'       => $user->phone,
-                        'age'         => rand(18, 60),
-                    ])->create();
-
-                    $usedSeatCodes[] = $code;
-                }
-
-                $tickets->push($ticket);
-            }
-
-            // ❌ KHÔNG CÒN cập nhật $trip->so_ghe_trong ở đây nữa
-        }
-
-        // --------------------------
-        // 6. Tạo Payments cho mỗi ticket
-        // --------------------------
-        foreach ($tickets as $ticket) {
-            Payment::factory()->state([
-                'ticket_id' => $ticket->id,
-                'user_id'   => $ticket->user_id,
-            ])->create();
-        }
-
-        // --------------------------
-        // 7. Tạo Reviews (chỉ user đã mua vé của trip)
-        // --------------------------
-        foreach ($trips as $trip) {
-            $usersBought = $tickets
-                ->where('trip_id', $trip->id)
-                ->pluck('user_id')
-                ->unique();
-
-            foreach ($usersBought as $userId) {
-                $numReviews = rand(0, 2);
-                for ($i = 0; $i < $numReviews; $i++) {
-                    Review::factory()->state([
-                        'trip_id' => $trip->id,
-                        'user_id' => $userId,
-                    ])->create();
-                }
+                // Điểm trả phụ tại thành phố đến
+                PickupDropoffPoint::updateOrCreate(
+                    [
+                        'city_id'  => $toCity->id,
+                        'route_id' => $route->id,
+                        'name'     => 'Văn phòng ' . $toCity->name,
+                        'type'     => 'dropoff',
+                    ],
+                    [
+                        'address' => 'Văn phòng PoLyCoach tại ' . $toCity->name,
+                        'time'    => '20:30',
+                        'active'  => 1,
+                    ]
+                );
             }
         }
-
-        // --------------------------
-        // 8. Tạo Contacts
-        // --------------------------
-        Contact::factory()->count(25)->create();
     }
 }

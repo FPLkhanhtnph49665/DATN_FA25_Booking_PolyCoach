@@ -1,76 +1,304 @@
-/* Wrapper chính */
-#admin-wrapper {
+/* =============== GLOBAL =============== */
+
+.admin-body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    background:
+        radial-gradient(circle at 10% 20%, rgba(104, 213, 255, 0.16) 0, transparent 55%),
+        radial-gradient(circle at 80% 0%, rgba(255, 98, 234, 0.16) 0, transparent 55%),
+        radial-gradient(circle at 50% 100%, rgba(120, 255, 184, 0.12) 0, transparent 55%),
+        #050816;
+    color: #e5e7eb;
+    overflow-x: hidden;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* =============== SIDEBAR =============== */
+
+.admin-sidebar {
+    width: 260px;
+    background: linear-gradient(160deg, rgba(8, 17, 40, 0.95), rgba(15, 23, 42, 0.98));
+    backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 89, 94, 0.36);
+    box-shadow: 0 0 40px rgba(15, 23, 42, 0.9);
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+
+.sidebar-header {
+    border-bottom: 1px solid rgba(255, 89, 94, 0.36);
+}
+
+.sidebar-logo-wrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid rgba(96, 165, 250, 0.6);
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.5);
+}
+
+.sidebar-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.sidebar-brand {
+    font-size: 0.85rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #9ca3af;
+}
+
+.sidebar-menu {
+    margin-top: 0.75rem;
+}
+
+/* Nav link futurisic */
+.admin-nav-link {
+    color: #cbd5f5;
+    font-size: 0.9rem;
+    padding: 0.55rem 0.8rem;
+    border-radius: 999px;
+    margin-bottom: 0.2rem;
     display: flex;
-    min-height: 100vh; /* chiếm full chiều cao */
+    align-items: center;
+    gap: 0.35rem;
+    position: relative;
+    transition:
+        background 0.18s ease-out,
+        color 0.18s ease-out,
+        transform 0.14s ease-out,
+        box-shadow 0.18s ease-out;
 }
 
-/* Sidebar */
-#sidebar {
-    background-color: #ff595e;
-    color: whitesmoke;
-    min-width: 250px;
-    max-width: 250px;
-    padding: 1rem;
-    transition: all 0.3s;
+.admin-nav-link i {
+    font-size: 1rem;
+    opacity: 0.9;
 }
 
-/* Sidebar collapsed */
-#sidebar.collapsed {
-    margin-left: -250px; /* ẩn sidebar */
+/* Hover */
+.admin-nav-link:hover {
+    background: radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.18), transparent 55%);
+    color: #f9fafb;
+    transform: translateX(3px);
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.25);
 }
 
-/* Tiêu đề sidebar */
-#sidebar h3 {
-    color: white;
-    background-color: rgb(#00d9ff, rgb(2, 164, 185), blue);
-    margin-bottom: 2rem;
+/* Active */
+.admin-nav-link.active {
+    background: linear-gradient(90deg, #ff595e, #22c55e);
+    color: #f9fafb;
+    box-shadow:
+        0 0 24px rgba(37, 99, 235, 0.55),
+        0 0 18px rgba(34, 197, 94, 0.4);
 }
 
-/* Link sidebar */
-#sidebar .nav-link {
-    color: white;
-    margin-bottom: 0.5rem;
-    transition: background 0.3s, color 0.3s;
+.admin-nav-link.active i {
+    color: #e5e7eb;
 }
 
-#sidebar .nav-link:hover {
-    background-color: #243746;
-    color: white;
-    border-radius: 4px;
+/* Footer */
+.sidebar-footer {
+    border-top: 1px solid rgba(255, 89, 94, 0.36);
 }
 
-#sidebar .nav-link.active {
-    background-color: #243746;
-    color: white;
-    font-weight: bold;
-    border-radius: 4px;
+/* =============== SIDEBAR COLLAPSED =============== */
+
+.admin-sidebar.collapsed {
+    width: 76px;
 }
 
-/* Content chính */
-#admin-wrapper > .flex-grow-1 {
-    flex-grow: 1;
+.admin-sidebar.collapsed .sidebar-brand {
+    display: none;
+}
+
+.admin-sidebar.collapsed .admin-nav-link span {
+    display: none;
+}
+
+.admin-sidebar.collapsed .admin-nav-link {
+    justify-content: center;
+}
+
+/* Khi sidebar thu nhỏ, đẩy main rộng hơn */
+.sidebar-collapsed .layout-main {
+    /* Optional: can adjust padding if needed */
+}
+
+/* =============== NAVBAR FUTURISTIC =============== */
+
+.admin-navbar {
+    background: radial-gradient(circle at 20% -20%, rgba(56, 189, 248, 0.18), transparent 55%),
+                radial-gradient(circle at 90% -10%, rgba(244, 63, 94, 0.18), transparent 55%),
+                rgba(15, 23, 42, 0.88);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(255, 89, 94, 0.36);
+    color: #e5e7eb;
+
+    /* phần quan trọng thêm để dropdown không bị che */
+    position: relative;
+    z-index: 1100;
+}
+
+
+
+.admin-navbar .dropdown-menu {
+    z-index: 2000;
+}
+
+.admin-title {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: #9ca3af;
+}
+
+.admin-subtitle {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+/* =============== USER PILL =============== */
+
+.admin-user-pill {
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.16), rgba(15, 23, 42, 0.9));
+    border: 1px solid rgba(59, 130, 246, 0.5);
+}
+
+.avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: radial-gradient(circle at 30% 0, #38bdf8, #0f172a);
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #e5e7eb;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.55);
 }
 
-/* Footer luôn nằm dưới content */
-footer {
-    margin-top: auto; /* đẩy footer xuống cuối */
-    background-color: #f8f9fa;
-    padding: 1rem 0;
-    text-align: center;
+.user-name {
+    font-weight: 600;
+    font-size: 0.9rem;
 }
 
-/* Responsive: màn hình nhỏ */
-@media (max-width: 768px) {
-    #sidebar {
+.user-role {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #9ca3af;
+}
+
+/* =============== MAIN CONTENT =============== */
+
+.admin-main {
+    position: relative;
+}
+
+.admin-main-inner {
+    border-radius: 28px;
+    padding: 1.5rem;
+    background:
+        radial-gradient(circle at 10% 0, rgba(59, 130, 246, 0.14), transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.16), transparent 55%),
+        rgba(15, 23, 42, 0.92);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    box-shadow:
+        0 32px 80px rgba(15, 23, 42, 0.95),
+        0 0 0 1px rgba(15, 23, 42, 0.8);
+    min-height: calc(100vh - 120px);
+}
+
+/* Cho card con bên trong đẹp sẵn */
+.admin-main-inner .card {
+    background: radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.14), rgba(15, 23, 42, 0.96));
+    border-radius: 20px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    color: #e5e7eb;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.85);
+}
+
+/* Input / form control trong main */
+.admin-main-inner .form-control,
+.admin-main-inner .form-select {
+    background-color: rgba(15, 23, 42, 0.95);
+    border-color: rgba(148, 163, 184, 0.6);
+    color: #e5e7eb;
+}
+
+.admin-main-inner .form-control:focus,
+.admin-main-inner .form-select:focus {
+    background-color: #020617;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.55);
+    color: #f9fafb;
+}
+
+/* Button primary */
+.btn-primary {
+    background: linear-gradient(135deg, #ff595e, #22c55e);
+    border: none;
+    box-shadow:
+        0 12px 30px rgba(37, 99, 235, 0.5),
+        0 0 0 1px rgba(15, 23, 42, 0.9);
+}
+
+.btn-primary:hover {
+    filter: brightness(1.08);
+}
+
+/* Button outline light (toggle sidebar) */
+.btn-outline-light {
+    border-color: rgba(148, 163, 184, 0.6);
+}
+/* Đảm bảo menu user và dropdown nằm trên cùng */
+
+
+
+/* =============== RESPONSIVE =============== */
+
+@media (max-width: 991.98px) {
+    .admin-sidebar {
         position: fixed;
-        z-index: 1000;
-        height: 100%;
-        left: -250px;
-        top: 0;
+        inset: 0 auto 0 0;
+        transform: translateX(0);
+        z-index: 1040;
     }
-    #sidebar.collapsed {
-        left: 0;
+
+    .admin-sidebar.collapsed {
+        transform: translateX(-100%);
+    }
+
+    #admin-wrapper {
+        padding-left: 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .admin-main-inner {
+        padding: 1rem;
+        border-radius: 20px;
+    }
+
+    .admin-subtitle {
+        font-size: 1.05rem;
+    }
+
+    .admin-title {
+        font-size: 0.8rem;
+    }
+
+    .admin-user-pill {
+        display: none;
     }
 }

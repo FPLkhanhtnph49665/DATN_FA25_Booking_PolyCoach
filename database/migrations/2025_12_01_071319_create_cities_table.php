@@ -13,11 +13,22 @@ return new class extends Migration
     {
         Schema::create('cities', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 150); // tên thành phố
-            $table->string('code', 10)->nullable()->unique(); // mã thành phố nếu cần
-            $table->tinyInteger('status')->default(1); // 1 = active, 0 = inactive
+            // Quan hệ với vé
+            $table->foreignId('ticket_id')->constrained()->onDelete('cascade');
+
+            // Thông tin hành khách
+            $table->string('name', 150);
+            $table->string('phone', 20)->nullable();
+            $table->integer('age')->nullable();
+
+            // Số ghế (vd: A1, B2…)
+            $table->string('seat_number', 5);
+            
             $table->timestamps();
             $table->softDeletes();
+
+            // Index để tìm nhanh theo vé / số ghế
+            $table->index(['ticket_id', 'seat_number']);
         });
     }
 

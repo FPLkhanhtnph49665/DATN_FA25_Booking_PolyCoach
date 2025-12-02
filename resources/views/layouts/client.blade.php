@@ -133,44 +133,45 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(230, 57, 70, 0.3);
         }
-        .btn-auth-header{
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 16px;
-    border-radius: 999px;
-    background: #ffffff;
-    border: 1px solid #dcdcdc;
-    font-size: 13px;
-    font-weight: 500;
-    color: #333;
-    text-decoration: none;
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.02);
-    transition: all .2s ease;
-}
 
-.btn-auth-icon{
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: #e9ecef;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #555;
-    font-size: 13px;
-}
+        .btn-auth-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 16px;
+            border-radius: 999px;
+            background: #ffffff;
+            border: 1px solid #dcdcdc;
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+            text-decoration: none;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02);
+            transition: all .2s ease;
+        }
 
-.btn-auth-header:hover{
-    border-color: #ff595e;
-    box-shadow: 0 0 0 1px rgba(255,122,0,0.35);
-    color: #ff595e;
-}
+        .btn-auth-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            font-size: 13px;
+        }
 
-.btn-auth-header:hover .btn-auth-icon{
-    background: #ffe8d1;
-    color: #ff595e;
-}
+        .btn-auth-header:hover {
+            border-color: #ff595e;
+            box-shadow: 0 0 0 1px rgba(255, 122, 0, 0.35);
+            color: #ff595e;
+        }
+
+        .btn-auth-header:hover .btn-auth-icon {
+            background: #ffe8d1;
+            color: #ff595e;
+        }
 
 
         .hero-section {
@@ -351,7 +352,11 @@
                                     </li>
 
                                     <li>
+<<<<<<< HEAD
                                         <a class="dropdown-item" href="">
+=======
+                                        <a class="dropdown-item" href="{{ route('client.account.tickets') }}">
+>>>>>>> 8b2d99e384608832df1c473dc5dbf415fe251c7f
                                             <i class="fas fa-clock-rotate-left me-1"></i> Lịch sử đặt vé
                                         </a>
                                     </li>
@@ -528,7 +533,7 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Optional: Add smooth scroll -->
     <script>
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {

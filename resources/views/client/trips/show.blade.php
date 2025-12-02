@@ -203,6 +203,7 @@
             border-color: #ff8f26;
             color: #fff;
         }
+
         /* ===== PHƯƠNG THỨC THANH TOÁN ===== */
         .payment-option {
             border: 1px solid #eee;
@@ -239,7 +240,6 @@
             margin-right: 12px;
         }
     </style>
-
     @php
         $route = $trip->route;
         $date = \Carbon\Carbon::parse($trip->ngay_khoi_hanh);
@@ -275,9 +275,8 @@
             </div>
         </div>
     </div>
-
+    {{-- NỘI DUNG CHÍNH --}}
     <div class="container mb-5" style="margin-top: 50px;">
-
         <div class="row">
             {{-- LEFT: card lớn chọn ghế + form --}}
             <div class="col-lg-8 mb-4">
@@ -330,7 +329,6 @@
                                         @endforeach
                                     </div>
                                 </div>
-
                                 {{-- TẦNG TRÊN --}}
                                 <div class="seat-floor">
                                     <div class="seat-floor-title">Tầng trên</div>
@@ -715,13 +713,13 @@
             // --- 6. LẮNG NGHE SỰ KIỆN THAY ĐỔI ĐIỂM ĐÓN/TRẢ ---
             if (pickupSelect) pickupSelect.addEventListener('change', fetchFare);
             if (dropoffSelect) dropoffSelect.addEventListener('change', fetchFare);
-            
+
             // Chạy lần đầu
             // --- 7. XỬ LÝ CHỌN PHƯƠNG THỨC THANH TOÁN ---
             const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
             const payOnlineLabel = document.getElementById('pay-online-label');
             const payCashLabel = document.getElementById('pay-cash-label');
-            
+
             function updatePaymentUI() {
                 // Reset active class
                 payOnlineLabel.classList.remove('active');

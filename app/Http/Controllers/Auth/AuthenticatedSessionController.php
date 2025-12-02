@@ -50,7 +50,6 @@ class AuthenticatedSessionController extends Controller
         }
 
         // User bình thường → giữ URL trước khi login nếu có
-        // return redirect()->intended(route('dashboard', absolute: false));
         return redirect()->intended(route('client.home'));
     }
 
@@ -60,19 +59,20 @@ class AuthenticatedSessionController extends Controller
 
         return view('client.account.show', compact('user'));
     }
+
     public function update(Request $request)
     {
         $user = Auth::user();
 
         $data = $request->validate([
             'full_name' => 'required|string|max:255',
-            'phone'     => 'nullable|string|max:20',
-            'image'     => 'nullable|image|mimes:jpeg,png,jpg|max:1024', // 1MB
+            'phone' => 'nullable|string|max:20',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:1024', // 1MB
         ], [
             'full_name.required' => 'Vui lòng nhập họ và tên.',
-            'image.image'        => 'File tải lên phải là hình ảnh.',
-            'image.mimes'        => 'Chỉ chấp nhận JPEG, JPG, PNG.',
-            'image.max'          => 'Dung lượng ảnh tối đa 1MB.',
+            'image.image' => 'File tải lên phải là hình ảnh.',
+            'image.mimes' => 'Chỉ chấp nhận JPEG, JPG, PNG.',
+            'image.max' => 'Dung lượng ảnh tối đa 1MB.',
         ]);
 
         // Xử lý upload avatar
@@ -90,17 +90,21 @@ class AuthenticatedSessionController extends Controller
 
         return back()->with('success', 'Cập nhật thông tin tài khoản thành công.');
     }
+
     public function ticketHistory(Request $request)
     {
         $user = Auth::user();
 
-        $code   = trim($request->input('code'));      // mã vé
-        $date   = $request->input('date');            // ngày đi
-        $routeQ = trim($request->input('route'));     // tuyến đường
-        $status = $request->input('status');          // trạng thái
+        $code = trim($request->input('code'));      // mã vé (id hoặc code)
+        $date = $request->input('date');            // ngày đi (Y-m-d)
+        $routeQ = trim($request->input('route'));     // tuyến đường (tên TP)
+        $status = $request->input('status');          // trạng thái vé
 
         $query = $user->tickets()
-            ->with(['trip.route'])
+            ->with([
+                'trip.route.fromCity',
+                'trip.route.toCity',
+            ])
             ->orderByDesc('created_at');
 
         if ($request->filled('code')) {
@@ -110,7 +114,7 @@ class AuthenticatedSessionController extends Controller
 
         if ($request->filled('date')) {
             $query->whereHas('trip', function ($q) use ($date) {
-                $q->whereDate('ngay_khoi_hanh', $date);
+                $q->whereDate('departure_date', $date);
             });
         }
 

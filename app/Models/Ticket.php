@@ -12,10 +12,11 @@ class Ticket extends Model
 
     protected $fillable = [
         'trip_id',
-        'user_id',                 // ai đặt vé
-        'so_ghe',                  // 👉 số LƯỢNG ghế trong vé này (1,2,3...)
-        'trang_thai',              // pending | paid | canceled
-        'phuong_thuc_thanh_toan',  // cash | momo | bank
+        'user_id',           // who booked the ticket
+        'seat_number',        // number of seats in this ticket (1,2,3,...)
+        'seat_code',
+        'status',            // pending | paid | canceled
+        'payment_method',    // cash | momo | bank
     ];
 
     protected $casts = [
@@ -24,12 +25,11 @@ class Ticket extends Model
     ];
 
     // =====================
-    // 🔗 QUAN HỆ
+    // 🔗 RELATIONSHIPS
     // =====================
 
     public function trip()
     {
-        // Không with() ở đây, để query nhẹ, khi cần thì ->load() bên ngoài
         return $this->belongsTo(Trip::class);
     }
 
@@ -49,60 +49,61 @@ class Ticket extends Model
     }
 
     // =====================
-    // 💡 ACCESSORS
+    // 💡 ACCESSORS / HELPERS
     // =====================
 
-    public function getTrangThaiLabelAttribute(): string
+    public function getStatusLabelAttribute(): string
     {
-        return match ($this->trang_thai) {
-            'pending'  => '<span class="badge bg-warning">Chờ thanh toán</span>',
-            'paid'     => '<span class="badge bg-success">Đã thanh toán</span>',
-            'canceled' => '<span class="badge bg-danger">Đã hủy</span>',
-            default    => '<span class="badge bg-secondary">Không xác định</span>',
+        return match ($this->status) {
+            'pending'  => '<span class="badge bg-warning">Pending</span>',
+            'paid'     => '<span class="badge bg-success">Paid</span>',
+            'canceled' => '<span class="badge bg-danger">Canceled</span>',
+            default    => '<span class="badge bg-secondary">Unknown</span>',
         };
     }
 
-    public function getPhuongThucThanhToanLabelAttribute(): string
+    public function getPaymentMethodLabelAttribute(): string
     {
-        return match ($this->phuong_thuc_thanh_toan) {
-            'cash'  => 'Tiền mặt',
+        return match ($this->payment_method) {
+            'cash'  => 'Cash',
             'momo'  => 'Momo',
-            'bank'  => 'Chuyển khoản',
-            default => 'Không rõ',
+            'bank'  => 'Bank Transfer',
+            default => 'Unknown',
         };
     }
 
-    // Danh sách ghế (mã ghế) thuộc về ticket này, nếu bạn đang lưu seat_number ở passengers
+    // List of booked seat numbers for this ticket (assuming stored in passengers)
     public function getBookedSeatsAttribute(): array
     {
         return $this->passengers->pluck('seat_number')->toArray();
     }
+
+    // Available seats for the trip
     public function getAvailableSeatsAttribute(): array
-{
-    $trip = $this->trip;
-    if (!$trip || !$trip->bus) return [];
+    {
+        $trip = $this->trip;
+        if (!$trip || !$trip->bus) return [];
 
-    $bus = $trip->bus;
-    $totalSeats = (int) ($bus->so_ghe ?? 0);
-    if ($totalSeats <= 0 || $totalSeats > 100) return [];
+        $bus = $trip->bus;
+        $totalSeats = (int) ($bus->seat_count ?? 0);
+        if ($totalSeats <= 0 || $totalSeats > 100) return [];
 
-    $booked = $trip->booked_seats ?? [];   // dùng từ Trip cho thống nhất
+        $booked = $trip->booked_seats ?? [];
 
-    $rows = range('A', 'Z');
-    $cols = range(1, ceil($totalSeats / count($rows)));
+        $rows = range('A', 'Z');
+        $cols = range(1, ceil($totalSeats / count($rows)));
 
-    $allSeats = [];
-    foreach ($rows as $r) {
-        foreach ($cols as $c) {
-            $seat = $r . $c;
-            $allSeats[] = $seat;
-            if (count($allSeats) >= $totalSeats) break 2;
+        $allSeats = [];
+        foreach ($rows as $r) {
+            foreach ($cols as $c) {
+                $seat = $r . $c;
+                $allSeats[] = $seat;
+                if (count($allSeats) >= $totalSeats) break 2;
+            }
         }
+
+        return array_values(array_diff($allSeats, $booked));
     }
-
-    return array_values(array_diff($allSeats, $booked));
-}
-
 
     // =====================
     // 🔍 SCOPES
@@ -110,17 +111,17 @@ class Ticket extends Model
 
     public function scopePaid($query)
     {
-        return $query->where('trang_thai', 'paid');
+        return $query->where('status', 'paid');
     }
 
     public function scopePending($query)
     {
-        return $query->where('trang_thai', 'pending');
+        return $query->where('status', 'pending');
     }
 
     public function scopeCanceled($query)
     {
-        return $query->where('trang_thai', 'canceled');
+        return $query->where('status', 'canceled');
     }
 
     public function scopeByUser($query, $userId)

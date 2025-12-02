@@ -61,3 +61,4 @@ class City extends Model
         return $query->where('name', 'like', "%$keyword%");
     }
 }
+

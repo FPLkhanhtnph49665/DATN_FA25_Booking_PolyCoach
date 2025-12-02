@@ -62,7 +62,7 @@ class UserController extends Controller
             'email'      => 'required|email|unique:users,email',
             'phone'      => 'nullable|string|max:20',
             'password'   => 'required|string|confirmed|min:6',
-            'role'       => 'required|in:admin,customer',
+            'role' => 'required|in:admin,user,staff,checker',
             'status'     => 'required|in:0,1',
             'image'      => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -143,6 +143,16 @@ class UserController extends Controller
      * Xóa user.
      */
     public function destroy(User $user)
-    {
+{
+    // Nếu muốn kiểm tra trước khi xóa (ví dụ: user có liên kết ticket, payment)
+    if ($user->tickets()->count() > 0 || $user->payments()->count() > 0) {
+        return redirect()->route('admin.users.index')
+            ->withErrors('Không thể xóa user vì đã có dữ liệu liên quan!');
     }
+
+    $user->delete(); // Soft delete
+    return redirect()->route('admin.users.index')
+        ->with('success', 'User đã được xóa thành công!');
+}
+
 }

@@ -33,34 +33,53 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
     public function getMaskedPhoneAttribute()
     {
         if (!$this->phone) return '-';
         $length = strlen($this->phone);
         return substr($this->phone, 0, 3) . str_repeat('*', max($length - 6, 0)) . substr($this->phone, -3);
     }
+
     protected static function booted()
     {
         static::creating(function ($user) {
-            $lastUser = User::latest('id')->first();
-            $number = $lastUser ? $lastUser->id + 1 : 1;
-            $user->user_code = 'DATN_FA25_PoLyCoach_' . str_pad($number, 4, '0', STR_PAD_LEFT);
+            // 1. Generate user_code nếu chưa có
+            if (empty($user->user_code)) {
+                $lastUser = static::latest('id')->first();
+                $number   = $lastUser ? $lastUser->id + 1 : 1;
+                $user->user_code = 'DATN_FA25_PoLyCoach_' . str_pad($number, 4, '0', STR_PAD_LEFT);
+            }
+
+            // 2. Tự ghép full_name nếu chưa truyền từ form
+            if (empty($user->full_name)) {
+                $first = $user->first_name ?? '';
+                $last  = $user->last_name ?? '';
+                $user->full_name = trim($first . ' ' . $last);
+            }
+        });
+
+        // (Tuỳ chọn) auto update full_name nếu sau này sửa first_name / last_name
+        static::updating(function ($user) {
+            if ($user->isDirty(['first_name', 'last_name']) && empty($user->full_name)) {
+                $first = $user->first_name ?? '';
+                $last  = $user->last_name ?? '';
+                $user->full_name = trim($first . ' ' . $last);
+            }
         });
     }
 
-
-
     public function isRoleAdmin(): bool
     {
-        return $this->role === 'admin'; // hoặc 'is_admin' nếu bạn dùng cột này
+        return $this->role === 'admin';
     }
-
 
     // Relationship
     public function bookings()
     {
         return $this->hasMany(Booking::class, 'user_id');
     }
+
     public function tickets()
     {
         return $this->hasMany(Ticket::class);
