@@ -18,9 +18,9 @@ class PointFareController extends Controller
 
     public function index()
     {
-        $pointFares = PointFare::with(['pickupPoint', 'dropoffPoint'])
-                                ->paginate(15);
-        
+        $pointFares = PointFare::with(['pickupPoint', 'dropoffPoint', 'route'])
+            ->paginate(15);
+
         return view('admin.point_fares.index', compact('pointFares'));
     }
 
@@ -29,16 +29,16 @@ class PointFareController extends Controller
      */
     public function create(Request $request)
     {
-        $type = $request->string('type')->trim();
-        if (!in_array($type, ['pickup', 'dropoff'])) {
-             return redirect()->route('admin.dashboard')->with('error', 'Vui lòng chọn loại điểm (Đón hoặc Trả).');
-        }
+        // 1. Lấy danh sách Tuyến xe đang hoạt động để người dùng chọn
+        $routes = Route::where('trang_thai', 1)->orderBy('diem_di')->get();
 
-        $cities = City::orderBy('name')->get();
-        $routes = Route::orderBy('id')->get(); 
+        // 2. Lấy danh sách Điểm đón (từ bảng pickup_points)
+        $pickupPoints = PickupPoint::with('city')->orderBy('ten_diem_don')->get();
 
-        // Truyền type xuống view để view biết đang tạo điểm loại nào
-        return view('admin.pickup-dropoff-points.create', compact('cities', 'routes', 'type'));
+        // 3. Lấy danh sách Điểm trả (từ bảng dropoff_points)
+        $dropoffPoints = DropoffPoint::with('city')->orderBy('ten_diem_tra')->get();
+
+        return view('admin.point_fares.create', compact('routes', 'pickupPoints', 'dropoffPoints'));
     }
 
 
@@ -49,14 +49,14 @@ class PointFareController extends Controller
     {
         $type = $request->string('type')->trim();
         if (!in_array($type, ['pickup', 'dropoff'])) {
-             return back()->with('error', 'Loại điểm không xác định.')->withInput();
+            return back()->with('error', 'Loại điểm không xác định.')->withInput();
         }
 
         $data = $request->validate([
             'city_id' => 'nullable|exists:cities,id',
             'route_id' => 'required|exists:routes,id',
             // Dùng tên cột thực tế của bạn
-            'ten_diem_tra' => 'required|string|max:255', 
+            'ten_diem_tra' => 'required|string|max:255',
             'dia_chi' => 'nullable|string|max:255',
             'order' => 'nullable|integer|min:0', // Thêm validation cho cột order
             'active' => 'boolean',
@@ -87,15 +87,15 @@ class PointFareController extends Controller
     {
         $model = $this->resolveModel($type);
         $point = $model->newQuery()->findOrFail($id);
-        
+
         $cities = City::orderBy('name')->get();
         $routes = Route::orderBy('id')->get();
 
         return view('admin.pickup-dropoff-points.edit', [
-            'point'  => $point,
+            'point' => $point,
             'cities' => $cities,
             'routes' => $routes,
-            'type'   => $type, // Truyền type xuống view
+            'type' => $type, // Truyền type xuống view
         ]);
     }
 
@@ -111,7 +111,7 @@ class PointFareController extends Controller
         $data = $request->validate([
             'city_id' => 'nullable|exists:cities,id',
             'route_id' => 'required|exists:routes,id',
-            'ten_diem_tra' => 'required|string|max:255', 
+            'ten_diem_tra' => 'required|string|max:255',
             'dia_chi' => 'nullable|string|max:255',
             'order' => 'nullable|integer|min:0',
             'active' => 'boolean',
@@ -132,7 +132,7 @@ class PointFareController extends Controller
     {
         $model = $this->resolveModel($type);
         $point = $model->newQuery()->findOrFail($id);
-        
+
         // Dùng Soft Deletes (nếu bạn dùng SoftDeletes trong model)
         $point->delete();
 
