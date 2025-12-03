@@ -41,6 +41,8 @@ class Route extends Model
     {
         return $this->hasMany(DropoffPoint::class)->orderBy('order');
     }
+    
+    
     // =====================
     // 💡 Accessors
     // =====================

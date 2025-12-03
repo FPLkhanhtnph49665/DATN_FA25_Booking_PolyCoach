@@ -280,7 +280,7 @@
         <div class="row">
             {{-- LEFT: card lớn chọn ghế + form --}}
             <div class="col-lg-8 mb-4">
-                <form action="{{ route('client.bookings.store') }}" method="POST" id="booking-form">
+                <form action="" method="POST" id="booking-form">
                     @csrf
                     <input type="hidden" name="trip_id" value="{{ $trip->id }}">
                     <input type="hidden" name="seats" id="input-seat-count">

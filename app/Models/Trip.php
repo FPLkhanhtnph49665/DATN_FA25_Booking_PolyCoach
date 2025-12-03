@@ -13,20 +13,20 @@ class Trip extends Model
     protected $fillable = [
         'route_id',
         'bus_id',
-        'departure_date',
-        'departure_time',
-        'arrival_date',
-        'arrival_time',
-        'ticket_price',
-        'status',
+        'ngay_khoi_hanh',
+        'gio_khoi_hanh',
+        'ngay_den',
+        'gio_den',
+        'gia_ve',
+        'trang_thai',
         'trip_code',
     ];
 
     protected $casts = [
-        'departure_date' => 'date',
-        'arrival_date'   => 'date',
-        'departure_time' => 'datetime:H:i',
-        'arrival_time'   => 'datetime:H:i',
+        'ngay_khoi_hanh' => 'date',
+        'ngay_den'   => 'date',
+        'gio_khoi_hanh' => 'datetime:H:i',
+        'gio_den'   => 'datetime:H:i',
     ];
 
     // Relations
