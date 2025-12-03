@@ -10,6 +10,13 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RouteController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Admin\PointFareController;
+use App\Http\Controllers\Admin\BookingController;
+use App\Http\Controllers\Admin\ContactController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\PassengerController;
+use App\Http\Controllers\Admin\TicketController;
+use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Client\TripController as ClientTripController;
 use App\Http\Controllers\Client\BookingController as ClientBookingController;
@@ -35,8 +42,8 @@ Route::middleware('auth')->group(function () {
         ->name('client.account.update');
     Route::get('/thong-tin-tai-khoan/lich-su-mua-ve', [AuthenticatedSessionController::class, 'ticketHistory'])
         ->name('client.account.tickets');
-    Route::post('/dat-ve', [ClientBookingController::class, 'store'])
-        ->name('client.bookings.store');
+    // Route::post('/dat-ve', [ClientBookingController::class, 'store'])
+        // ->name('client.bookings.store');
 
     Route::get('/da-dat-ve/{booking}', [ClientBookingController::class, 'show'])
         ->name('client.bookings.show');

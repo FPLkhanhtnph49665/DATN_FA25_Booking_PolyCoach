@@ -1,90 +1,69 @@
 {{-- resources/views/client/trips/_search-form.blade.php --}}
 
 <div class="pc-search-form-wrapper">
-    <form action="{{ route('client.searchTrips') }}" method="GET" class="pc-search-form">
-        {{-- Nơi xuất phát --}}
-        <div class="pc-field">
-            <span class="pc-field-label">Nơi xuất phát</span>
-            <span class="pc-field-icon">
-                <i class="fas fa-location-dot"></i>
-            </span>
-            <input type="text" name="from" class="pc-field-input" placeholder="VD: Hà Nội"
-                value="{{ request('from') }}" required>
+
+    <form action="{{ route('client.searchTrips') }}" method="GET" class="row g-3 align-items-end">
+        {{-- Điểm đi --}}
+        <div class="col-lg-3 col-md-6">
+            <label class="form-label fw-semibold mb-1">Điểm đi</label>
+            <div class="futa-input">
+                <select name="from" class="form-select border-0 shadow-none p-0" required>
+                    <option value="">-- Chọn điểm đi --</option>
+                    @foreach ($allFrom as $from)
+                        <option value="{{ $from }}" {{ request('from') == $from ? 'selected' : '' }}>
+                            {{ $from }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
         </div>
 
-        {{-- Nơi đến --}}
-        <div class="pc-field">
-            <span class="pc-field-label">Nơi đến</span>
-            <span class="pc-field-icon">
-                <i class="fas fa-map-marker-alt"></i>
-            </span>
-            <input type="text" name="to" class="pc-field-input" placeholder="VD: Đà Nẵng"
-                value="{{ request('to') }}" required>
+        {{-- Điểm đến --}}
+        <div class="col-lg-3 col-md-6">
+            <label class="form-label fw-semibold mb-1">Điểm đến</label>
+            <div class="futa-input">
+                <select name="to" class="form-select border-0 shadow-none p-0" required>
+                    <option value="">-- Chọn điểm đến --</option>
+                    @foreach ($allTo as $to)
+                        <option value="{{ $to }}" {{ request('to') == $to ? 'selected' : '' }}>
+                            {{ $to }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
         </div>
 
-        <form action="{{ route('client.searchTrips') }}" method="GET" class="row g-3 align-items-end">
-            {{-- Điểm đi --}}
-            <div class="col-lg-3 col-md-6">
-                <label class="form-label fw-semibold mb-1">Điểm đi</label>
-                <div class="futa-input">
-                    <select name="from" class="form-select border-0 shadow-none p-0" required>
-                        <option value="">-- Chọn điểm đi --</option>
-                        @foreach ($allFrom as $from)
-                            <option value="{{ $from }}" {{ request('from') == $from ? 'selected' : '' }}>
-                                {{ $from }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
 
-            {{-- Điểm đến --}}
-            <div class="col-lg-3 col-md-6">
-                <label class="form-label fw-semibold mb-1">Điểm đến</label>
-                <div class="futa-input">
-                    <select name="to" class="form-select border-0 shadow-none p-0" required>
-                        <option value="">-- Chọn điểm đến --</option>
-                        @foreach ($allTo as $to)
-                            <option value="{{ $to }}" {{ request('to') == $to ? 'selected' : '' }}>
-                                {{ $to }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+        {{-- Ngày đi --}}
+        <div class="col-lg-3 col-md-6">
+            <label class="form-label fw-semibold mb-1">Ngày đi</label>
+            <div class="futa-input">
+                <input type="date" name="date" class="form-control border-0 shadow-none p-0"
+                    value="{{ request('date', date('d-m-Y')) }}" required>
             </div>
+        </div>
 
-
-            {{-- Ngày đi --}}
-            <div class="col-lg-3 col-md-6">
-                <label class="form-label fw-semibold mb-1">Ngày đi</label>
-                <div class="futa-input">
-                    <input type="date" name="date" class="form-control border-0 shadow-none p-0"
-                        value="{{ request('date', date('d-m-Y')) }}" required>
-                </div>
+        {{-- Số vé --}}
+        <div class="col-lg-2 col-md-4">
+            <label class="form-label fw-semibold mb-1">Số vé</label>
+            <div class="futa-input">
+                <select name="seats" class="form-select border-0 shadow-none p-0">
+                    @for ($i = 1; $i <= 10; $i++)
+                        <option value="{{ $i }}" {{ request('seats', 1) == $i ? 'selected' : '' }}>
+                            {{ $i }} vé
+                        </option>
+                    @endfor
+                </select>
             </div>
+        </div>
 
-            {{-- Số vé --}}
-            <div class="col-lg-2 col-md-4">
-                <label class="form-label fw-semibold mb-1">Số vé</label>
-                <div class="futa-input">
-                    <select name="seats" class="form-select border-0 shadow-none p-0">
-                        @for ($i = 1; $i <= 10; $i++)
-                            <option value="{{ $i }}" {{ request('seats', 1) == $i ? 'selected' : '' }}>
-                                {{ $i }} vé
-                            </option>
-                        @endfor
-                    </select>
-                </div>
-            </div>
-
-            {{-- Nút tìm --}}
-            <div class="col-12 d-flex justify-content-center mt-2">
-                <button type="submit" class="btn btn-search px-5 py-2 fw-semibold">
-                    Tìm chuyến xe
-                </button>
-            </div>
-        </form>
-</div>
+        {{-- Nút tìm --}}
+        <div class="col-12 d-flex justify-content-center mt-2">
+            <button type="submit" class="btn btn-search px-5 py-2 fw-semibold">
+                Tìm chuyến xe
+            </button>
+        </div>
+    </form>
 </div>
 
 {{-- ================== CSS ================== --}}
