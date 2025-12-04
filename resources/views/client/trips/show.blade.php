@@ -1,5 +1,24 @@
 @extends('layouts.client')
+<div class="container mt-3">
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Đã có lỗi xảy ra:</strong>
+            <ul class="mb-0 mt-1 ps-3">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
+    @if (session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
+</div>
 @section('content')
     <style>
         body {
@@ -242,7 +261,7 @@
     </style>
     @php
         $route = $trip->route;
-        $date = \Carbon\Carbon::parse($trip->ngay_khoi_hanh);
+        $date = \Carbon\Carbon::parse($trip->departure_date);
         $weekdayMap = [
             1 => 'Thứ 2',
             2 => 'Thứ 3',
@@ -261,7 +280,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <div class="booking-hero-title">
-                        {{ $route->diem_di ?? '—' }} - {{ $route->diem_den ?? '—' }}
+                        {{ $route->fromCity->name ?? '—' }} - {{ $route->toCity->name ?? '—' }}
                     </div>
                     <div class="booking-hero-sub">
                         {{ $weekday }}, {{ $date->format('d/m') }}
@@ -280,7 +299,7 @@
         <div class="row">
             {{-- LEFT: card lớn chọn ghế + form --}}
             <div class="col-lg-8 mb-4">
-                <form action="" method="POST" id="booking-form">
+                <form action="{{ route('client.bookings.store') }}" method="POST" id="booking-form">
                     @csrf
                     <input type="hidden" name="trip_id" value="{{ $trip->id }}">
                     <input type="hidden" name="seats" id="input-seat-count">
@@ -303,14 +322,21 @@
                                     <div class="seat-floor-title">Tầng dưới</div>
                                     <div class="seat-floor-body">
                                         @php
-                                            // mỗi mảng là 1 cột ghế (trên xuống)
+                                            // 1. Lấy danh sách các ghế ĐÃ ĐẶT từ bảng tickets
+                                            // Quan hệ tickets phải được định nghĩa trong model Trip (hoặc query trực tiếp ở đây nếu lười)
+                                            // Logic: Lấy các ticket thuộc trip này, status != cancelled
+                                            $bookedSeats = \App\Models\Ticket::where('trip_id', $trip->id)
+                                                ->where('status', '!=', 'cancelled')
+                                                ->pluck('seat_code')
+                                                ->toArray();
+
+                                            // 2. Định nghĩa sơ đồ ghế (Giữ nguyên hoặc lấy từ DB bus_seats nếu muốn dynamic)
                                             $floor1Columns = [
                                                 ['A01', 'A02', 'A03', 'A04'],
                                                 ['A05', 'A06', 'A07', 'A08'],
                                                 ['A09', 'A10', 'A11', 'A12'],
                                                 ['A13', 'A14', 'A15', 'A16'],
                                             ];
-                                            $bookedSeats = []; // TODO: sau này lấy từ DB
                                         @endphp
 
                                         @foreach ($floor1Columns as $column)
@@ -429,17 +455,15 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <div class="small fw-semibold mb-1">
-                                        ĐIỂM ĐÓN <span class="text-danger">*</span>
-                                    </div>
+                                        ĐIỂM ĐÓN </div>
                                     <div class="mb-2 small">
                                         <span class="me-3">
-                                            <input type="radio" name="pickup_type" value="ben" checked>
-                                            Bến xe/VP
+                                            <input type="radio" name="pickup_type" value="ben" checked> Bến xe/VP
                                         </span>
                                     </div>
 
                                     <select name="pickup_point_id" id="pickup-select" class="form-select mb-2">
-                                        <option value="">-- điểm đón tại {{ $route->diem_di }} --</option>
+                                        <option value="">-- Mặc định (Tại bến xe) --</option>
 
                                         @if ($route->pickupPoints && $route->pickupPoints->count() > 0)
                                             @foreach ($route->pickupPoints as $point)
@@ -447,30 +471,21 @@
                                                     {{ $point->ten_diem_don }} - {{ $point->dia_chi }}
                                                 </option>
                                             @endforeach
-                                        @else
-                                            <option value="0">{{ $route->diem_di }}</option>
                                         @endif
                                     </select>
-
-                                    <div class="small text-danger">
-                                        Vui lòng có mặt tại bến/VP trước giờ xuất bến để kiểm tra thông tin hoặc trung
-                                        chuyển.
-                                    </div>
                                 </div>
 
                                 <div class="col-md-6 mb-3">
                                     <div class="small fw-semibold mb-1">
-                                        ĐIỂM TRẢ <span class="text-danger">*</span>
-                                    </div>
+                                        ĐIỂM TRẢ </div>
                                     <div class="mb-2 small">
                                         <span class="me-3">
-                                            <input type="radio" name="drop_type" value="ben" checked>
-                                            Bến xe/VP
+                                            <input type="radio" name="drop_type" value="ben" checked> Bến xe/VP
                                         </span>
                                     </div>
 
                                     <select name="dropoff_point_id" id="dropoff-select" class="form-select mb-2">
-                                        <option value="">-- điểm trả tại {{ $route->diem_den }} --</option>
+                                        <option value="">-- Mặc định (Tại bến xe) --</option>
 
                                         @if ($route->dropoffPoints && $route->dropoffPoints->count() > 0)
                                             @foreach ($route->dropoffPoints as $point)
@@ -478,8 +493,6 @@
                                                     {{ $point->ten_diem_tra }} - {{ $point->dia_chi }}
                                                 </option>
                                             @endforeach
-                                        @else
-                                            <option value="0">{{ $route->diem_den }}</option>
                                         @endif
                                     </select>
                                 </div>
@@ -534,15 +547,15 @@
                     <h6>Thông tin lượt đi</h6>
                     <div class="price-row">
                         <span>Tuyến xe</span>
-                        <span>{{ $route->diem_di ?? '' }} - {{ $route->diem_den ?? '' }}</span>
+                        <span>{{ $route->fromCity->name ?? '' }} - {{ $route->toCity->name ?? '' }}</span>
                     </div>
                     <div class="price-row">
                         <span>biển số xe</span>
-                        <span>{{ $trip->bus->bien_so ?? '' }}</span>
+                        <span>{{ $trip->bus->plate_number ?? '' }}</span>
                     </div>
                     <div class="price-row">
                         <span>Thời gian xuất bến</span>
-                        <span>{{ $trip->gio_khoi_hanh }} {{ $date->format('d/m/Y') }}</span>
+                        <span>{{ $trip->departure_time }} {{ $date->format('d/m/Y') }}</span>
                     </div>
                     <div class="price-row">
                         <span>Số lượng ghế</span>
@@ -563,7 +576,7 @@
                     <div class="price-row">
                         <span>Giá vé lượt đi</span>
                         <span id="sidebar-price-per-seat">
-                            {{ number_format($trip->gia_ve, 0, '.', '.') }}đ
+                            {{ number_format($trip->ticket_price, 0, '.', '.') }}đ
                         </span>
                     </div>
                     <div class="price-row">
@@ -583,9 +596,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // --- 1. KHỞI TẠO BIẾN ---
-            // Chuyển price thành 'let' để có thể thay đổi giá trị
-            let currentPrice = {{ $trip->gia_ve }};
-            const basePrice = {{ $trip->gia_ve }}; // Lưu giá gốc để fallback
+            let currentPrice = {{ $trip->ticket_price ?? ($trip->price ?? 0) }};
+            const basePrice = {{ $trip->ticket_price ?? ($trip->price ?? 0) }};
             const tripId = {{ $trip->id }};
 
             // Các element DOM
@@ -599,8 +611,7 @@
             const sidebarSeatCodes = document.getElementById('sidebar-seat-codes');
             const sidebarTripTotal = document.getElementById('sidebar-trip-total');
             const sidebarTotalAll = document.getElementById('sidebar-total-all');
-            const sidebarPricePerSeat = document.getElementById(
-                'sidebar-price-per-seat'); // Element hiển thị đơn giá
+            const sidebarPricePerSeat = document.getElementById('sidebar-price-per-seat');
 
             // Select Inputs
             const pickupSelect = document.getElementById('pickup-select');
@@ -608,21 +619,21 @@
 
             // --- 2. HÀM TIỆN ÍCH ---
             function formatMoney(n) {
-                return Number(n).toLocaleString('vi-VN') + 'đ'; // Sửa lại cách format cho chuẩn
+                return Number(n).toLocaleString('vi-VN') + 'đ';
             }
 
-            // --- 3. HÀM TÍNH TOÁN & CẬP NHẬT UI (SUMMARY) ---
+            // --- 3. HÀM TÍNH TOÁN & CẬP NHẬT UI ---
             function updateSummary() {
-                // Lấy danh sách ghế đang chọn
+                // Lấy danh sách ghế đang chọn (class .selected)
                 const selected = Array.from(seatsEls)
                     .filter(el => el.classList.contains('selected'))
                     .map(el => el.dataset.code);
 
                 const count = selected.length;
 
-                // Update Input Hidden Form
+                // Update Input Hidden Form gửi lên Server
                 if (inputSeatCount) inputSeatCount.value = count;
-                if (inputSeatCodes) inputSeatCodes.value = selected.join(',');
+                if (inputSeatCodes) inputSeatCodes.value = selected.join(','); // Gửi chuỗi "A01,A02"
 
                 // Enable/Disable Submit Button
                 if (btnSubmit) btnSubmit.disabled = count === 0;
@@ -631,7 +642,7 @@
                 if (sidebarSeatQty) sidebarSeatQty.textContent = count + ' ghế';
                 if (sidebarSeatCodes) sidebarSeatCodes.textContent = count ? selected.join(', ') : '—';
 
-                // TÍNH TỔNG TIỀN DỰA TRÊN GIÁ MỚI NHẤT (currentPrice)
+                // Tính tổng tiền
                 const total = count * currentPrice;
                 const totalText = count ? formatMoney(total) : '0đ';
 
@@ -639,110 +650,113 @@
                 if (sidebarTotalAll) sidebarTotalAll.textContent = totalText;
             }
 
-            // --- 4. SỰ KIỆN CHỌN GHẾ ---
+            // --- 4. SỰ KIỆN CLICK GHẾ ---
             seatsEls.forEach(el => {
                 el.addEventListener('click', function() {
-                    if (this.dataset.booked === '1') return;
+                    // Nếu ghế đã có người đặt (check từ PHP render ra) thì chặn
+                    if (this.dataset.booked === '1' || this.classList.contains('booked')) {
+                        alert('Ghế này đã có người đặt, vui lòng chọn ghế khác.');
+                        return;
+                    }
                     this.classList.toggle('selected');
                     updateSummary();
                 });
             });
 
-            // --- 5. LOGIC GỌI API TÍNH GIÁ (MỚI) ---
+            // --- 5. AJAX LẤY GIÁ VÉ ---
             function fetchFare() {
                 const pickupId = pickupSelect.value;
                 const dropoffId = dropoffSelect.value;
 
-                // Nếu chưa chọn cả 2, hoặc chọn về mặc định -> Về giá gốc
+                // LOGIC MỚI:
+                // Nếu 1 trong 2 điểm chưa được chọn (giá trị rỗng) -> Về giá gốc ngay lập tức
                 if (!pickupId || !dropoffId) {
-                    currentPrice = basePrice;
-                    updatePriceUI();
-                    updateSummary(); // Tính lại tổng tiền
+                    currentPrice = basePrice; // Về giá gốc
+
+                    updatePriceUI(); // Cập nhật text giá
+                    updateSummary(); // Cập nhật tổng tiền
+
+                    // Không cần gọi API nữa vì Controller cũng sẽ trả về giá gốc thôi
+                    if (sidebarPricePerSeat) {
+                        sidebarPricePerSeat.style.color = ''; // Xóa màu đỏ (nếu có)
+                        sidebarPricePerSeat.style.fontWeight = '';
+                    }
                     return;
                 }
 
-                // Hiệu ứng loading nhẹ (tuỳ chọn)
+                // Nếu đã chọn cả 2 thì mới gọi API tính giá đặc biệt
                 if (sidebarPricePerSeat) sidebarPricePerSeat.innerText = 'Đang tính...';
 
-                // Gọi API (Sử dụng đường dẫn API bạn đã tạo)
-                // Lưu ý: Đảm bảo route này trả về JSON: { final_price: 150000, note: "..." }
                 const url = `/api/get-fare?trip_id=${tripId}&pickup_id=${pickupId}&dropoff_id=${dropoffId}`;
+
+                // ... (Phần fetch giữ nguyên)
 
                 fetch(url)
                     .then(response => {
-                        if (!response.ok) throw new Error('Lỗi mạng');
+                        if (!response.ok) throw new Error('Lỗi kết nối Server');
                         return response.json();
                     })
                     .then(data => {
-                        // Cập nhật giá hiện tại từ API trả về
-                        currentPrice = Number(data.final_price);
-
-                        // Cập nhật giao diện đơn giá & tổng tiền
+                        // Cập nhật giá từ API (Lưu ý: Controller trả về key 'price')
+                        currentPrice = Number(data.price);
                         updatePriceUI();
-                        updateSummary();
-
-                        // (Tuỳ chọn) Hiển thị thông báo nếu có thay đổi giá
-                        if (currentPrice !== basePrice) {
-                            console.log('Đã cập nhật giá mới: ' + data.note);
-                        }
+                        updateSummary(); // Tính lại tổng tiền với giá mới
                     })
                     .catch(error => {
-                        console.error('Lỗi lấy giá:', error);
-                        // Nếu lỗi, quay về giá gốc
-                        currentPrice = basePrice;
+                        console.error('Lỗi:', error);
+                        currentPrice = basePrice; // Fallback về giá gốc nếu lỗi
                         updatePriceUI();
                         updateSummary();
                     });
             }
 
             function updatePriceUI() {
-                // Cập nhật hiển thị "Giá vé lượt đi" trên sidebar
                 if (sidebarPricePerSeat) {
                     sidebarPricePerSeat.innerText = formatMoney(currentPrice);
 
-                    // Thêm màu sắc nếu giá thay đổi (tuỳ chọn)
+                    // Đổi màu nếu giá khác giá gốc
                     if (currentPrice !== basePrice) {
-                        sidebarPricePerSeat.style.color = '#dc3545'; // Màu đỏ
+                        sidebarPricePerSeat.style.color = '#dc3545';
                         sidebarPricePerSeat.style.fontWeight = 'bold';
                     } else {
-                        sidebarPricePerSeat.style.color = ''; // Reset màu
+                        sidebarPricePerSeat.style.color = '';
+                        sidebarPricePerSeat.style.fontWeight = '';
                     }
                 }
             }
 
-            // --- 6. LẮNG NGHE SỰ KIỆN THAY ĐỔI ĐIỂM ĐÓN/TRẢ ---
+            // --- 6. GẮN SỰ KIỆN ---
             if (pickupSelect) pickupSelect.addEventListener('change', fetchFare);
             if (dropoffSelect) dropoffSelect.addEventListener('change', fetchFare);
 
-            // Chạy lần đầu
-            // --- 7. XỬ LÝ CHỌN PHƯƠNG THỨC THANH TOÁN ---
+            // Xử lý nút chọn phương thức thanh toán
             const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
             const payOnlineLabel = document.getElementById('pay-online-label');
             const payCashLabel = document.getElementById('pay-cash-label');
 
             function updatePaymentUI() {
-                // Reset active class
-                payOnlineLabel.classList.remove('active');
-                payCashLabel.classList.remove('active');
+                if (payOnlineLabel) payOnlineLabel.classList.remove('active');
+                if (payCashLabel) payCashLabel.classList.remove('active');
 
-                // Check cái nào đang checked
-                const selected = document.querySelector('input[name="payment_method"]:checked').value;
+                const checkedRadio = document.querySelector('input[name="payment_method"]:checked');
+                if (!checkedRadio) return;
+
+                const selected = checkedRadio.value;
 
                 if (selected === 'vnpay') {
-                    payOnlineLabel.classList.add('active');
-                    btnSubmit.innerHTML = 'Thanh toán ngay'; // Đổi text nút
+                    if (payOnlineLabel) payOnlineLabel.classList.add('active');
+                    if (btnSubmit) btnSubmit.innerHTML = 'Thanh toán ngay';
                 } else {
-                    payCashLabel.classList.add('active');
-                    btnSubmit.innerHTML = 'Hoàn tất đặt vé'; // Đổi text nút
+                    if (payCashLabel) payCashLabel.classList.add('active');
+                    if (btnSubmit) btnSubmit.innerHTML = 'Hoàn tất đặt vé';
                 }
             }
 
-            // Lắng nghe sự kiện change
             paymentRadios.forEach(radio => {
                 radio.addEventListener('change', updatePaymentUI);
             });
 
-            // Gọi 1 lần khi load trang để set trạng thái mặc định
+            // Khởi chạy lần đầu
             updatePaymentUI();
             updateSummary();
         });

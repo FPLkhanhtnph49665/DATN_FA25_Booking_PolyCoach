@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\PickupPoint;
 use App\Models\DropoffPoint;
+use App\Models\City;
 
 class TripController extends Controller
 {
@@ -19,74 +20,87 @@ class TripController extends Controller
 
     public function index(Request $request)
     {
-        $from = trim($request->input('from'));
-        $to = trim($request->input('to'));
-        $date = $request->input('date');
+        // Lấy dữ liệu từ Request
+        // Dùng intval() cho ID để đảm bảo chúng là số và tránh lỗi LIKE
+        $from = intval(trim($request->input('from_city_id')));
+        $to = intval(trim($request->input('to_city_id')));
+        $date = $request->input('departure_date');
         $seats = (int) $request->input('seats', 1);
         $timeFilters = (array) $request->input('time', []);
         $busTypes = (array) $request->input('bus_type', []);
         $rows = (array) $request->input('row', []);
+
         $query = Trip::with([
-            'route.pickupPoints',  // Load điểm đón
-            'route.dropoffPoints', // Load điểm trả
+            'route.fromCity',       // Thêm load City
+            'route.toCity',         // Thêm load City
+            'route.pickupPoints',
+            'route.dropoffPoints',
             'bus',
-            'tickets.passengers'
+            // Chỉ load tickets nếu cần tính availableSeats, nếu không thì nên tối ưu
+            'tickets'
         ])
-            // ->active()
+            ->where('status', 1) // Chỉ lấy các chuyến đi đang hoạt động (Active)
             ->when($from, fn($q) => $q->whereHas(
                 'route',
-                fn($qr) =>
-                $qr->where('diem_di', 'like', "%$from%")
+                // Sửa LỖI: Dùng toán tử bằng (=) cho ID
+                fn($qr) => $qr->where('from_city_id', $from)
             ))
             ->when($to, fn($q) => $q->whereHas(
                 'route',
-                fn($qr) =>
-                $qr->where('diem_den', 'like', "%$to%")
+                // Sửa LỖI: Dùng toán tử bằng (=) cho ID
+                fn($qr) => $qr->where('to_city_id', $to)
             ))
             ->when(
                 $date,
-                fn($q) =>
-                $q->whereDate('ngay_khoi_hanh', $date)
+                fn($q) => $q->whereDate('departure_date', $date)
             )
             ->when($timeFilters, function ($q) use ($timeFilters) {
+                // Nhóm các điều kiện OR cho thời gian
                 $q->where(function ($query) use ($timeFilters) {
                     if (in_array('morning', $timeFilters)) {
-                        $query->orWhereBetween('gio_khoi_hanh', ['00:00:00', '11:59:59']);
+                        $query->orWhereBetween('departure_time', ['00:00:00', '11:59:59']);
                     }
                     if (in_array('afternoon', $timeFilters)) {
-                        $query->orWhereBetween('gio_khoi_hanh', ['12:00:00', '17:59:59']);
+                        $query->orWhereBetween('departure_time', ['12:00:00', '17:59:59']);
                     }
                     if (in_array('evening', $timeFilters)) {
-                        $query->orWhereBetween('gio_khoi_hanh', ['18:00:00', '23:59:59']);
+                        $query->orWhereBetween('departure_time', ['18:00:00', '23:59:59']);
                     }
                 });
             })
             ->when(
                 $busTypes,
-                fn($q) =>
-                $q->whereHas(
+                fn($q) => $q->whereHas(
                     'bus',
-                    fn($qr) =>
-                    $qr->whereIn('type', $busTypes)
+                    fn($qr) => $qr->whereIn('type', $busTypes)
                 )
             );
 
         $trips = $query
-            ->orderBy('ngay_khoi_hanh')
-            ->orderBy('gio_khoi_hanh')
-            ->get();
+            ->orderBy('departure_date')
+            ->orderBy('departure_time')
+            ->get(); // Thực hiện query và tải dữ liệu về bộ nhớ
 
-        // Filter theo số ghế trống
+        // --- Lọc trên Collection (Bộ nhớ PHP) ---
+
+        // 1. Filter theo số ghế trống
         if ($seats > 0) {
+            // Giả định $trip->availableSeats() là method tồn tại trong model Trip
             $trips = $trips->filter(fn($trip) => $trip->availableSeats() >= $seats)->values();
         }
 
-        // Filter theo dãy ghế
+        // 2. Filter theo dãy ghế
         if (!empty($rows)) {
+            // Giả định $trip->availableSeatsInRows($rows) là method tồn tại trong model Trip
             $trips = $trips->filter(fn($trip) => $trip->availableSeatsInRows($rows) >= $seats)->values();
         }
 
-        return view('client.trips.index', compact('trips'));
+        // Tải lại danh sách cities cho form tìm kiếm/lọc trên view
+        $allFrom = City::where('status', 1)->orderBy('name', 'asc')->get();
+        $allTo = City::where('status', 1)->orderBy('name', 'asc')->get();
+
+        // Trả về view kết quả tìm kiếm
+        return view('client.trips.index', compact('trips', 'allFrom', 'allTo'));
     }
 
     /**
@@ -100,6 +114,8 @@ class TripController extends Controller
 
         // Lấy trip theo ID, load quan hệ
         $trip = Trip::with([
+            'route.fromCity',
+            'route.toCity',
             'route.pickupPoints',
             'route.dropoffPoints',
             'bus',

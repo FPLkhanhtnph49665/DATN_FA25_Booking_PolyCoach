@@ -7,11 +7,14 @@
         <div class="col-lg-3 col-md-6">
             <label class="form-label fw-semibold mb-1">Điểm đi</label>
             <div class="futa-input">
-                <select name="from" class="form-select border-0 shadow-none p-0" required>
+                {{-- Đã thay đổi name thành 'from_city_id' và value là ID của City --}}
+                <select name="from_city_id" class="form-select border-0 shadow-none p-0" required>
                     <option value="">-- Chọn điểm đi --</option>
-                    @foreach ($allFrom as $from)
-                        <option value="{{ $from }}" {{ request('from') == $from ? 'selected' : '' }}>
-                            {{ $from }}
+                    {{-- Giả định $allFrom là Collection các đối tượng City --}}
+                    @foreach ($allFrom as $fromCity)
+                        <option value="{{ $fromCity->id }}" 
+                            {{ request('from_city_id') == $fromCity->id ? 'selected' : '' }}>
+                            {{ $fromCity->name }}
                         </option>
                     @endforeach
                 </select>
@@ -22,11 +25,14 @@
         <div class="col-lg-3 col-md-6">
             <label class="form-label fw-semibold mb-1">Điểm đến</label>
             <div class="futa-input">
-                <select name="to" class="form-select border-0 shadow-none p-0" required>
+                {{-- Đã thay đổi name thành 'to_city_id' và value là ID của City --}}
+                <select name="to_city_id" class="form-select border-0 shadow-none p-0" required>
                     <option value="">-- Chọn điểm đến --</option>
-                    @foreach ($allTo as $to)
-                        <option value="{{ $to }}" {{ request('to') == $to ? 'selected' : '' }}>
-                            {{ $to }}
+                    {{-- Giả định $allTo là Collection các đối tượng City --}}
+                    @foreach ($allTo as $toCity)
+                        <option value="{{ $toCity->id }}" 
+                            {{ request('to_city_id') == $toCity->id ? 'selected' : '' }}>
+                            {{ $toCity->name }}
                         </option>
                     @endforeach
                 </select>
@@ -38,8 +44,11 @@
         <div class="col-lg-3 col-md-6">
             <label class="form-label fw-semibold mb-1">Ngày đi</label>
             <div class="futa-input">
-                <input type="date" name="date" class="form-control border-0 shadow-none p-0"
-                    value="{{ request('date', date('d-m-Y')) }}" required>
+                <input type="date" name="departure_date" class="form-control border-0 shadow-none p-0"
+                    {{-- Cập nhật để nhận request('departure_date') hoặc ngày hiện tại Y-m-d --}}
+                    value="{{ request('departure_date', date('Y-m-d')) }}" 
+                    min="{{ date('Y-m-d') }}" {{-- Thêm minDate để hạn chế chọn ngày cũ --}}
+                    required>
             </div>
         </div>
 
@@ -66,7 +75,7 @@
     </form>
 </div>
 
-{{-- ================== CSS ================== --}}
+{{-- ================== CSS (Giữ nguyên) ================== --}}
 <style>
     .trip-search-wrapper {
         border-radius: 24px;
@@ -196,47 +205,24 @@
     }
 </style>
 
-{{-- ========== Flatpickr (nếu chưa include ở layout thì giữ 2 dòng này) ========== --}}
+{{-- ========== Script (Đã xóa phần Flatpickr không cần thiết) ========== --}}
+{{-- Giữ nguyên script nếu bạn vẫn muốn dùng flatpickr cho trường ngày về (nếu có) --}}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const departureInput = document.getElementById('pc_departure_date');
-        const returnInput = document.getElementById('pc_return_date');
-        const btnReturn = document.getElementById('pc_btn_add_return');
-        const btnReturnText = btnReturn.querySelector('.pc-return-text');
-        const defaultText = btnReturnText.textContent;
-
-        // Lịch ngày đi
+        // Lấy input date
+        const departureInput = document.querySelector('input[name="departure_date"]');
+        
+        // Thiết lập Flatpickr cho input date (chỉ dùng để định dạng và giới hạn ngày)
         flatpickr(departureInput, {
             dateFormat: "Y-m-d",
             minDate: "today",
-            showMonths: 2,
             disableMobile: true
         });
 
-        // Lịch ngày về
-        const returnPicker = flatpickr(returnInput, {
-            dateFormat: "Y-m-d",
-            minDate: "today",
-            showMonths: 2,
-            disableMobile: true,
-            onChange: function(selectedDates) {
-                if (selectedDates.length) {
-                    const d = selectedDates[0];
-                    const dd = String(d.getDate()).padStart(2, '0');
-                    const mm = String(d.getMonth() + 1).padStart(2, '0');
-                    btnReturnText.textContent = `Ngày về: ${dd}/${mm}`;
-                } else {
-                    btnReturnText.textContent = defaultText;
-                }
-            }
-        });
-
-        // Bấm "Thêm ngày về" → mở lịch
-        btnReturn.addEventListener('click', function() {
-            returnPicker.open();
-        });
+        // Xóa các script không liên quan đến ngày về (pc_return_date, pc_btn_add_return)
+        // Nếu bạn có tính năng khứ hồi, hãy giữ lại phần script Flatpickr cho ngày về.
     });
 </script>

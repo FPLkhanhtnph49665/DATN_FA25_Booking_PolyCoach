@@ -3,6 +3,7 @@
 @section('content')
     <div class="container my-5">
         <div class="mb-3">
+            {{-- Giả định _filter.blade.php đã được cập nhật để sử dụng ID thành phố --}}
             @include('client.trips._filter')
         </div>
 
@@ -17,18 +18,31 @@
                             {{-- Giờ đi --}}
                             <div class="text-center">
                                 <div class="fw-bold fs-4">
-                                    {{ \Carbon\Carbon::parse($trip->gio_khoi_hanh)->format('H') }} giờ
-                                    {{ \Carbon\Carbon::parse($trip->gio_khoi_hanh)->format('i') }} phút
+                                    {{-- SỬA: Dùng trường departure_time --}}
+                                    {{ \Carbon\Carbon::parse($trip->departure_time)->format('H') }} giờ
+                                    {{ \Carbon\Carbon::parse($trip->departure_time)->format('i') }} phút
                                 </div>
                                 <div class="small text-muted">
-                                    {{ optional($trip->route)->diem_di }}
+                                    {{-- SỬA: Lấy tên thành phố từ quan hệ route->fromCity->name --}}
+                                    {{ $trip->route->fromCity->name ?? 'Điểm đi' }}
                                 </div>
                             </div>
 
                             {{-- Đường kẻ thời lượng --}}
+                            @php
+                                // Tính thời gian di chuyển (giả định route->estimated_time là số phút hoặc string 'HH:MM:SS')
+                                $estimatedTime = optional($trip->route)->estimated_time;
+                                if ($estimatedTime) {
+                                    $duration = Carbon\Carbon::parse($estimatedTime);
+                                    $durationText = $duration->diff(Carbon\Carbon::today())->format('%h giờ %i phút');
+                                } else {
+                                    $durationText = 'Không rõ';
+                                }
+                            @endphp
                             <div class="text-center futa-trip-duration">
                                 <div class="small text-muted">
-                                    {{ \Carbon\Carbon::parse($trip->route->thoi_gian_du_kien)->format('H') }} giờ
+                                    {{-- SỬA: Sử dụng trường estimated_time của Route --}}
+                                    {{ $durationText }}
                                 </div>
                                 <div class="futa-dot-line my-1">
                                     <span class="dot"></span>
@@ -36,18 +50,21 @@
                                     <span class="dot"></span>
                                 </div>
                                 <div class="small text-muted">
-                                    ({{ optional($trip->route)->ten_tinh ?? 'Dự kiến' }})
+                                    {{-- SỬA: Lấy tên thành phố từ quan hệ route->toCity->name (chỉ hiển thị dự kiến) --}}
+                                    ({{ $trip->route->toCity->name ?? 'Dự kiến' }})
                                 </div>
                             </div>
 
                             {{-- Giờ đến --}}
                             <div class="text-center">
                                 <div class="fw-bold fs-4">
-                                    {{ \Carbon\Carbon::parse($trip->gio_den)->format('H') }} giờ
-                                    {{ \Carbon\Carbon::parse($trip->gio_den)->format('i') }} phút
+                                    {{-- SỬA: Dùng trường arrival_time --}}
+                                    {{ \Carbon\Carbon::parse($trip->arrival_time)->format('H') }} giờ
+                                    {{ \Carbon\Carbon::parse($trip->arrival_time)->format('i') }} phút
                                 </div>
                                 <div class="small text-muted">
-                                    {{ optional($trip->route)->diem_den }}
+                                    {{-- SỬA: Lấy tên thành phố từ quan hệ route->toCity->name --}}
+                                    {{ $trip->route->toCity->name ?? 'Điểm đến' }}
                                 </div>
                             </div>
 
@@ -56,13 +73,16 @@
                         {{-- Loại xe – ghế trống – giá --}}
                         <div class="text-end">
                             <div class="small text-muted mb-1">
-                                {{ $trip->loai_xe ?? 'Limousine' }}
+                                {{-- SỬA: Lấy loại xe từ quan hệ bus->type --}}
+                                {{ $trip->bus->type ?? 'Xe giường nằm' }}
                             </div>
                             <div class="small text-success mb-1">
-                                {{ $trip->so_ghe_trong }} chỗ trống
+                                {{-- SỬA: Gọi hàm availableSeats() trong model Trip --}}
+                                {{ $trip->availableSeats() }} chỗ trống
                             </div>
                             <div class="futa-price">
-                                {{ number_format($trip->gia_ve, 0, '.', '.') }}đ
+                                {{-- SỬA: Dùng trường ticket_price --}}
+                                {{ number_format($trip->ticket_price, 0, '.', '.') }}đ
                             </div>
                         </div>
                     </div>
@@ -71,8 +91,11 @@
                     <div class="futa-trip-body">
                         <div class="mb-2">
                             <strong>
-                                {{ optional($trip->route)->diem_di }}
-                                – {{ optional($trip->route)->diem_den }}
+                                {{-- SỬA: Lấy tên thành phố từ quan hệ route->fromCity->name --}}
+                                {{ $trip->route->fromCity->name ?? 'Điểm đi' }}
+                                – 
+                                {{-- SỬA: Lấy tên thành phố từ quan hệ route->toCity->name --}}
+                                {{ $trip->route->toCity->name ?? 'Điểm đến' }}
                             </strong>
                         </div>
 
@@ -91,6 +114,7 @@
                                 <a href="javascript:void(0)">Chính sách</a>
                             </div>
 
+                            {{-- Link Chọn chuyến --}}
                             <a href="{{ route('client.trips.show', ['trip_id' => $trip->id]) }}"
                                 class="btn btn-warning rounded-pill px-4 fw-semibold futa-btn-choose">
                                 Chọn chuyến
@@ -105,6 +129,7 @@
     </div>
 @endsection
 
+{{-- ================== STYLE (GIỮ NGUYÊN) ================== --}}
 <style>
     .futa-trip-card {
         border-radius: 12px;

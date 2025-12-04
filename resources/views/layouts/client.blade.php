@@ -352,11 +352,7 @@
                                     </li>
 
                                     <li>
-<<<<<<< HEAD
-                                        <a class="dropdown-item" href="">
-=======
                                         <a class="dropdown-item" href="{{ route('client.account.tickets') }}">
->>>>>>> 8b2d99e384608832df1c473dc5dbf415fe251c7f
                                             <i class="fas fa-clock-rotate-left me-1"></i> Lịch sử đặt vé
                                         </a>
                                     </li>
