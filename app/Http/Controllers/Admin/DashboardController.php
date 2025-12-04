@@ -23,32 +23,32 @@ class DashboardController extends Controller
         // Đếm tổng số Buses (bao gồm cả đã xóa mềm)
         $totalBuses = Bus::withTrashed()->count();
 
-        // Đếm số lượng Buses đang hoạt động (trang_thai = 1), bao gồm cả đã xóa mềm
-        $activeBuses = Bus::withTrashed()->where('trang_thai', 1)->count();
+        // Đếm số lượng Buses đang hoạt động (status = 1), bao gồm cả đã xóa mềm
+        $activeBuses = Bus::withTrashed()->where('status', 1)->count();
 
         // Đếm tổng số Trips (bao gồm cả đã xóa mềm)
         $totalTrips = Trip::withTrashed()->count();
 
-        // Đếm số lượng Trips đang hoạt động (trang_thai = 1), bao gồm cả đã xóa mềm
-        $activeTrips = Trip::withTrashed()->where('trang_thai', 1)->count();
+        // Đếm số lượng Trips đang hoạt động (status = 1), bao gồm cả đã xóa mềm
+        $activeTrips = Trip::withTrashed()->where('status', 1)->count();
 
         // 💰 Payment statistics
         // Tính tổng số tiền Payments (bao gồm cả đã xóa mềm)
-        $totalPayments = Payment::withTrashed()->sum('so_tien');
+        $totalPayments = Payment::withTrashed()->sum('amount');
 
         // Tính tổng tiền mặt (Cash), bao gồm cả đã xóa mềm
-        $totalCash = Payment::withTrashed()->where('phuong_thuc', 'cash')->sum('so_tien');
+        $totalCash = Payment::withTrashed()->where('payment_method', 'cash')->sum('amount');
 
         // Tính tổng tiền Momo, bao gồm cả đã xóa mềm
-        $totalMomo = Payment::withTrashed()->where('phuong_thuc', 'momo')->sum('so_tien');
+        $totalMomo = Payment::withTrashed()->where('payment_method', 'momo')->sum('amount');
 
         // 📈 Payments by month/year
         // Thống kê thanh toán theo tháng/năm, bao gồm cả đã xóa mềm
         $paymentsByMonth = Payment::withTrashed()->select(
             DB::raw('YEAR(created_at) as year'),
             DB::raw('MONTH(created_at) as month'),
-            DB::raw("SUM(CASE WHEN phuong_thuc = 'cash' THEN so_tien ELSE 0 END) as cash_total"),
-            DB::raw("SUM(CASE WHEN phuong_thuc = 'momo' THEN so_tien ELSE 0 END) as momo_total")
+            DB::raw("SUM(CASE WHEN payment_method = 'cash' THEN amount ELSE 0 END) as cash_total"),
+            DB::raw("SUM(CASE WHEN payment_method = 'momo' THEN amount ELSE 0 END) as momo_total")
         )
             ->groupBy('year', 'month')
             ->orderBy('year')

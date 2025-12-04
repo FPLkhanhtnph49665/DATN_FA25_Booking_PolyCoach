@@ -26,8 +26,8 @@ class HomeController extends Controller
         // Có thể thêm các dữ liệu khác như banner, reviews, products tùy hệ thống
 
         // Lấy tất cả điểm đi / điểm đến từ bảng routes
-        $allFrom = Route::select('diem_di')->distinct()->pluck('diem_di');
-        $allTo = Route::select('diem_den')->distinct()->pluck('diem_den');
+        $allFrom = Route::select('from_city_id')->distinct()->pluck('from_city_id');
+        $allTo = Route::select('to_city_id')->distinct()->pluck('to_city_id');
 
         return view('client.home', compact('allFrom', 'allTo', 'popularTrips'));
     }

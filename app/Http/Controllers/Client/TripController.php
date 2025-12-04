@@ -36,28 +36,28 @@ class TripController extends Controller
             ->when($from, fn($q) => $q->whereHas(
                 'route',
                 fn($qr) =>
-                $qr->where('diem_di', 'like', "%$from%")
+                $qr->where('from_city_id', 'like', "%$from%")
             ))
             ->when($to, fn($q) => $q->whereHas(
                 'route',
                 fn($qr) =>
-                $qr->where('diem_den', 'like', "%$to%")
+                $qr->where('to_city_id', 'like', "%$to%")
             ))
             ->when(
                 $date,
                 fn($q) =>
-                $q->whereDate('ngay_khoi_hanh', $date)
+                $q->whereDate('departure_date', $date)
             )
             ->when($timeFilters, function ($q) use ($timeFilters) {
                 $q->where(function ($query) use ($timeFilters) {
                     if (in_array('morning', $timeFilters)) {
-                        $query->orWhereBetween('gio_khoi_hanh', ['00:00:00', '11:59:59']);
+                        $query->orWhereBetween('departure_time', ['00:00:00', '11:59:59']);
                     }
                     if (in_array('afternoon', $timeFilters)) {
-                        $query->orWhereBetween('gio_khoi_hanh', ['12:00:00', '17:59:59']);
+                        $query->orWhereBetween('departure_time', ['12:00:00', '17:59:59']);
                     }
                     if (in_array('evening', $timeFilters)) {
-                        $query->orWhereBetween('gio_khoi_hanh', ['18:00:00', '23:59:59']);
+                        $query->orWhereBetween('departure_time', ['18:00:00', '23:59:59']);
                     }
                 });
             })
@@ -72,8 +72,8 @@ class TripController extends Controller
             );
 
         $trips = $query
-            ->orderBy('ngay_khoi_hanh')
-            ->orderBy('gio_khoi_hanh')
+            ->orderBy('departure_date')
+            ->orderBy('departure_time')
             ->get();
 
         // Filter theo số ghế trống

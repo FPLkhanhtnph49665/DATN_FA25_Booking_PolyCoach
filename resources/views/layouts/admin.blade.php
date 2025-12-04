@@ -7,257 +7,227 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PolyCoach Admin - @yield('title', 'Dashboard')</title>
 
-    <!-- Bootstrap 5 CSS -->
+    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    {{-- Bootstrap Icons (để dùng các icon bi bi-*) --}}
+    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- Admin custom CSS -->
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 
-    <link rel="icon" href="{{ asset('iconPoLyCoach.png') }}" alt="Icon PolyCoach">
+    <link rel="icon" href="{{ asset('iconPoLyCoach.png') }}">
     @stack('styles')
 </head>
 
 <body class="admin-body">
     <div id="admin-wrapper" class="d-flex min-vh-100">
 
-        <!-- Sidebar -->
+        <!-- SIDEBAR -->
         <nav id="sidebar" class="admin-sidebar d-flex flex-column">
+
+            <!-- Logo -->
             <div class="sidebar-header text-center py-4">
-                <a href="{{ route('admin.dashboard') }}"
-                    class="d-flex flex-column align-items-center text-decoration-none">
+                <a href="{{ route('admin.dashboard') }}" class="d-flex flex-column align-items-center text-decoration-none">
                     <div class="sidebar-logo-wrapper mb-2">
-                        <img src="{{ asset('logoPoLyCoach.png') }}" alt="Logo PolyCoach" class="sidebar-logo img-fluid">
+                        <img src="{{ asset('logoPoLyCoach.png') }}" class="sidebar-logo img-fluid" alt="Logo PolyCoach">
                     </div>
                     <span class="sidebar-brand">PolyCoach Admin</span>
                 </a>
             </div>
 
+            <!-- Menu -->
             <div class="sidebar-menu flex-grow-1">
                 <ul class="nav flex-column px-2">
+
                     <li class="nav-item">
                         <a href="{{ route('admin.dashboard') }}"
-                            class="nav-link admin-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                            <i class="bi bi-speedometer2 me-2"></i>
-                            <span>Dashboard</span>
+                           class="nav-link admin-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                            <i class="bi bi-speedometer2 me-2"></i> Dashboard
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.users.index') }}"
-                            class="nav-link admin-nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                            <i class="bi bi-people me-2"></i>
-                            <span>Quản lý người dùng</span>
+                           class="nav-link admin-nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                            <i class="bi bi-people me-2"></i> Quản lý người dùng
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.cities.index') }}"
-                            class="nav-link admin-nav-link {{ request()->routeIs('admin.cities.*') ? 'active' : '' }}">
-                            <i class="bi bi-geo-alt me-2"></i>
-                            <span>Quản lý Thành phố</span>
+                           class="nav-link admin-nav-link {{ request()->routeIs('admin.cities.*') ? 'active' : '' }}">
+                            <i class="bi bi-geo-alt me-2"></i> Quản lý Thành phố
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.point_fares.index') }}"
-                            class="nav-link admin-nav-link {{ request()->routeIs(patterns: 'admin.point_fares.*') ? 'active' : '' }}">
-                            <i class="bi bi-pin-map me-2"></i>
-                            {{-- Sửa tên hiển thị --}}
-                            <span>Giá vé chặng</span>
+                           class="nav-link admin-nav-link {{ request()->routeIs('admin.point_fares.*') ? 'active' : '' }}">
+                            <i class="bi bi-pin-map me-2"></i> Giá vé chặng
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.routes.index') }}"
-                            class="nav-link admin-nav-link {{ request()->routeIs('admin.routes.*') ? 'active' : '' }}">
-                            <i class="bi bi-signpost-split me-2"></i>
-                            <span>Quản lý Tuyến</span>
+                           class="nav-link admin-nav-link {{ request()->routeIs('admin.routes.*') ? 'active' : '' }}">
+                            <i class="bi bi-signpost-split me-2"></i> Quản lý Tuyến
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.buses.index') }}"
-                            class="nav-link admin-nav-link {{ request()->routeIs('admin.buses.*') ? 'active' : '' }}">
-                            <i class="bi bi-truck-front me-2"></i>
-                            <span>Quản lý Xe</span>
+                           class="nav-link admin-nav-link {{ request()->routeIs('admin.buses.*') ? 'active' : '' }}">
+                            <i class="bi bi-truck-front me-2"></i> Quản lý Xe
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.trips.index') }}"
-                            class="nav-link admin-nav-link {{ request()->routeIs('admin.trips.*') ? 'active' : '' }}">
-                            <i class="bi bi-calendar2-week me-2"></i>
-                            <span>Quản lý Chuyến</span>
+                           class="nav-link admin-nav-link {{ request()->routeIs('admin.trips.*') ? 'active' : '' }}">
+                            <i class="bi bi-calendar2-week me-2"></i> Quản lý Chuyến
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.bookings.index') }}"
-                            class="nav-link admin-nav-link {{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}">
-                            <i class="bi bi-ticket-detailed me-2"></i>
-                            <span>Quản lý Booking</span>
+                           class="nav-link admin-nav-link {{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}">
+                            <i class="bi bi-ticket-detailed me-2"></i> Quản lý Booking
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.tickets.index') }}"
-                            class="nav-link admin-nav-link {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
-                            <i class="bi bi-ticket-perforated me-2"></i>
-                            <span>Quản lý Vé</span>
+                           class="nav-link admin-nav-link {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
+                            <i class="bi bi-ticket-perforated me-2"></i> Quản lý Vé
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.payments.index') }}"
-                            class="nav-link admin-nav-link {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
-                            <i class="bi bi-credit-card-2-front me-2"></i>
-                            <span>Quản lý Thanh toán</span>
+                           class="nav-link admin-nav-link {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
+                            <i class="bi bi-credit-card-2-front me-2"></i> Quản lý Thanh toán
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.passengers.index') }}"
-                            class="nav-link admin-nav-link {{ request()->routeIs('admin.passengers.*') ? 'active' : '' }}">
-                            <i class="bi bi-person-walking me-2"></i>
-                            <span>Quản lý Hành khách</span>
+                           class="nav-link admin-nav-link {{ request()->routeIs('admin.passengers.*') ? 'active' : '' }}">
+                            <i class="bi bi-person-walking me-2"></i> Quản lý Hành khách
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.reviews.index') }}"
-                            class="nav-link admin-nav-link {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
-                            <i class="bi bi-chat-dots me-2"></i>
-                            <span>Quản lý Đánh giá</span>
+                           class="nav-link admin-nav-link {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
+                            <i class="bi bi-chat-dots me-2"></i> Quản lý Đánh giá
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.contacts.index') }}"
-                            class="nav-link admin-nav-link {{ request()->routeIs('admin.contacts.*') ? 'active' : '' }}">
-                            <i class="bi bi-envelope-paper me-2"></i>
-                            <span>Quản lý Liên hệ</span>
+                           class="nav-link admin-nav-link {{ request()->routeIs('admin.contacts.*') ? 'active' : '' }}">
+                            <i class="bi bi-envelope-paper me-2"></i> Quản lý Liên hệ
                         </a>
                     </li>
+
                 </ul>
             </div>
 
-            <div class="sidebar-footer text-center py-3 small">
-                <span class="text-muted">© {{ now()->year }} PolyCoach</span>
+            <div class="sidebar-footer text-center py-3 small text-muted">
+                © {{ now()->year }} PolyCoach
             </div>
         </nav>
 
-        <!-- Page Content -->
+        <!-- MAIN CONTENT -->
         <div class="layout-main flex-grow-1 d-flex flex-column">
 
-            <!-- Header -->
+            <!-- NAVBAR -->
             <nav class="navbar navbar-expand-lg admin-navbar shadow-sm">
                 <div class="container-fluid">
 
-                    <!-- Toggle Sidebar -->
+                    <!-- Sidebar Toggle -->
                     <button class="btn btn-sm btn-outline-light me-3" id="sidebarToggle">
                         <i class="bi bi-list"></i>
                     </button>
 
-                    <!-- Title -->
+                    <!-- Page Title -->
                     <div class="d-flex flex-column">
                         <span class="admin-title">Quản trị hệ thống PolyCoach</span>
-                        <span class="admin-subtitle">@yield('title', 'Tổng quan hệ thống')</span>
+                        <span class="admin-subtitle">@yield('title')</span>
                     </div>
 
-                    <!-- User Info + Logout -->
+                    <!-- User Dropdown -->
                     <ul class="navbar-nav ms-auto align-items-center">
-                        @php
-                            $user = Auth::user();
-                        @endphp
+                        @php $user = Auth::user(); @endphp
 
                         <li class="nav-item dropdown">
-                            <<<<<<< HEAD <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-light"
-                                href="#" id="userDropdown" role="button" data-bs-toggle="dropdown"
-                                aria-expanded="false">
 
-                                {{-- Avatar tròn --}}
+                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-light"
+                               href="#" id="userDropdown" data-bs-toggle="dropdown">
+
                                 <div class="avatar-circle">
-                                    <span>{{ strtoupper(mb_substr($user->first_name ?? ($user->name ?? 'A'), 0, 1)) }}</span>
-                                    =======
-                                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-light"
-                                        href="#" id="userDropdown" role="button" data-bs-toggle="dropdown"
-                                        aria-expanded="false">
+                                    <span>{{ strtoupper(mb_substr($user->first_name ?? $user->name, 0, 1)) }}</span>
+                                </div>
 
-                                        {{-- Avatar tròn --}}
-                                        <div class="avatar-circle">
-                                            <span>{{ strtoupper(mb_substr($user->first_name ?? ($user->name ?? 'A'), 0, 1)) }}</span>
-                                            >>>>>>> 8b2d99e384608832df1c473dc5dbf415fe251c7f
-                                        </div>
+                                <div class="d-flex flex-column text-start">
+                                    <span class="fw-semibold user-name">
+                                        {{ $user->full_name ?? $user->name }}
+                                    </span>
+                                    <span class="user-role small opacity-75 text-capitalize">
+                                        {{ $user->role ?? 'admin' }}
+                                    </span>
+                                </div>
+                            </a>
 
-                                        {{-- Tên & Role --}}
-                                        <div class="d-flex flex-column text-start">
-                                            <span class="user-name fw-semibold">
-                                                <<<<<<< HEAD
-                                                    {{ $user->full_name ?? ($user->name ?? 'Admin') }}======={{ $user->full_name ?? ($user->name ?? 'Admin') }}>
-                                                    >>>>>> 8b2d99e384608832df1c473dc5dbf415fe251c7f
-                                            </span>
-                                            <span class="user-role small text-capitalize opacity-75">
-                                                {{ $user->role ?? 'admin' }}
-                                            </span>
-                                        </div>
+                            <ul class="dropdown-menu dropdown-menu-end">
+
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="bi bi-gear me-2"></i> Hồ sơ
                                     </a>
+                                </li>
 
-                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                        <li>
-                                            <a class="dropdown-item" href="#">
-                                                <i class="bi bi-gear me-2"></i> Hồ sơ
-                                            </a>
-                                        </li>
+                                <li><hr class="dropdown-divider"></li>
 
-                                        <li>
-                                            <hr class="dropdown-divider">
-                                        </li>
+                                <li>
+                                    <form action="{{ route('logout') }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
+                                        </button>
+                                    </form>
+                                </li>
 
-                                        <li>
-                                            {{-- KHÔNG JS, KHÔNG FORM ẨN, GỬI THẲNG POST --}}
-                                            <form action="{{ route('logout') }}" method="POST">
-                                                @csrf
-                                                <button type="submit"
-                                                    class="dropdown-item text-danger w-100 text-start">
-                                                    <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
-                                                </button>
-                                            </form>
-                                        </li>
-                                    </ul>
+                            </ul>
+
                         </li>
                     </ul>
-
 
                 </div>
             </nav>
 
-            <!-- Main Content -->
+            <!-- Content -->
             <main class="admin-main p-4 flex-grow-1">
                 <div class="admin-main-inner">
                     @yield('content')
                 </div>
             </main>
+
         </div>
     </div>
 
-    <!-- Bootstrap JS Bundle -->
+    <!-- JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        const sidebar = document.getElementById('sidebar');
-        const toggleBtn = document.getElementById('sidebarToggle');
-        const body = document.body;
-
-        toggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-            body.classList.toggle('sidebar-collapsed');
+        document.getElementById('sidebarToggle').addEventListener('click', function () {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.body.classList.toggle('sidebar-collapsed');
         });
     </script>
 
     @stack('scripts')
-</body>
 
+</body>
 </html>
