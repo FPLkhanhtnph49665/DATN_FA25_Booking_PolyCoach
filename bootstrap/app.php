@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // ✅ Alias cho middleware tuỳ chỉnh
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'checker' => \App\Http\Middleware\CheckerMiddleware::class,
         ]);
 
         // ✅ Thêm web middleware nếu cần
