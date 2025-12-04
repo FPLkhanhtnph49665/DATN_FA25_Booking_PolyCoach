@@ -345,20 +345,28 @@
                                         </li>
                                     @endif
 
+                                    {{-- Nếu là nhân viên checker --}}
+                                    @if(auth()->user()->role === 'checker')
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('checker.dashboard') }}">
+                                                <i class="fas fa-qrcode me-1"></i> Checker
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                    @endif
+
                                     <li>
                                         <a class="dropdown-item" href="{{ route('client.account.show') }}">
                                             <i class="fas fa-user-cog me-1"></i> Thông tin tài khoản
                                         </a>
                                     </li>
-
                                     <li>
-<<<<<<< HEAD
                                         <a class="dropdown-item" href="">
-=======
-                                        <a class="dropdown-item" href="{{ route('client.account.tickets') }}">
->>>>>>> 8b2d99e384608832df1c473dc5dbf415fe251c7f
-                                            <i class="fas fa-clock-rotate-left me-1"></i> Lịch sử đặt vé
-                                        </a>
+                                            <a class="dropdown-item" href="{{ route('client.account.tickets') }}">
+                                                <i class="fas fa-clock-rotate-left me-1"></i> Lịch sử đặt vé
+                                            </a>
                                     </li>
 
                                     <li>
@@ -366,17 +374,14 @@
                                             <i class="fas fa-location-dot me-1"></i> Địa chỉ của bạn
                                         </a>
                                     </li>
-
                                     <li>
                                         <a class="dropdown-item" href="">
                                             <i class="fas fa-key me-1"></i> Đặt lại mật khẩu
                                         </a>
                                     </li>
-
                                     <li>
                                         <hr class="dropdown-divider">
                                     </li>
-
                                     <li>
                                         <form action="{{ route('logout') }}" method="POST">
                                             @csrf
@@ -439,7 +444,7 @@
     <!-- Mobile Offcanvas Menu -->
     <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileMenu">
         <div class="offcanvas-header">
-            <img src="{{ asset('PolyCoach.gif') }}" alt="Logo" style="height: 40px;">
+            {{-- <img src="{{ asset('PolyCoach.gif') }}" alt="Logo" style="height: 40px;"> --}}
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
         </div>
         <div class="offcanvas-body">
