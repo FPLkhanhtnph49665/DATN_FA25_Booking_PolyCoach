@@ -351,9 +351,9 @@
                 {{-- Form thật của bạn --}}
                 @include('client.trips._search-form')
                 {{-- Gợi ý: trong _search-form bạn bọc từng input vào div.search-field,
-                 label dùng class search-field-label,
-                 icon dùng <span class="search-field-icon"><i class="..."></i></span>
-                 để style ăn theo. --}}
+                label dùng class search-field-label,
+                icon dùng <span class="search-field-icon"><i class="..."></i></span>
+                để style ăn theo. --}}
             </div>
 
             {{-- Thanh benefit giống hàng dưới banner của Vexere --}}
@@ -415,15 +415,51 @@
                 @forelse($popularTrips->take(8) as $trip)
                     <div class="col-6 col-md-3">
                         <div class="route-card">
-                            <div class="route-from">{{ $trip->route->diem_di }}</div>
-                            <i class="fas fa-arrow-right text-muted my-1"></i>
-                            <div class="route-to">{{ $trip->route->diem_den }}</div>
-                            <div class="route-price mt-2">{{ number_format($trip->gia_ve ?? 250000) }}đ</div>
-                            <div class="route-time">{{ $trip->gio_khoi_hanh ?? '6h' }}</div>
-                            <a href="{{ route('client.searchTrips', ['from' => $trip->route->diem_di, 'to' => $trip->route->diem_den]) }}"
-                                class="btn btn-outline-danger btn-sm w-100 mt-3 rounded-pill">
-                                Đặt ngay
-                            </a>
+
+                            {{-- Lấy route --}}
+                            @php
+                                $route = $trip->route;
+                            @endphp
+
+                            @if($route)
+                                <div class="d-flex align-items-center gap-2">
+
+                                    <span class="route-from">
+                                        {{ $route->fromCity->name ?? '---' }}
+                                    </span>
+
+                                    <i class="fas fa-arrow-right text-muted"></i>
+
+                                    <span class="route-to">
+                                        {{ $route->toCity->name ?? '---' }}
+                                    </span>
+
+                                </div>
+                            @else
+                                <div class="text-muted small">Không có route</div>
+                            @endif
+
+
+                            {{-- Giá vé --}}
+                            <div class="route-price mt-2">
+                                {{ number_format($trip->ticket_price ?? 0) }}đ
+                            </div>
+
+                            {{-- Giờ khởi hành --}}
+                            <div class="route-time">
+                                {{ \Carbon\Carbon::parse($trip->departure_time)->format('H:i') }}
+                            </div>
+
+                            {{-- Nút đặt ngay --}}
+                            @if($route)
+                                    <a href="{{ route('client.searchTrips', [
+                                    'from' => $route->from_city_id,
+                                    'to' => $route->to_city_id
+                                ]) }}" class="btn btn-outline-danger btn-sm w-100 mt-3 rounded-pill">
+                                        Đặt ngay
+                                    </a>
+                            @endif
+
                         </div>
                     </div>
                 @empty
@@ -431,5 +467,6 @@
                 @endforelse
             @endisset
         </div>
+
     </section>
 @endsection
