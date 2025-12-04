@@ -1,0 +1,36 @@
+.checker-sidebar {
+    width: 240px;
+    background: #f8f9fa;
+}
+
+.checker-sidebar .nav-link {
+    color: #333;
+}
+
+.checker-sidebar .nav-link.active {
+    background: #0d6efd;
+    color: white;
+    border-radius: 8px;
+}
+
+.checker-navbar {
+    background: #ffffff;
+    border-bottom: 1px solid #ddd;
+}
+
+.avatar-circle {
+    width: 36px;
+    height: 36px;
+    background: #0d6efd;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#sidebar.collapsed {
+    width: 0;
+    overflow: hidden;
+    transition: 0.3s;
+}
