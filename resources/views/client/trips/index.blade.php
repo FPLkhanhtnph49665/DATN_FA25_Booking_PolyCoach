@@ -3,7 +3,6 @@
 @section('content')
     <div class="container my-5">
         <div class="mb-3">
-            {{-- Giả định _filter.blade.php đã được cập nhật để sử dụng ID thành phố --}}
             @include('client.trips._filter')
         </div>
 
@@ -12,33 +11,38 @@
         @forelse($trips as $trip)
             <div class="vex-trip-card mb-3">
 
-                {{-- HEADER --}}
-                <div class="vex-header d-flex justify-content-between">
+                {{-- HEADER (Thông tin cốt lõi: Xe, Giờ, Giá) --}}
+                <div class="vex-header d-flex justify-content-between align-items-start">
 
                     <div class="d-flex gap-4 align-items-center">
 
-                        {{-- Ảnh xe (1 ảnh mặc định) --}}
-                        <img src="{{ $trip->bus->image ?? asset('images/bus-default.jpg') }}" class="vex-bus-img" />
+                        {{-- Ảnh xe --}}
+                        {{-- <img src="{{ $trip->bus->image ?? asset('images/bus-default.jpg') }}" class="vex-bus-img" alt="Hình ảnh xe" /> --}}
 
                         <div>
+                            {{-- Tên tuyến và Loại xe --}}
+                            <div class="fw-bold mb-1">
+                                {{ $trip->route->fromCity->name ?? 'Điểm đi' }} – {{ $trip->route->toCity->name ?? 'Điểm đến' }}
+                            </div>
+                            <div class="small text-muted mb-2">
+                                {{ $trip->bus->type ?? 'Xe giường nằm' }}
+                            </div>
 
-                            {{-- Giờ xuất phát – thời gian – giờ đến --}}
-                            <div class="d-flex gap-5 mt-2">
+                            {{-- Giờ xuất phát – thời gian – giờ đến (GIỮ NGUYÊN LOGIC CỦA BẠN) --}}
+                            <div class="d-flex gap-4 align-items-center">
 
                                 {{-- Giờ xuất phát --}}
                                 <div class="text-center">
                                     <div class="fw-bold fs-4">
-                                        {{-- SỬA: Dùng trường departure_time --}}
                                         {{ \Carbon\Carbon::parse($trip->departure_time)->format('H') }} giờ
                                         {{ \Carbon\Carbon::parse($trip->departure_time)->format('i') }} phút
                                     </div>
                                     <div class="small text-muted">
-                                        {{-- SỬA: Lấy tên thành phố từ quan hệ route->fromCity->name --}}
                                         {{ $trip->route->fromCity->name ?? 'Điểm đi' }}
                                     </div>
                                 </div>
 
-                                {{-- Đường kẻ thời lượng --}}
+                                {{-- Đường kẻ thời lượng (GIỮ NGUYÊN LOGIC CỦA BẠN) --}}
                                 @php
                                     // Tính thời gian di chuyển (giả định route->estimated_time là số phút hoặc string 'HH:MM:SS')
                                     $estimatedTime = optional($trip->route)->estimated_time;
@@ -53,7 +57,6 @@
                                 @endphp
                                 <div class="text-center futa-trip-duration">
                                     <div class="small text-muted">
-                                        {{-- SỬA: Sử dụng trường estimated_time của Route --}}
                                         {{ $durationText }}
                                     </div>
 
@@ -63,7 +66,6 @@
                                         <span class="dot"></span>
                                     </div>
                                     <div class="small text-muted">
-                                        {{-- SỬA: Lấy tên thành phố từ quan hệ route->toCity->name (chỉ hiển thị dự kiến) --}}
                                         ({{ $trip->route->toCity->name ?? 'Dự kiến' }})
                                     </div>
                                 </div>
@@ -71,98 +73,37 @@
                                 {{-- Giờ đến --}}
                                 <div class="text-center">
                                     <div class="fw-bold fs-4">
-                                        {{-- SỬA: Dùng trường arrival_time --}}
                                         {{ \Carbon\Carbon::parse($trip->arrival_time)->format('H') }} giờ
                                         {{ \Carbon\Carbon::parse($trip->arrival_time)->format('i') }} phút
                                     </div>
                                     <div class="small text-muted">
-                                        {{-- SỬA: Lấy tên thành phố từ quan hệ route->toCity->name --}}
                                         {{ $trip->route->toCity->name ?? 'Điểm đến' }}
                                     </div>
                                 </div>
-
-                            </div>
-
-                            {{-- Loại xe – ghế trống – giá --}}
-                            <div class="text-end">
-                                <div class="small text-muted mb-1">
-                                    {{-- SỬA: Lấy loại xe từ quan hệ bus->type --}}
-                                    {{ $trip->bus->type ?? 'Xe giường nằm' }}
-                                </div>
-                                <div class="small text-success mb-1">
-                                    {{-- SỬA: Gọi hàm availableSeats() trong model Trip --}}
-                                    {{ $trip->availableSeats() }} chỗ trống
-                                </div>
-                                <div class="futa-price">
-                                    {{-- SỬA: Dùng trường ticket_price --}}
-                                    {{ number_format($trip->ticket_price, 0, '.', '.') }}đ
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- BODY: tên tuyến, lưu ý, link phụ + nút Chọn chuyến --}}
-                        <div class="futa-trip-body">
-                            <div class="mb-2">
-                                <strong>
-                                    {{-- SỬA: Lấy tên thành phố từ quan hệ route->fromCity->name --}}
-                                    {{ $trip->route->fromCity->name ?? 'Điểm đi' }}
-                                    –
-                                    {{-- SỬA: Lấy tên thành phố từ quan hệ route->toCity->name --}}
-                                    {{ $trip->route->toCity->name ?? 'Điểm đến' }}
-                                </strong>
-                            </div>
-
-                            <div class="small text-muted mb-3">
-                                Lưu ý: Lý do xe không nhận đón trả tại khu vực cụ thể sẽ hiển thị tại đây.
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="small futa-links">
-                                    <a href="javascript:void(0)">Ghế ngồi</a>
-                                    <span> | </span>
-                                    <a href="javascript:void(0)">Lịch trình</a>
-                                    <span> | </span>
-                                    <a href="javascript:void(0)">Trung chuyển</a>
-                                    <span> | </span>
-                                    <a href="javascript:void(0)">Chính sách</a>
-                                </div>
-
-                                {{-- Link Chọn chuyến --}}
-                                <a href="{{ route('client.trips.show', ['trip_id' => $trip->id]) }}"
-                                    class="btn btn-warning rounded-pill px-4 fw-semibold futa-btn-choose">
-                                    Chọn chuyến
-                                </a>
                             </div>
                         </div>
                     </div>
 
-                    {{-- Giá + ghế trống --}}
-                    <div class="text-end">
-
-                        <div class="text-success fw-semibold mb-1">
+                    {{-- Giá + Ghế trống + Nút Chọn chuyến --}}
+                    <div class="text-end d-flex flex-column align-items-end">
+                        <div class="vex-price mb-1">
+                            {{ number_format($trip->ticket_price, 0, '.', '.') }}đ
+                        </div>
+                        <div class="text-success fw-semibold small mb-3">
                             Còn {{ $trip->availableSeats() }} chỗ trống
                         </div>
 
-                        <div class="vex-price">
-                            {{ number_format($trip->ticket_price, 0, '.', '.') }}đ
-                        </div>
-
+                        {{-- Nút Chọn chuyến (Chỉ còn một nút duy nhất) --}}
+                        <a href="{{ route('client.trips.show', ['trip_id' => $trip->id]) }}"
+                            class="btn vex-btn-choose fw-semibold px-4">
+                            Chọn chuyến
+                        </a>
                     </div>
                 </div>
 
-                {{-- BODY --}}
+                {{-- BODY (Chứa các link phụ trợ) --}}
                 <div class="vex-body">
-
-                    <div class="fw-semibold mb-2">
-                        {{ $trip->route->fromCity->name }} → {{ $trip->route->toCity->name }}
-                    </div>
-
-                    <div class="text-muted small mb-3">
-                        Lưu ý: điểm đón và điểm trả sẽ được hiển thị ở phần chi tiết bên dưới.
-                    </div>
-
                     <div class="d-flex justify-content-between align-items-center">
-
                         <div class="small vex-links">
                             <a href="#">Sơ đồ ghế</a>
                             <span>|</span>
@@ -177,17 +118,10 @@
                             <span>|</span>
                             <a href="#">Chính sách</a>
                         </div>
-
-                        <a href="{{ route('client.trips.show', ['trip_id' => $trip->id]) }}"
-                            class="btn vex-btn-choose fw-semibold px-4">
-                            Chọn chuyến
-                        </a>
-
                     </div>
-
                 </div>
 
-                {{-- KHUNG CHI TIẾT ĐÓN / TRẢ (ẨN MẶC ĐỊNH) --}}
+                {{-- KHUNG CHI TIẾT ĐÓN / TRẢ (ẨN MẶC ĐỊNH - GIỮ NGUYÊN LOGIC CỦA BẠN) --}}
                 @php
                     $pickupPoints = \App\Models\PickupDropoffPoint::where('route_id', $trip->route->id)
                         ->where('type', 'pickup')
@@ -203,7 +137,6 @@
                 @endphp
 
                 <div class="vex-detail-panel" id="detail-trip-{{ $trip->id }}" style="display:none;">
-                    {{-- Tabs đơn giản, chỉ kích hoạt Đón/trả --}}
                     <div class="vex-detail-tabs">
                         <button type="button" class="tab active">Đón/trả</button>
                         <button type="button" class="tab" disabled>Đánh giá</button>
@@ -226,12 +159,12 @@
                                 <h6 class="fw-bold mb-2">Điểm đón</h6>
                                 @forelse($pickupPoints as $p)
                                     <div class="vex-point-row">
-                                        <span class="time">{{ $p->time }}</span>
+                                        <span class="time">{{ \Carbon\Carbon::parse($p->time)->format('H:i') }}</span>
                                         <span class="dot">•</span>
                                         <span class="text">
                                             {{ $p->name }}
                                             @if ($p->address)
-                                                – {{ $p->address }}
+                                                – <span class="text-muted">{{ $p->address }}</span>
                                             @endif
                                         </span>
                                     </div>
@@ -244,12 +177,12 @@
                                 <h6 class="fw-bold mb-2">Điểm trả</h6>
                                 @forelse($dropoffPoints as $p)
                                     <div class="vex-point-row">
-                                        <span class="time">{{ $p->time }}</span>
+                                        <span class="time">{{ \Carbon\Carbon::parse($p->time)->format('H:i') }}</span>
                                         <span class="dot">•</span>
                                         <span class="text">
                                             {{ $p->name }}
                                             @if ($p->address)
-                                                – {{ $p->address }}
+                                                – <span class="text-muted">{{ $p->address }}</span>
                                             @endif
                                         </span>
                                     </div>
@@ -268,7 +201,9 @@
 
     </div>
 
+    {{-- CSS BỔ SUNG CHO KHUNG CHI TIẾT --}}
     <style>
+        /* Các CSS đã cung cấp */
         .vex-trip-card {
             border-radius: 14px;
             border: 1px solid #eaeaea;
@@ -342,6 +277,8 @@
         .vex-btn-choose {
             background: #ffd400;
             border-radius: 8px;
+            border: none;
+            color: #000;
         }
 
         .vex-btn-choose:hover {
@@ -352,7 +289,8 @@
         .vex-detail-panel {
             margin: 0 20px 16px 20px;
             border-radius: 0 0 14px 14px;
-            border-top: 1px solid #f2f2f2;
+            border: 1px solid #f2f2f2; /* Thêm border để không bị lỗi layout khi mở */
+            border-top: none;
             background: #fff;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
         }
@@ -363,6 +301,7 @@
             gap: 8px;
             padding: 10px 16px;
             border-bottom: 1px solid #f2f2f2;
+            position: relative; /* Thêm để nút đóng căn đúng */
         }
 
         .vex-detail-tabs .tab {
@@ -383,10 +322,91 @@
         .vex-detail-tabs .tab[disabled] {
             color: #999;
         }
-
-        .futa-btn-choose:hover {
-            background-color: #ff8f26;
-            border-color: #ff8f26;
-            color: #fff;
+        
+        /* Bổ sung CSS cho khung chi tiết */
+        .vex-detail-body {
+            padding: 20px 16px;
+        }
+        .vex-note {
+            padding: 10px;
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        .vex-point-row {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            gap: 8px;
+        }
+        .vex-point-row .time {
+            font-weight: 600;
+            color: #000;
+            width: 50px; /* Cố định chiều rộng cho giờ */
+        }
+        .vex-point-row .dot {
+            color: #ff7a00;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+        .vex-point-row .text {
+            flex: 1;
+            font-size: 0.9rem;
+        }
+        .btn-close-detail {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            font-size: 1.2rem;
+            color: #666;
+            cursor: pointer;
         }
     </style>
+@endsection
+
+{{-- THÊM SCRIPT ĐỂ XỬ LÝ SỰ KIỆN MỞ/ĐÓNG DETAIL PANEL --}}
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleDetail = (tripId, isClosing = false) => {
+            const panel = document.getElementById(`detail-trip-${tripId}`);
+            const link = document.querySelector(`.vex-link-dontra[data-trip-id="${tripId}"]`);
+            
+            if (panel && link) {
+                if (panel.style.display === 'block' || isClosing) {
+                    panel.style.display = 'none';
+                    link.textContent = 'Đón/trả';
+                } else {
+                    // Đóng tất cả panel khác trước khi mở panel mới
+                    document.querySelectorAll('.vex-detail-panel').forEach(p => p.style.display = 'none');
+                    document.querySelectorAll('.vex-link-dontra').forEach(l => l.textContent = 'Đón/trả');
+
+                    panel.style.display = 'block';
+                    link.textContent = 'Đóng chi tiết';
+                }
+            }
+        };
+
+        // Bắt sự kiện click vào link Đón/trả
+        document.querySelectorAll('.vex-link-dontra').forEach(link => {
+            link.addEventListener('click', function() {
+                const tripId = this.getAttribute('data-trip-id');
+                toggleDetail(tripId);
+            });
+        });
+
+        // Bắt sự kiện click vào nút Đóng (✕)
+        document.querySelectorAll('.btn-close-detail').forEach(button => {
+            button.addEventListener('click', function() {
+                const tripId = this.getAttribute('data-trip-id');
+                toggleDetail(tripId, true);
+            });
+        });
+    });
+</script>
+@endpush
