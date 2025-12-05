@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
 
             // Số ghế
-            $table->integer('seat_number');
+            $table->string('seat_number');
             $table->string('seat_code', 10)->nullable();
 
             // Trạng thái vé

@@ -14,7 +14,7 @@ class Payment extends Model
         'ticket_id',       // FK to tickets
         'user_id',         // FK to users
         'amount',          // payment amount
-        'method',          // payment method: cash / momo / bank / etc.
+        'payment_method',          // payment method: cash / momo / bank / etc.
         'status',          // paid / pending / failed
         'transaction_code' // unique transaction identifier
     ];

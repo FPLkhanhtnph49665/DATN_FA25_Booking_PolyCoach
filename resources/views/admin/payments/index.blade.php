@@ -18,8 +18,7 @@
         </div>
 
         <div class="d-flex gap-2">
-            {{-- Nếu sau này có màn tạo thanh toán tay thì mở route ra --}}
-            <a href="#"
+            <a href="{{ route('admin.payments.create') }}"
                class="btn btn-primary d-flex align-items-center gap-1">
                 <i class="bi bi-plus-circle"></i>
                 <span>Thêm thanh toán mới</span>
@@ -33,27 +32,22 @@
         </div>
     </div>
 
-    {{-- Thông báo lỗi nhanh (nếu có) --}}
+    {{-- Error message --}}
     @if($errors->any())
         <div class="alert alert-danger py-2 small">
             {{ $errors->first() }}
         </div>
     @endif
 
-    {{-- Bộ lọc / tìm kiếm --}}
+    {{-- Filters --}}
     <div class="card border-0 mb-4">
         <div class="card-body">
             <form method="GET" action="{{ route('admin.payments.index') }}" class="row g-3 align-items-end">
                 <div class="col-md-5">
                     <label for="search" class="form-label text-muted small mb-1">Tìm kiếm</label>
-                    <input
-                        type="text"
-                        name="search"
-                        id="search"
-                        class="form-control"
+                    <input type="text" name="search" id="search" class="form-control"
                         placeholder="Tìm theo tên người dùng, email hoặc mã vé..."
-                        value="{{ request('search') }}"
-                    >
+                        value="{{ request('search') }}">
                 </div>
 
                 <div class="col-md-3">
@@ -81,7 +75,7 @@
         </div>
     </div>
 
-    {{-- Bảng danh sách thanh toán --}}
+    {{-- Payments table --}}
     <div class="card border-0">
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -105,20 +99,14 @@
                                     {{ $payments->firstItem() + $loop->index }}
                                 </td>
 
-                                {{-- Vé --}}
+                                {{-- Ticket --}}
                                 <td>
-                                    @php
-                                        $ticket = $payment->ticket ?? null;
-                                    @endphp
-
-                                    @if($ticket)
+                                    @if($payment->ticket)
                                         <div class="d-flex flex-column">
-                                            <span class="fw-semibold">
-                                                Vé #{{ $ticket->id }}
-                                            </span>
-                                            @if(!empty($ticket->trip?->ma_chuyen))
+                                            <span class="fw-semibold">Vé #{{ $payment->ticket->id }}</span>
+                                            @if(!empty($payment->ticket->trip?->ma_chuyen))
                                                 <span class="text-muted small">
-                                                    Mã chuyến: {{ $ticket->trip->ma_chuyen }}
+                                                    Mã chuyến: {{ $payment->ticket->trip->ma_chuyen }}
                                                 </span>
                                             @endif
                                         </div>
@@ -127,33 +115,32 @@
                                     @endif
                                 </td>
 
-                                {{-- Người dùng --}}
+                                {{-- User --}}
                                 <td>
-                                    <div class="d-flex flex-column">
-                                        <span class="fw-semibold">
-                                            {{ $payment->user->full_name ?? $payment->user->name ?? 'N/A' }}
-                                        </span>
-                                        @if(!empty($payment->user?->email))
-                                            <span class="text-muted small">
-                                                {{ $payment->user->email }}
-                                            </span>
-                                        @endif
-                                    </div>
+                                    @if($payment->user)
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-semibold">{{ $payment->user->full_name ?? $payment->user->name }}</span>
+                                            @if(!empty($payment->user->email))
+                                                <span class="text-muted small">{{ $payment->user->email }}</span>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <span class="text-muted small">N/A</span>
+                                    @endif
                                 </td>
 
-                                {{-- Số tiền --}}
+                                {{-- Amount --}}
                                 <td>
                                     <span class="badge bg-secondary-subtle text-light border border-primary-subtle">
-                                        {{ number_format($payment->so_tien, 0, ',', '.') }}₫
+                                        {{ number_format($payment->amount, 0, ',', '.') }}₫
                                     </span>
                                 </td>
 
-                                {{-- Phương thức --}}
+                                {{-- Payment method --}}
                                 <td>
                                     @php
-                                        $method = $payment->phuong_thuc ?? '-';
+                                        $method = $payment->payment_method ?? '-';
                                     @endphp
-
                                     @if($method !== '-')
                                         <span class="badge bg-info-subtle text-info border border-info-subtle">
                                             {{ strtoupper($method) }}
@@ -163,34 +150,31 @@
                                     @endif
                                 </td>
 
-                                {{-- Trạng thái --}}
+                                {{-- Status --}}
                                 <td>
-                                    @if($payment->trang_thai == 'pending')
+                                    @php $status = $payment->status; @endphp
+                                    @if($status === 'pending')
                                         <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
-                                            <i class="bi bi-hourglass-split me-1"></i>
-                                            Chờ xử lý
+                                            <i class="bi bi-hourglass-split me-1"></i> Chờ xử lý
                                         </span>
-                                    @elseif($payment->trang_thai == 'success')
+                                    @elseif($status === 'success')
                                         <span class="badge bg-success-subtle text-success border border-success-subtle">
-                                            <i class="bi bi-check-circle me-1"></i>
-                                            Thành công
+                                            <i class="bi bi-check-circle me-1"></i> Thành công
                                         </span>
                                     @else
                                         <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
-                                            <i class="bi bi-x-circle me-1"></i>
-                                            Thất bại
+                                            <i class="bi bi-x-circle me-1"></i> Thất bại
                                         </span>
                                     @endif
                                 </td>
 
-                                {{-- Ngày thanh toán --}}
+                                {{-- Paid at --}}
                                 <td class="text-muted small">
                                     {{ $payment->created_at?->format('d/m/Y H:i') ?? '-' }}
                                 </td>
 
-                                {{-- Hành động --}}
+                                {{-- Actions --}}
                                 <td class="text-center">
-                                    {{-- Hiện tại chưa có route show/edit cụ thể, ông thay # bằng route khi có --}}
                                     <a href="#"
                                        class="btn btn-sm btn-outline-info me-1">
                                         <i class="bi bi-eye"></i>
@@ -234,50 +218,49 @@
 @endsection
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    @if(session('success'))
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Thành công!',
-                text: @json(session('success')),
-                showConfirmButton: false,
-                timer: 2000
-            });
-        </script>
-    @endif
+@if(session('success'))
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Thành công!',
+        text: @json(session('success')),
+        showConfirmButton: false,
+        timer: 2000
+    });
+</script>
+@endif
 
-    @if(session('error'))
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi!',
-                text: @json(session('error')),
-                showConfirmButton: true
-            });
-        </script>
-    @endif
+@if(session('error'))
+<script>
+    Swal.fire({
+        icon: 'error',
+        title: 'Lỗi!',
+        text: @json(session('error')),
+        showConfirmButton: true
+    });
+</script>
+@endif
 
-    <script>
-        // SweetAlert2 confirm xóa thanh toán
-        document.querySelectorAll('.delete-payment-form').forEach(form => {
-            form.addEventListener('submit', function (e) {
-                e.preventDefault();
-                Swal.fire({
-                    title: 'Bạn có chắc muốn xóa thanh toán này?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Xóa',
-                    cancelButtonText: 'Hủy'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                });
-            });
+<script>
+document.querySelectorAll('.delete-payment-form').forEach(form => {
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        Swal.fire({
+            title: 'Bạn có chắc muốn xóa thanh toán này?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
         });
-    </script>
+    });
+});
+</script>
 @endpush

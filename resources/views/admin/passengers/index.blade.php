@@ -18,7 +18,7 @@
         </div>
 
         <div class="d-flex gap-2">
-            <a href="#"
+            <a href="{{ route('admin.passengers.create') }}"
                class="btn btn-primary d-flex align-items-center gap-1">
                 <i class="bi bi-plus-circle"></i>
                 <span>Thêm hành khách mới</span>
@@ -155,8 +155,8 @@
 
                                 {{-- Trạng thái vé --}}
                                 <td>
-                                    @if(!empty($ticket?->trang_thai_label))
-                                        {!! $ticket->trang_thai_label !!}
+                                    @if(!empty($ticket?->status))
+                                        {!! $ticket->status !!}
                                     @else
                                         <span class="text-muted small">-</span>
                                     @endif
