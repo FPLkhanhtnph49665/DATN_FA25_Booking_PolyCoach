@@ -412,58 +412,38 @@
 
         <div class="row g-4">
             @isset($popularTrips)
-                @forelse($popularTrips->take(8) as $trip)
+                {{-- Sửa: Đảm bảo chỉ lặp qua 8 chuyến (nếu cần, mặc dù query trong Controller đã take(8)) --}}
+                @forelse($popularTrips as $trip)
                     <div class="col-6 col-md-3">
                         <div class="route-card">
+                            {{-- 1. Điểm đi: Truy cập tên thành phố qua quan hệ Route -> fromCity -> name --}}
+                            <div class="route-from">{{ $trip->route->fromCity->name ?? 'Không rõ' }}</div>
 
-                            {{-- Lấy route --}}
-                            @php
-                                $route = $trip->route;
-                            @endphp
+                            <i class="fas fa-arrow-right text-muted my-1"></i>
 
-                            @if($route)
-                                <div class="d-flex align-items-center gap-2">
+                            {{-- 2. Điểm đến: Truy cập tên thành phố qua quan hệ Route -> toCity -> name --}}
+                            <div class="route-to">{{ $trip->route->toCity->name ?? 'Không rõ' }}</div>
 
-                                    <span class="route-from">
-                                        {{ $route->fromCity->name ?? '---' }}
-                                    </span>
+                            {{-- 3. Giá vé: Sử dụng trường ticket_price mới và cung cấp giá mặc định nếu cần --}}
+                            <div class="route-price mt-2">{{ number_format($trip->ticket_price ?? 250000) }}đ</div>
 
-                                    <i class="fas fa-arrow-right text-muted"></i>
-
-                                    <span class="route-to">
-                                        {{ $route->toCity->name ?? '---' }}
-                                    </span>
-
-                                </div>
-                            @else
-                                <div class="text-muted small">Không có route</div>
-                            @endif
-
-
-                            {{-- Giá vé --}}
-                            <div class="route-price mt-2">
-                                {{ number_format($trip->ticket_price ?? 0) }}đ
+                            {{-- 4. Giờ khởi hành: Sử dụng trường departure_time mới --}}
+                            <div class="route-time">{{ Carbon\Carbon::parse($trip->departure_time)->format('H:i') ?? '6:00' }}
                             </div>
 
-                            {{-- Giờ khởi hành --}}
-                            <div class="route-time">
-                                {{ \Carbon\Carbon::parse($trip->departure_time)->format('H:i') }}
-                            </div>
-
-                            {{-- Nút đặt ngay --}}
-                            @if($route)
-                                    <a href="{{ route('client.searchTrips', [
-                                    'from' => $route->from_city_id,
-                                    'to' => $route->to_city_id
-                                ]) }}" class="btn btn-outline-danger btn-sm w-100 mt-3 rounded-pill">
-                                        Đặt ngay
-                                    </a>
-                            @endif
-
+                            {{-- 5. Link Đặt ngay: Truyền ID thành phố và ID thành phố đến qua URL --}}
+                            <a href="{{ route('client.searchTrips', [
+                                'from_city_id' => $trip->route->from_city_id,
+                                'to_city_id' => $trip->route->to_city_id,
+                                'departure_date' => \Carbon\Carbon::now()->format('Y-m-d'), // Đặt ngày đi là ngày hiện tại hoặc ngày gần nhất
+                            ]) }}"
+                                class="btn btn-outline-danger btn-sm w-100 mt-3 rounded-pill">
+                                Đặt ngay
+                            </a>
                         </div>
                     </div>
                 @empty
-                    <p class="text-muted col-12 text-center">Chưa có tuyến phổ biến.</p>
+                    <p class="text-muted col-12 text-center">Chưa có chuyến đi phổ biến nào.</p>
                 @endforelse
             @endisset
         </div>

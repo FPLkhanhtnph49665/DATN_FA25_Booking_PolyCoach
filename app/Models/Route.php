@@ -41,21 +41,19 @@ class Route extends Model
     {
         return $this->hasMany(DropoffPoint::class)->orderBy('order');
     }
-
-
-    // =====================
-    // 💡 Accessors
-    // =====================
-
     public function fromCity()
     {
         return $this->belongsTo(City::class, 'from_city_id');
     }
-
     public function toCity()
     {
         return $this->belongsTo(City::class, 'to_city_id');
     }
+    
+    
+    // =====================
+    // 💡 Accessors
+    // =====================
 
     public function getTenTuyenAttribute(): string
     {

@@ -363,10 +363,9 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="">
-                                            <a class="dropdown-item" href="{{ route('client.account.tickets') }}">
-                                                <i class="fas fa-clock-rotate-left me-1"></i> Lịch sử đặt vé
-                                            </a>
+                                        <a class="dropdown-item" href="{{ route('client.account.tickets') }}">
+                                            <i class="fas fa-clock-rotate-left me-1"></i> Lịch sử đặt vé
+                                        </a>
                                     </li>
 
                                     <li>

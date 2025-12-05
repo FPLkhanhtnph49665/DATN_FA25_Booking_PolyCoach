@@ -44,10 +44,12 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/thong-tin-tai-khoan', [AuthenticatedSessionController::class, 'update'])
         ->name('client.account.update');
+
     Route::get('/thong-tin-tai-khoan/lich-su-mua-ve', [AuthenticatedSessionController::class, 'ticketHistory'])
         ->name('client.account.tickets');
-    // Route::post('/dat-ve', [ClientBookingController::class, 'store'])
-        // ->name('client.bookings.store');
+        
+    Route::post('/dat-ve', [ClientBookingController::class, 'store'])
+        ->name('client.bookings.store');
 
     Route::get('/da-dat-ve/{booking}', [ClientBookingController::class, 'show'])
         ->name('client.bookings.show');

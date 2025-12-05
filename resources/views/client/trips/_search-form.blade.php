@@ -1,25 +1,55 @@
 <div class="vx-wrapper">
     <form action="{{ route('client.searchTrips') }}" method="GET" class="vx-form">
 
-        {{-- Nơi xuất phát --}}
-        <div class="vx-field">
-            <i class="fas fa-location-dot vx-icon"></i>
-            <input type="text" name="from" class="vx-input" placeholder="Nơi xuất phát"
-                   value="{{ request('from') }}" required>
+<div class="pc-search-form-wrapper">
+
+    <form action="{{ route('client.searchTrips') }}" method="GET" class="row g-3 align-items-end">
+        {{-- Điểm đi --}}
+        <div class="col-lg-3 col-md-6">
+            <label class="form-label fw-semibold mb-1">Điểm đi</label>
+            <div class="futa-input">
+                {{-- Đã thay đổi name thành 'from_city_id' và value là ID của City --}}
+                <select name="from_city_id" class="form-select border-0 shadow-none p-0" required>
+                    <option value="">-- Chọn điểm đi --</option>
+                    {{-- Giả định $allFrom là Collection các đối tượng City --}}
+                    @foreach ($allFrom as $fromCity)
+                        <option value="{{ $fromCity->id }}" 
+                            {{ request('from_city_id') == $fromCity->id ? 'selected' : '' }}>
+                            {{ $fromCity->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
         </div>
 
-        {{-- Nơi đến --}}
-        <div class="vx-field">
-            <i class="fas fa-map-marker-alt vx-icon"></i>
-            <input type="text" name="to" class="vx-input" placeholder="Nơi đến"
-                   value="{{ request('to') }}" required>
+        {{-- Điểm đến --}}
+        <div class="col-lg-3 col-md-6">
+            <label class="form-label fw-semibold mb-1">Điểm đến</label>
+            <div class="futa-input">
+                {{-- Đã thay đổi name thành 'to_city_id' và value là ID của City --}}
+                <select name="to_city_id" class="form-select border-0 shadow-none p-0" required>
+                    <option value="">-- Chọn điểm đến --</option>
+                    {{-- Giả định $allTo là Collection các đối tượng City --}}
+                    @foreach ($allTo as $toCity)
+                        <option value="{{ $toCity->id }}" 
+                            {{ request('to_city_id') == $toCity->id ? 'selected' : '' }}>
+                            {{ $toCity->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
         </div>
 
         {{-- Ngày đi --}}
-        <div class="vx-field">
-            <i class="fas fa-calendar-alt vx-icon"></i>
-            <input type="text" name="date" id="vx_departure_date" class="vx-input"
-                   placeholder="Ngày đi" value="{{ request('date') }}" required>
+        <div class="col-lg-3 col-md-6">
+            <label class="form-label fw-semibold mb-1">Ngày đi</label>
+            <div class="futa-input">
+                <input type="date" name="departure_date" class="form-control border-0 shadow-none p-0"
+                    {{-- Cập nhật để nhận request('departure_date') hoặc ngày hiện tại Y-m-d --}}
+                    value="{{ request('departure_date', date('Y-m-d')) }}" 
+                    min="{{ date('Y-m-d') }}" {{-- Thêm minDate để hạn chế chọn ngày cũ --}}
+                    required>
+            </div>
         </div>
 
         {{-- Ngày về --}}
@@ -39,6 +69,7 @@
 
     </form>
 </div>
+
 
 <style>
 /* ===== VEXERE UI CHUẨN ===== */
@@ -138,40 +169,24 @@
 }
 </style>
 
+{{-- ========== Script (Đã xóa phần Flatpickr không cần thiết) ========== --}}
+{{-- Giữ nguyên script nếu bạn vẫn muốn dùng flatpickr cho trường ngày về (nếu có) --}}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Lấy input date
+        const departureInput = document.querySelector('input[name="departure_date"]');
+        
+        // Thiết lập Flatpickr cho input date (chỉ dùng để định dạng và giới hạn ngày)
+        flatpickr(departureInput, {
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            disableMobile: true
+        });
 
-    const departInput = document.getElementById('vx_departure_date');
-    const returnInput = document.getElementById('vx_return_date');
-    const btnReturn = document.getElementById('vx_btn_return');
-    const returnText = document.getElementById('vx_return_text');
-    const defaultText = returnText.textContent;
-
-    /* Laravel dùng Y-m-d => Flatpickr phải dùng format này */
-    flatpickr(departInput, {
-        dateFormat: "Y-m-d",
-        minDate: "today",
-        disableMobile: true
+        // Xóa các script không liên quan đến ngày về (pc_return_date, pc_btn_add_return)
+        // Nếu bạn có tính năng khứ hồi, hãy giữ lại phần script Flatpickr cho ngày về.
     });
-
-    const returnPicker = flatpickr(returnInput, {
-        dateFormat: "Y-m-d",
-        minDate: "today",
-        disableMobile: true,
-        onChange(selectedDates) {
-            if (selectedDates.length) {
-                let d = selectedDates[0];
-                returnText.textContent =
-                    `Ngày về: ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
-            } else {
-                returnText.textContent = defaultText;
-            }
-        }
-    });
-
-    btnReturn.addEventListener('click', () => returnPicker.open());
-});
 </script>

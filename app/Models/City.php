@@ -34,7 +34,7 @@ class City extends Model
     {
         return $this->hasMany(Route::class, 'to_city_id');
     }
-
+    
     // =====================
     // 💡 Accessors
     // =====================
