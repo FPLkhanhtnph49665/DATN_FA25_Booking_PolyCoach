@@ -23,7 +23,7 @@ class PaymentController extends Controller
             $query->where('transaction_code', 'like', "%$keyword%")
                 ->orWhereHas('user', function ($q) use ($keyword) {
                     $q->where('first_name', 'like', "%$keyword%")
-                      ->orWhere('last_name', 'like', "%$keyword%");
+                        ->orWhere('last_name', 'like', "%$keyword%");
                 });
         }
 
@@ -51,16 +51,15 @@ class PaymentController extends Controller
             'ticket_id'        => 'required|exists:tickets,id',
             'transaction_code' => 'required|string|max:50|unique:payments,transaction_code',
             'amount'           => 'required|numeric|min:0',
-            'method'           => 'required|in:cash,momo,bank',
-            'status'           => 'required|in:0,1',
-        ], [
-            'transaction_code.unique' => 'This transaction code already exists!',
+            'payment_method'   => 'required|in:cash,momo,bank',
+            'status'           => 'required|in:pending,success,failed', // <- sửa đây
         ]);
+
 
         Payment::create($data);
 
         return redirect()->route('admin.payments.index')
-                         ->with('success', 'Payment created successfully!');
+            ->with('success', 'Payment created successfully!');
     }
 
     /**
@@ -99,7 +98,7 @@ class PaymentController extends Controller
         $payment->update($data);
 
         return redirect()->route('admin.payments.index')
-                         ->with('success', 'Payment updated successfully!');
+            ->with('success', 'Payment updated successfully!');
     }
 
     /**
@@ -109,7 +108,7 @@ class PaymentController extends Controller
     {
         $payment->delete();
         return redirect()->route('admin.payments.index')
-                         ->with('success', 'Payment deleted successfully!');
+            ->with('success', 'Payment deleted successfully!');
     }
 
     /**
@@ -130,7 +129,7 @@ class PaymentController extends Controller
         $payment->restore();
 
         return redirect()->route('admin.payments.index')
-                         ->with('success', 'Payment restored successfully!');
+            ->with('success', 'Payment restored successfully!');
     }
 
     /**
@@ -142,6 +141,6 @@ class PaymentController extends Controller
         $payment->forceDelete();
 
         return redirect()->route('admin.payments.trash')
-                         ->with('success', 'Payment permanently deleted!');
+            ->with('success', 'Payment permanently deleted!');
     }
 }

@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Models\Passenger;
+use App\Models\Trip;
 use App\Models\Ticket;
+use App\Models\Passenger;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class PassengerController extends Controller
 {
@@ -34,30 +35,42 @@ class PassengerController extends Controller
      * Show form to create a new passenger.
      */
     public function create()
-    {
-        $tickets = Ticket::all();
-        return view('admin.passengers.create', compact('tickets'));
-    }
+{
+    $tickets = Ticket::with('user')->get();
+    $trips = Trip::with('route.fromCity', 'route.toCity')->get();
 
-    /**
-     * Store a newly created passenger.
-     */
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name'      => 'required|string|max:255',
-            'email'     => 'nullable|email|max:255',
-            'phone'     => 'required|string|max:15',
-            'gender'    => 'required|in:male,female,other',
-            'age'       => 'nullable|integer|min:0|max:120',
-            'ticket_id' => 'required|exists:tickets,id',
-        ]);
+    return view('admin.passengers.create', compact('tickets', 'trips'));
+}
 
-        Passenger::create($data);
+public function store(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'phone' => 'nullable|string|max:20',
+        'age' => 'nullable|integer|min:1|max:120',
+        'seat_number' => 'required|string|max:10',
+        'ticket_id' => 'nullable|exists:tickets,id',
+        'trip_id' => 'required|exists:trips,id',
+    ], [
+        'name.required' => 'Vui lòng nhập tên hành khách.',
+        'seat_number.required' => 'Vui lòng nhập số ghế.',
+        'trip_id.required' => 'Vui lòng chọn chuyến.',
+    ]);
 
-        return redirect()->route('admin.passengers.index')
-                         ->with('success', 'Passenger created successfully!');
-    }
+    Passenger::create([
+        'name' => $request->name,
+        'phone' => $request->phone,
+        'age' => $request->age,
+        'seat_number' => $request->seat_number,
+        'ticket_id' => $request->ticket_id,
+        'trip_id' => $request->trip_id,
+    ]);
+
+    return redirect()
+        ->route('admin.passengers.index')
+        ->with('success_toast', 'Thêm hành khách thành công!');
+}
+
 
     /**
      * Display the specified passenger.

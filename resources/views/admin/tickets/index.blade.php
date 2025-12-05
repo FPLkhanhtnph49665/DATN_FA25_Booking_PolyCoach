@@ -142,7 +142,7 @@
                                 {{-- Số ghế --}}
                                 <td>
                                     @php
-                                        $seatInfo = $ticket->seat_numbers ?? $ticket->so_ghe ?? null;
+                                        $seatInfo = $ticket->seat_number ?? $ticket->seat_number ?? null;
                                     @endphp
 
                                     @if(is_array($seatInfo))
@@ -160,12 +160,12 @@
 
                                 {{-- Trạng thái --}}
                                 <td>
-                                    @if($ticket->trang_thai === 'pending')
+                                    @if($ticket->status === 'pending')
                                         <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
                                             <i class="bi bi-hourglass-split me-1"></i>
                                             Chờ thanh toán
                                         </span>
-                                    @elseif($ticket->trang_thai === 'paid')
+                                    @elseif($ticket->status === 'paid')
                                         <span class="badge bg-success-subtle text-success border border-success-subtle">
                                             <i class="bi bi-check-circle me-1"></i>
                                             Đã thanh toán
@@ -181,7 +181,7 @@
                                 {{-- Phương thức thanh toán --}}
                                 <td>
                                     @php
-                                        $method = $ticket->phuong_thuc_thanh_toan ?? '-';
+                                        $method = $ticket->payment_method ?? '-';
                                     @endphp
 
                                     @if($method !== '-')

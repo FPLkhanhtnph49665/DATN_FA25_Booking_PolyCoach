@@ -27,6 +27,8 @@ return new class extends Migration
             // Trạng thái thanh toán
             $table->enum('status', ['pending', 'success', 'failed'])->default('pending');
 
+            $table->string('transaction_code')->unique()->nullable();
+
             $table->timestamps();
             $table->softDeletes();
 
