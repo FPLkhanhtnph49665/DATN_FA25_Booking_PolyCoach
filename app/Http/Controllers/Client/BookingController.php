@@ -112,8 +112,8 @@ class BookingController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('client.trips.show', $trip->id) // Hoặc trang "Cảm ơn/Lịch sử vé"
-                ->with('success', 'Đặt vé thành công! Vui lòng thanh toán ' . number_format($totalAmount) . 'đ');
+                ->route('client.account.tickets') // Hoặc trang "Cảm ơn/Lịch sử vé"
+                ->with('success', 'Đặt vé thành công!');
 
         } catch (\Exception $e) {
             DB::rollBack();

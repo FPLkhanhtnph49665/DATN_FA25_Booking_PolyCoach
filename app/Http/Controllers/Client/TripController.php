@@ -119,7 +119,8 @@ class TripController extends Controller
             'route.pickupPoints',
             'route.dropoffPoints',
             'bus',
-            'tickets.passengers'
+            'tickets',
+            'bookings',
         ])->findOrFail($tripId);
 
         // Gọi method selectSeat, có thể truyền tripId hoặc $trip trực tiếp
@@ -133,7 +134,8 @@ class TripController extends Controller
      */
     public function selectSeat($tripId)
     {
-        $trip = Trip::with(['route', 'tickets.passengers'])->findOrFail($tripId);
+        // Loại bỏ 'tickets.passengers' khỏi Eager Loading
+        $trip = Trip::with(['route', 'tickets'])->findOrFail($tripId);
         $route = $trip->route;
 
         // Ghế đã bán

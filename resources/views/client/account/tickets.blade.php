@@ -177,7 +177,20 @@
                     </form>
                 </div>
             </div>
+            {{-- MODAL THÔNG BÁO THÀNH CÔNG --}}
+            <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-body text-center p-5">
+                            <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
 
+                            <h3 class="mt-3 text-success">Đặt vé thành công!</h3>
+                            <p class="text-muted">Vé của bạn đã được đặt. Vui lòng kiểm tra email hoặc lịch sử đặt vé.</p>
+                            <button type="button" class="btn btn-success mt-3" data-bs-dismiss="modal">Đóng</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             {{-- MAIN CONTENT --}}
             <div class="col-lg-9">
                 <div class="account-main-card">
@@ -395,13 +408,11 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // ... (Logic Modal Chi Tiết Vé - Giữ nguyên) ...
             var ticketModal = document.getElementById('ticketDetailModal');
-
             ticketModal.addEventListener('show.bs.modal', function(event) {
-                // Nút đã kích hoạt modal
+                // ... (Logic nạp dữ liệu vào ticketDetailModal) ...
                 var button = event.relatedTarget;
-
-                // Lấy thông tin từ data-* attributes
                 var id = button.getAttribute('data-id');
                 var route = button.getAttribute('data-route');
                 var time = button.getAttribute('data-time');
@@ -412,7 +423,6 @@
                 var total = button.getAttribute('data-total');
                 var payment = button.getAttribute('data-payment');
 
-                // Cập nhật nội dung Modal
                 document.getElementById('modal-ticket-id').textContent = id;
                 document.getElementById('modal-route').textContent = route;
                 document.getElementById('modal-time').textContent = time;
@@ -423,6 +433,29 @@
                 document.getElementById('modal-total').textContent = total;
                 document.getElementById('modal-payment').textContent = payment;
             });
+
+
+            // =======================================================
+            // PHẦN SỬA LỖI HIỂN THỊ MODAL THÔNG BÁO THÀNH CÔNG
+            // =======================================================
+
+            // 1. Lấy giá trị session, bọc trong '|| false' để tránh lỗi cú pháp JS khi session rỗng
+            const successMessage = "{{ session('success') }}" || false;
+
+            if (successMessage && successMessage.trim() === 'Đặt vé thành công!') {
+                const successModalElement = document.getElementById('successModal');
+
+                // 2. Kiểm tra xem Bootstrap đã được tải chưa và element có tồn tại không
+                if (typeof bootstrap !== 'undefined' && successModalElement) {
+                    // Khởi tạo và hiển thị Modal
+                    const successModal = new bootstrap.Modal(successModalElement);
+                    successModal.show();
+                } else {
+                    // Fallback nếu Bootstrap không hoạt động (chỉ để debug)
+                    console.error('Bootstrap Modal object not found or successModal element missing.');
+                    // alert(successMessage); // Có thể dùng alert tạm thời để kiểm tra session
+                }
+            }
         });
     </script>
 @endsection

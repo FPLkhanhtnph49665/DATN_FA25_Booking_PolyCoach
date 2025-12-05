@@ -24,9 +24,9 @@ class Trip extends Model
 
     protected $casts = [
         'departure_date' => 'date',
-        'arrival_date'   => 'date',
+        'arrival_date' => 'date',
         'departure_time' => 'datetime:H:i',
-        'arrival_time'   => 'datetime:H:i',
+        'arrival_time' => 'datetime:H:i',
     ];
 
     // Relations
@@ -61,14 +61,17 @@ class Trip extends Model
     // Helper: count available seats
     public function availableSeats(): int
     {
-        if (!$this->bus) return 0;
+        if (!$this->bus)
+            return 0;
 
-        $bookedSeats = $this->tickets->flatMap(fn($t) => $t->passengers ?? collect())
-                                     ->pluck('seat_code')
-                                     ->filter()
-                                     ->map(fn($s) => strtoupper(trim($s)))
-                                     ->all();
+        // Lấy tất cả seat_code từ bộ sưu tập tickets
+        $bookedSeats = $this->tickets
+            ->pluck('seat_code') // Lấy trực tiếp cột 'seat_code' từ các Ticket
+            ->filter()
+            ->map(fn($s) => strtoupper(trim($s)))
+            ->all();
 
+        // Logic còn lại giữ nguyên
         $allSeats = range(1, $this->bus->seat_count); // assume seats are 1..N
         $available = array_diff($allSeats, $bookedSeats);
 
@@ -78,24 +81,21 @@ class Trip extends Model
     // Helper: available seats in rows
     public function availableSeatsInRows(array $rows): int
     {
-        // Example mapping
-        $seatRows = [
-            'front'  => ['A01','A02','A03','A04','B01','B02','B03','B04'],
-            'middle' => ['A05','A06','A07','A08','B05','B06','B07','B08'],
-            'back'   => ['A09','A10','A11','A12','B09','B10','B11','B12'],
-        ];
+        // ... (Phần $seatRows và $allowedSeats giữ nguyên) ...
 
         $allowedSeats = [];
         foreach ($rows as $r) {
             $allowedSeats = array_merge($allowedSeats, $seatRows[$r] ?? []);
         }
 
-        $bookedSeats = $this->tickets->flatMap(fn($t) => $t->passengers ?? collect())
-                                     ->pluck('seat_code')
-                                     ->filter()
-                                     ->map(fn($s) => strtoupper(trim($s)))
-                                     ->all();
+        // Lấy tất cả seat_code từ bộ sưu tập tickets
+        $bookedSeats = $this->tickets
+            ->pluck('seat_code') // Lấy trực tiếp cột 'seat_code' từ các Ticket
+            ->filter()
+            ->map(fn($s) => strtoupper(trim($s)))
+            ->all();
 
+        // Logic còn lại giữ nguyên
         $availableInRows = array_diff($allowedSeats, $bookedSeats);
         return count($availableInRows);
     }
@@ -103,11 +103,12 @@ class Trip extends Model
     // Helper: booked seats
     public function getBookedSeats(): array
     {
-        return $this->tickets->flatMap(fn($t) => $t->passengers ?? collect())
-                             ->pluck('seat_code')
-                             ->filter()
-                             ->map(fn($s) => strtoupper(trim($s)))
-                             ->all();
+        // Lấy trực tiếp tất cả seat_code từ bộ sưu tập tickets
+        return $this->tickets
+            ->pluck('seat_code')
+            ->filter()
+            ->map(fn($s) => strtoupper(trim($s)))
+            ->all();
     }
 
     // Accessor formatted times
