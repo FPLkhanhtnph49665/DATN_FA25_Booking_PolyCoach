@@ -2,25 +2,29 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\AdminMiddleware;
-use App\Http\Controllers\ProfileController;
+use App\Http\Middleware\CheckerMiddleware;
 use App\Http\Controllers\Admin\BusController;
 use App\Http\Controllers\Admin\CityController;
 use App\Http\Controllers\Admin\TripController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RouteController;
 use App\Http\Controllers\Client\HomeController;
-use App\Http\Controllers\Admin\PointFareController;
+use App\Http\Controllers\Admin\ReviewController;
+use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\BookingController;
 use App\Http\Controllers\Admin\ContactController;
-use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PassengerController;
-use App\Http\Controllers\Admin\TicketController;
-use App\Http\Controllers\Admin\ReviewController;
+use App\Http\Controllers\Admin\PointFareController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Client\TripController as ClientTripController;
 use App\Http\Controllers\Client\BookingController as ClientBookingController;
+
 use App\Http\Controllers\Client\ContactController as ClientContactController;
+use App\Http\Controllers\Checker\TicketCheckController as TicketCheckController;
+use App\Http\Controllers\Checker\DashboardController as CheckerDashboardController;
+
 
 // Route::get('/', function () {
 //     return view('comingsoon');
@@ -74,5 +78,26 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', AdminMiddleware::cla
     Route::resource('contacts', ContactController::class);
 
 });
+Route::prefix('checker')->name('checker.')
+    ->middleware(['auth', CheckerMiddleware::class])
+    ->group(function () {
+
+        // Dashboard
+        Route::get('/', [CheckerDashboardController::class, 'index'])
+            ->name('dashboard');
+
+        // Tickets
+        Route::resource('tickets', TicketCheckController::class)
+            ->only(['index', 'show']);
+
+        Route::get('/verify', [TicketCheckController::class, 'verify'])
+            ->name('verify');
+
+        Route::post('/verify-ticket', [TicketCheckController::class, 'checkTicket'])
+            ->name('check');
+    });
+
+
+
 
 require __DIR__ . '/auth.php';

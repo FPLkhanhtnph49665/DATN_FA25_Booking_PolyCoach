@@ -41,8 +41,6 @@ class HomeController extends Controller
         // Ví dụ:
         // $allFromIds = Route::distinct()->pluck('from_city_id');
         // $allFrom = City::whereIn('id', $allFromIds)->get();
-
-
         return view('client.home', compact('allFrom', 'allTo', 'popularTrips'));
     }
 }

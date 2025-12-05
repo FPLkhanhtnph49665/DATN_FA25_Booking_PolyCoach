@@ -351,9 +351,9 @@
                 {{-- Form thật của bạn --}}
                 @include('client.trips._search-form')
                 {{-- Gợi ý: trong _search-form bạn bọc từng input vào div.search-field,
-                 label dùng class search-field-label,
-                 icon dùng <span class="search-field-icon"><i class="..."></i></span>
-                 để style ăn theo. --}}
+                label dùng class search-field-label,
+                icon dùng <span class="search-field-icon"><i class="..."></i></span>
+                để style ăn theo. --}}
             </div>
 
             {{-- Thanh benefit giống hàng dưới banner của Vexere --}}
@@ -447,5 +447,6 @@
                 @endforelse
             @endisset
         </div>
+
     </section>
 @endsection

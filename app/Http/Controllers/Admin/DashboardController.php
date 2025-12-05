@@ -23,13 +23,15 @@ class DashboardController extends Controller
         // Đếm tổng số Buses (bao gồm cả đã xóa mềm)
         $totalBuses = Bus::withTrashed()->count();
 
-        // Đếm số lượng Buses đang hoạt động (trang_thai = 1), bao gồm cả đã xóa mềm
+        // Đếm số lượng Buses đang hoạt động (status = 1), bao gồm cả đã xóa mềm
+
         $activeBuses = Bus::withTrashed()->where('status', 1)->count();
 
         // Đếm tổng số Trips (bao gồm cả đã xóa mềm)
         $totalTrips = Trip::withTrashed()->count();
 
-        // Đếm số lượng Trips đang hoạt động (trang_thai = 1), bao gồm cả đã xóa mềm
+        // Đếm số lượng Trips đang hoạt động (status = 1), bao gồm cả đã xóa mềm
+
         $activeTrips = Trip::withTrashed()->where('status', 1)->count();
 
         // 💰 Payment statistics

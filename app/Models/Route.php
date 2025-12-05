@@ -54,6 +54,7 @@ class Route extends Model
     // =====================
     // 💡 Accessors
     // =====================
+
     public function getTenTuyenAttribute(): string
     {
         return "{$this->fromCity?->name} → {$this->toCity?->name}";

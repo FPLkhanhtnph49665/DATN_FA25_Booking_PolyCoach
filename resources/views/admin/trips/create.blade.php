@@ -12,7 +12,7 @@
                 <i class="bi bi-calendar2-week-fill"></i>
                 Thêm chuyến mới
             </h2>
-            <p class="text-muted small mb-0">
+            <p class="text-light small mb-0">
                 Tạo mới chuyến xe theo tuyến, xe, ngày giờ khởi hành và giá vé.
             </p>
         </div>
@@ -46,7 +46,7 @@
 
                 {{-- Tuyến --}}
                 <div class="col-md-6">
-                    <label for="route_id" class="form-label small text-muted mb-1">
+                    <label for="route_id" class="form-label small text-light mb-1">
                         Tuyến <span class="text-danger">*</span>
                     </label>
                     <select
@@ -69,7 +69,7 @@
 
                 {{-- Xe --}}
                 <div class="col-md-6">
-                    <label for="bus_id" class="form-label small text-muted mb-1">
+                    <label for="bus_id" class="form-label small text-light mb-1">
                         Xe <span class="text-danger">*</span>
                     </label>
                     <select
@@ -92,7 +92,7 @@
 
                 {{-- Ngày khởi hành --}}
                 <div class="col-md-4">
-                    <label for="departure_date" class="form-label small text-muted mb-1">
+                    <label for="departure_date" class="form-label small text-light mb-1">
                         Ngày khởi hành <span class="text-danger">*</span>
                     </label>
                     <input
@@ -110,7 +110,7 @@
 
                 {{-- Giờ khởi hành --}}
                 <div class="col-md-4">
-                    <label for="departure_time" class="form-label small text-muted mb-1">
+                    <label for="departure_time" class="form-label small text-light mb-1">
                         Giờ khởi hành <span class="text-danger">*</span>
                     </label>
                     <input
@@ -129,7 +129,7 @@
 
                 {{-- Giờ đến dự kiến --}}
                 <div class="col-md-4">
-                    <label for="arrival_time" class="form-label small text-muted mb-1">
+                    <label for="arrival_time" class="form-label small text-light mb-1">
                         Giờ đến dự kiến <span class="text-danger">*</span>
                     </label>
                     <input
@@ -148,7 +148,7 @@
 
                 {{-- Giá vé --}}
                 <div class="col-md-4">
-                    <label for="ticket_price" class="form-label small text-muted mb-1">
+                    <label for="ticket_price" class="form-label small text-light mb-1">
                         Giá vé (VND) <span class="text-danger">*</span>
                     </label>
                     <input
@@ -169,7 +169,7 @@
 
                 {{-- Trạng thái --}}
                 <div class="col-md-4">
-                    <label for="status" class="form-label small text-muted mb-1">
+                    <label for="status" class="form-label small text-light mb-1">
                         Trạng thái
                     </label>
                     <select

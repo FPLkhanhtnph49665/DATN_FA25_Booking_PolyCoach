@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Models\Trip;
+use App\Models\User;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 
 class TicketController extends Controller
 {
@@ -24,32 +26,37 @@ class TicketController extends Controller
      */
     public function create()
     {
-        return view('admin.tickets.create');
+        return view('admin.tickets.create', [
+            'trips' => Trip::with(['route.fromCity', 'route.toCity'])->get(),
+            'users' => User::all(),
+        ]);
     }
+
 
     /**
      * Store a newly created ticket in storage.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
-        $validated = $request->validate([
-            'trip_id'        => 'required|exists:trips,id',
-            'user_id'        => 'required|exists:users,id',
-            'seat_number'    => 'required|string|max:10',
-            'price'          => 'required|numeric|min:0',
-            'payment_method' => 'required|string|max:50',
+        $request->validate([
+            'trip_id' => 'required|exists:trips,id',
+            'user_id' => 'required|exists:users,id',
+            'seat_number' => 'required|string|max:10',
+            'status' => 'required|in:pending,paid,cancelled',
+            'payment_method' => 'required|in:cash,banking',
         ]);
 
-        $ticket = Ticket::create($validated);
+        Ticket::create([
+            'trip_id' => $request->trip_id,
+            'user_id' => $request->user_id,
+            'seat_number' => $request->seat_number,
+            'status' => $request->status,
+            'payment_method' => $request->payment_method,
+        ]);
 
-        if ($request->hasFile('invoice')) {
-            $path = $request->file('invoice')->store('invoices', 'public');
-            $ticket->invoice_path = $path;
-            $ticket->save();
-        }
-
-        return redirect()->route('admin.tickets.index')->with('success', 'Ticket created successfully!');
+        return redirect()->route('admin.tickets.index')->with('success', 'Thêm vé thành công.');
     }
+
 
     /**
      * Display the specified ticket.

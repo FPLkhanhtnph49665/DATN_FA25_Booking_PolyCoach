@@ -1,4 +1,5 @@
-{{-- resources/views/client/trips/_search-form.blade.php --}}
+<div class="vx-wrapper">
+    <form action="{{ route('client.searchTrips') }}" method="GET" class="vx-form">
 
 <div class="pc-search-form-wrapper">
 
@@ -39,7 +40,6 @@
             </div>
         </div>
 
-
         {{-- Ngày đi --}}
         <div class="col-lg-3 col-md-6">
             <label class="form-label fw-semibold mb-1">Ngày đi</label>
@@ -52,157 +52,121 @@
             </div>
         </div>
 
-        {{-- Số vé --}}
-        <div class="col-lg-2 col-md-4">
-            <label class="form-label fw-semibold mb-1">Số vé</label>
-            <div class="futa-input">
-                <select name="seats" class="form-select border-0 shadow-none p-0">
-                    @for ($i = 1; $i <= 10; $i++)
-                        <option value="{{ $i }}" {{ request('seats', 1) == $i ? 'selected' : '' }}>
-                            {{ $i }} vé
-                        </option>
-                    @endfor
-                </select>
-            </div>
+        {{-- Ngày về --}}
+        <div class="vx-field vx-return-btn" id="vx_btn_return">
+            <i class="fas fa-plus vx-icon"></i>
+            <span id="vx_return_text">
+                {{ request('return_date') ? 'Ngày về: ' . \Carbon\Carbon::parse(request('return_date'))->format('d/m') : 'Thêm ngày về' }}
+            </span>
+
+            <input type="text" name="return_date" id="vx_return_date"
+                   value="{{ request('return_date') }}"
+                   style="opacity:0; position:absolute; left:-9999px;">
         </div>
 
-        {{-- Nút tìm --}}
-        <div class="col-12 d-flex justify-content-center mt-2">
-            <button type="submit" class="btn btn-search px-5 py-2 fw-semibold">
-                Tìm chuyến xe
-            </button>
-        </div>
+        {{-- Nút tìm kiếm --}}
+        <button type="submit" class="vx-btn-search">Tìm kiếm</button>
+
     </form>
 </div>
 
-{{-- ================== CSS (Giữ nguyên) ================== --}}
+
 <style>
-    .trip-search-wrapper {
-        border-radius: 24px;
-        border: 1.5px solid #ffd5c2;
-        background: #fff7f3;
-        padding: 20px 24px;
-        transition: all 0.3s;
-    }
+/* ===== VEXERE UI CHUẨN ===== */
 
-    .trip-search-wrapper:hover {
-        box-shadow: 0 8px 25px rgba(255, 120, 60, 0.18);
-    }
+.vx-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
 
-    /* Tab Một chiều / Khứ hồi */
-    .trip-type-pill {
-        display: inline-flex;
-        align-items: center;
-        padding: 6px 16px;
-        border-radius: 999px;
-        border: 1px solid transparent;
-        color: #ff7043;
-        cursor: pointer;
-        font-weight: 600;
-        transition: all 0.2s;
-    }
+.vx-form {
+    width: 100%;
+    max-width: 900px;
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.06);
+}
 
-    .trip-type-pill span {
-        line-height: 1;
-    }
+.vx-field {
+    flex: 1;
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    padding: 12px 12px 12px 44px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 54px;
+    transition: .2s;
+}
 
-    .trip-type-pill.active,
-    .trip-type-pill:hover {
-        background: #ffe0d1;
-        border-color: #ff7043;
-    }
+.vx-field:hover,
+.vx-field:focus-within {
+    border-color: #2563eb;
+    box-shadow: 0 0 8px rgba(37,99,235,0.25);
+}
 
-    .pc-field-label {
-        font-size: 11px;
-        font-weight: 700;
-        color: #848c96;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        margin-bottom: 0;
-        line-height: 1.1;
-    }
+.vx-icon {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: #2563eb;
+}
 
-    .pc-field-input {
-        border: none;
-        padding: 0;
-        margin-top: 4px;
-        font-size: 0.96rem;
-        font-weight: 600;
-        color: #222;
-        background: transparent;
-        outline: none;
-    }
+.vx-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: #111;
+}
 
-    .pc-field-input::placeholder {
-        color: #9ca3af;
-        font-weight: 500;
-    }
+.vx-input::placeholder {
+    color: #9ca3af;
+}
 
-    /* Ô input giống style FUTA */
-    .futa-input {
-        border-radius: 12px;
-        background: #f8fbff;
-        padding: 10px 14px;
-        border: 1px solid #e2e8f0;
-        display: flex;
-        align-items: center;
-    }
+.vx-return-btn {
+    flex: 1;
+    cursor: pointer;
+    user-select: none;
+}
 
-    .futa-input:focus-within {
-        border-color: #ff7043;
-        box-shadow: 0 0 0 1px rgba(255, 112, 67, 0.2);
-        background: #ffffff;
-    }
+.vx-btn-search {
+    background: #ffbf00;
+    border: none;
+    border-radius: 14px;
+    padding: 0 30px;
+    height: 54px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #000;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(255,191,0,0.35);
+    transition: .2s;
+}
 
-    .futa-input input,
-    .futa-input select {
-        background: transparent;
-    }
+.vx-btn-search:hover {
+    background: #ffd21f;
+    transform: translateY(-2px);
+}
 
-    /* Button tìm chuyến */
-    .btn-search {
-        border-radius: 999px;
-        background-color: #ff7043;
-        border: none;
-        color: #fff;
-        transition: all 0.2s;
+@media(max-width: 768px) {
+    .vx-form {
+        flex-wrap: wrap;
     }
-
-    .btn-search:hover {
-        background-color: #f4511e;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 16px rgba(244, 81, 30, 0.35);
-    }
-
-    .futa-input select {
-        background: transparent;
-        border: none;
+    .vx-btn-search {
         width: 100%;
-        padding: 0;
-        font-size: 1rem;
-        -webkit-appearance: none;
-        /* Chrome, Safari */
-        -moz-appearance: none;
-        /* Firefox */
-        appearance: none;
-        cursor: pointer;
     }
-
-    /* Thêm mũi tên select kiểu tùy chỉnh */
-    .futa-input {
-        position: relative;
-    }
-
-    .futa-input::after {
-        content: "▼";
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 0.6rem;
-        color: #888;
-        pointer-events: none;
-    }
+}
 </style>
 
 {{-- ========== Script (Đã xóa phần Flatpickr không cần thiết) ========== --}}

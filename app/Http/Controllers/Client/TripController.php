@@ -79,7 +79,7 @@ class TripController extends Controller
         $trips = $query
             ->orderBy('departure_date')
             ->orderBy('departure_time')
-            ->get(); // Thực hiện query và tải dữ liệu về bộ nhớ
+            ->get();
 
         // --- Lọc trên Collection (Bộ nhớ PHP) ---
 
