@@ -96,10 +96,8 @@ class BookingController extends Controller
                 Ticket::create([
                     'trip_id' => $trip->id,
                     'user_id' => Auth::id(),
-                    // Lưu ý: Bảng tickets của bạn không có booking_id, nên việc query gom nhóm sẽ dựa vào user_id + trip_id + created_at
-                    // Hoặc bạn nên thêm cột booking_id vào bảng tickets để liên kết chặt chẽ hơn.
+                    'booking_id' => $booking->id,
                     'seat_code' => $seatCode,
-                    // GÁN GIÁ TRỊ ĐÃ XỬ LÝ VÀO ĐÂY
                     'seat_number' => $seatNumber,
                     'status' => 'pending', // Trạng thái vé
                     'payment_method' => $request->payment_method,

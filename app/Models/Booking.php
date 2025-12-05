@@ -41,7 +41,10 @@ class Booking extends Model
     {
         return $this->belongsTo(Trip::class);
     }
-
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
+    }
     // -------------------------------
     // ACCESSORS / HELPERS
     // -------------------------------

@@ -13,6 +13,7 @@ class Ticket extends Model
     protected $fillable = [
         'trip_id',
         'user_id',           // who booked the ticket
+        'booking_id',        // liên kết đến booking
         'seat_number',        // number of seats in this ticket (1,2,3,...)
         'seat_code',
         'status',            // pending | paid | canceled
@@ -47,7 +48,10 @@ class Ticket extends Model
     {
         return $this->hasOne(Payment::class);
     }
-
+    public function booking()
+    {
+        return $this->belongsTo(Booking::class);
+    }
     // =====================
     // 💡 ACCESSORS / HELPERS
     // =====================

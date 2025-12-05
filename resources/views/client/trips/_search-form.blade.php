@@ -1,67 +1,53 @@
 <div class="vx-wrapper">
+    {{-- GIỮ LẠI FORM NÀY VÀ ĐỔI CLASS THÀNH vx-form --}}
     <form action="{{ route('client.searchTrips') }}" method="GET" class="vx-form">
 
-<div class="pc-search-form-wrapper">
-
-    <form action="{{ route('client.searchTrips') }}" method="GET" class="row g-3 align-items-end">
         {{-- Điểm đi --}}
-        <div class="col-lg-3 col-md-6">
-            <label class="form-label fw-semibold mb-1">Điểm đi</label>
-            <div class="futa-input">
-                {{-- Đã thay đổi name thành 'from_city_id' và value là ID của City --}}
-                <select name="from_city_id" class="form-select border-0 shadow-none p-0" required>
-                    <option value="">-- Chọn điểm đi --</option>
-                    {{-- Giả định $allFrom là Collection các đối tượng City --}}
-                    @foreach ($allFrom as $fromCity)
-                        <option value="{{ $fromCity->id }}" 
-                            {{ request('from_city_id') == $fromCity->id ? 'selected' : '' }}>
-                            {{ $fromCity->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+        <div class="vx-field">
+            <i class="fas fa-map-marker-alt vx-icon"></i> 
+            <select name="from_city_id" class="vx-input" required>
+                <option value="">Điểm đi</option> 
+                @foreach ($allFrom as $fromCity)
+                    <option value="{{ $fromCity->id }}"
+                        {{ request('from_city_id') == $fromCity->id ? 'selected' : '' }}>
+                        {{ $fromCity->name }}
+                    </option>
+                @endforeach
+            </select>
         </div>
 
         {{-- Điểm đến --}}
-        <div class="col-lg-3 col-md-6">
-            <label class="form-label fw-semibold mb-1">Điểm đến</label>
-            <div class="futa-input">
-                {{-- Đã thay đổi name thành 'to_city_id' và value là ID của City --}}
-                <select name="to_city_id" class="form-select border-0 shadow-none p-0" required>
-                    <option value="">-- Chọn điểm đến --</option>
-                    {{-- Giả định $allTo là Collection các đối tượng City --}}
-                    @foreach ($allTo as $toCity)
-                        <option value="{{ $toCity->id }}" 
-                            {{ request('to_city_id') == $toCity->id ? 'selected' : '' }}>
-                            {{ $toCity->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+        <div class="vx-field">
+            <i class="fas fa-map-pin vx-icon"></i>
+            <select name="to_city_id" class="vx-input" required>
+                <option value="">Điểm đến</option>
+                @foreach ($allTo as $toCity)
+                    <option value="{{ $toCity->id }}"
+                        {{ request('to_city_id') == $toCity->id ? 'selected' : '' }}>
+                        {{ $toCity->name }}
+                    </option>
+                @endforeach
+            </select>
         </div>
 
         {{-- Ngày đi --}}
-        <div class="col-lg-3 col-md-6">
-            <label class="form-label fw-semibold mb-1">Ngày đi</label>
-            <div class="futa-input">
-                <input type="date" name="departure_date" class="form-control border-0 shadow-none p-0"
-                    {{-- Cập nhật để nhận request('departure_date') hoặc ngày hiện tại Y-m-d --}}
-                    value="{{ request('departure_date', date('Y-m-d')) }}" 
-                    min="{{ date('Y-m-d') }}" {{-- Thêm minDate để hạn chế chọn ngày cũ --}}
-                    required>
-            </div>
+        <div class="vx-field">
+            <i class="fas fa-calendar-alt vx-icon"></i>
+            <input type="date" name="departure_date" class="vx-input"
+                value="{{ request('departure_date', date('Y-m-d')) }}"
+                min="{{ date('Y-m-d') }}"
+                required>
         </div>
 
-        {{-- Ngày về --}}
+        {{-- Ngày về (Giữ nguyên cấu trúc vx-return-btn để dùng JS/CSS) --}}
         <div class="vx-field vx-return-btn" id="vx_btn_return">
             <i class="fas fa-plus vx-icon"></i>
             <span id="vx_return_text">
                 {{ request('return_date') ? 'Ngày về: ' . \Carbon\Carbon::parse(request('return_date'))->format('d/m') : 'Thêm ngày về' }}
             </span>
-
             <input type="text" name="return_date" id="vx_return_date"
-                   value="{{ request('return_date') }}"
-                   style="opacity:0; position:absolute; left:-9999px;">
+                    value="{{ request('return_date') }}"
+                    style="opacity:0; position:absolute; left:-9999px;">
         </div>
 
         {{-- Nút tìm kiếm --}}
@@ -69,7 +55,6 @@
 
     </form>
 </div>
-
 
 <style>
 /* ===== VEXERE UI CHUẨN ===== */
@@ -169,8 +154,6 @@
 }
 </style>
 
-{{-- ========== Script (Đã xóa phần Flatpickr không cần thiết) ========== --}}
-{{-- Giữ nguyên script nếu bạn vẫn muốn dùng flatpickr cho trường ngày về (nếu có) --}}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 

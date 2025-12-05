@@ -246,86 +246,99 @@
                         <table class="table table-bordered table-ticket mb-0">
                             <thead>
                                 <tr class="text-center">
-                                    <th style="width: 80px;">Mã vé</th>
-                                    <th style="width: 80px;">Số vé</th>
+                                    <th style="width: 80px;">Mã Booking</th> {{-- THAY ĐỔI TÊN CỘT --}}
+                                    <th style="width: 80px;">Số lượng vé</th> {{-- THAY ĐỔI TÊN CỘT --}}
                                     <th>Tuyến đường</th>
                                     <th style="width: 120px;">Ngày đi</th>
-                                    <th style="width: 120px;">Số tiền</th>
+                                    <th style="width: 120px;">Tổng tiền</th> {{-- THAY ĐỔI TÊN CỘT --}}
                                     <th style="width: 120px;">Trạng thái</th>
-                                    <th style="width: 100px;">Hành động</th> {{-- THÊM CỘT NÀY --}}
+                                    <th style="width: 100px;">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($tickets as $ticket)
+                                @forelse($bookings as $booking)
+                                    {{-- THAY ĐỔI VÒNG LẶP SANG $bookings --}}
                                     @php
-                                        $trip = $ticket->trip;
+                                        $trip = $booking->trip;
                                         $route = $trip?->route;
-                                        $qty = (int) $ticket->so_ghe;
-                                        $price = $trip ? (float) $trip->gia_ve : 0;
-                                        $total = $qty * $price;
-                                        // Lấy thông tin chi tiết để nạp vào nút
-                                        $seatCodes = $ticket->danh_sach_ghe ?? $ticket->so_ghe; // Giả sử bạn có cột lưu mã ghế cụ thể
-                                        $busName = $trip->bus->bien_so ?? 'Đang cập nhật';
-                                        $pickup = $ticket->diem_don ?? $route->diem_di; // Hoặc lấy từ quan hệ pickup_point
-                                        $dropoff = $ticket->diem_tra ?? $route->diem_den; // Hoặc lấy từ quan hệ dropoff_point
-                                        $paymentMethod = $ticket->phuong_thuc_thanh_toan ?? 'Tiền mặt';
+                                        // Lấy danh sách mã ghế/số ghế từ collection tickets
+                                        $seatCodes = $booking->tickets->pluck('seat_code')->implode(', ');
+                                        $total = $booking->total_amount; // Lấy từ booking
+                                        $paymentMethod = $booking->payment_method ?? 'Tiền mặt';
+                                        // Lấy một vé đại diện để có thông tin đón/trả
+                                        $firstTicket = $booking->tickets->first();
+
+                                        // --- CHỈNH SỬA LOGIC DỮ LIỆU ---
+                                        // Cần đảm bảo Model Booking có quan hệ với Trip, và Booking có cột total_price, status
+
                                     @endphp
                                     <tr>
-                                        <td class="text-center">
-                                            #{{ $ticket->id }}
+                                        {{-- MÃ BOOKING --}}
+                                        <td class="text-center fw-bold">
+                                            #{{ $booking->id }}
                                         </td>
+
+                                        {{-- SỐ LƯỢNG VÉ --}}
                                         <td class="text-center">
-                                            {{ $ticket->so_ghe }}
+                                            {{ $booking->tickets->count() }}
                                         </td>
+
+                                        {{-- TUYẾN ĐƯỜNG --}}
                                         <td>
                                             @if ($route)
-                                                {{ $route->diem_di }} → {{ $route->diem_den }}
+                                                {{ $route->fromCity->name }} → {{ $route->toCity->name }}
                                             @else
                                                 —
                                             @endif
                                         </td>
+
+                                        {{-- NGÀY ĐI --}}
                                         <td class="text-center">
                                             @if ($trip)
-                                                {{ \Carbon\Carbon::parse($trip->ngay_khoi_hanh)->format('d/m/Y') }}
+                                                {{ \Carbon\Carbon::parse($trip->depature_date)->format('d/m/Y') }}
                                                 <br>
                                                 <span class="text-muted small">
-                                                    {{ $trip->gio_khoi_hanh }}
+                                                    {{ $trip->depature_time }}
                                                 </span>
                                             @else
                                                 —
                                             @endif
                                         </td>
-                                        <td class="text-end">
+
+                                        {{-- TỔNG TIỀN --}}
+                                        <td class="text-end fw-bold text-danger">
                                             {{ number_format($total, 0, ',', '.') }}đ
                                         </td>
+
+                                        {{-- TRẠNG THÁI (Lấy từ Booking) --}}
                                         <td class="text-center">
-                                            {!! $ticket->trang_thai_label ?? ucfirst($ticket->trang_thai) !!}
+                                            {!! $booking->trang_thai_label ?? ucfirst($booking->status) !!}
                                         </td>
+
                                         {{-- CỘT HÀNH ĐỘNG MỚI --}}
                                         <td class="text-center">
                                             <button type="button" class="btn btn-sm btn-outline-primary btn-view-detail"
-                                                data-bs-toggle="modal" data-bs-target="#ticketDetailModal"
-                                                {{-- Truyền dữ liệu vào data attribute --}} data-id="#{{ $ticket->id }}"
-                                                data-route="{{ $route->diem_di }} → {{ $route->diem_den }}"
-                                                data-time="{{ \Carbon\Carbon::parse($trip->ngay_khoi_hanh)->format('d/m/Y') }} - {{ $trip->gio_khoi_hanh }}"
-                                                data-bus="{{ $busName }}" data-seats="{{ $seatCodes }}"
-                                                data-pickup="{{ $pickup }}" data-dropoff="{{ $dropoff }}"
-                                                data-price="{{ number_format($price, 0, ',', '.') }}đ"
+                                                data-bs-toggle="modal" data-bs-target="#bookingDetailModal"
+                                                {{-- Truyền DỮ LIỆU BOOKING VÀ TICKETs VÀO data attribute --}} data-id="#{{ $booking->id }}"
+                                                data-route="{{ $route->fromCity->name }} → {{ $route->toCity->name }}"
+                                                data-time="{{ \Carbon\Carbon::parse($trip->depature_date)->format('d/m/Y') }} - {{ $trip->depature_time }}"
+                                                data-bus="{{ $trip->bus->plate_number ?? 'Đang cập nhật' }}"
+                                                data-seats="{{ $seatCodes }}" {{-- Lấy điểm đón/trả từ vé đầu tiên hoặc từ trip/route --}}
+                                                data-pickup="{{ $firstTicket->pickup_point->dia_chi ?? $route->fromCity->name }}"
+                                                data-dropoff="{{ $firstTicket->dropoff_point->dia_chi ?? $route->toCity->name }}"
                                                 data-total="{{ number_format($total, 0, ',', '.') }}đ"
                                                 data-payment="{{ $paymentMethod }}"
-                                                data-status="{{ $ticket->trang_thai }}">
+                                                data-status="{{ $booking->trang_thai_label ?? ucfirst($booking->status) }}"
+                                                data-tickets="{{ json_encode($booking->tickets->map(fn($t) => ['id' => $t->id, 'seat_code' => $t->seat_code, 'price' => number_format($t->price, 0, ',', '.') . 'đ'])) }}">
                                                 <i class="bi bi-eye"></i> Chi tiết
                                             </button>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6">
+                                        <td colspan="7">
                                             <div class="no-data">
-                                                <div class="mb-2">
-                                                    {{-- icon đơn giản, bạn có thể thay bằng SVG đẹp hơn --}}
-                                                    🪑
-                                                </div>
+                                                <div class="mb-2">🪑</div>
                                                 <div>Hiện chưa có lịch sử mua vé.</div>
                                             </div>
                                         </td>
@@ -336,18 +349,18 @@
                     </div>
 
                     <div class="mt-3">
-                        {{ $tickets->links() }}
+                        {{ $bookings->links() }}
                     </div>
                 </div>
             </div>
         </div>
     </div>
     {{-- MODAL CHI TIẾT VÉ --}}
-    <div class="modal fade" id="ticketDetailModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+    <div class="modal fade" id="bookingDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-light">
-                    <h5 class="modal-title">Chi tiết vé xe <span id="modal-ticket-id"
+                    <h5 class="modal-title">Chi tiết đặt chỗ <span id="modal-booking-id"
                             class="text-primary fw-bold"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -399,6 +412,21 @@
                             <div class="fw-bold text-danger fs-5" id="modal-total"></div>
                         </div>
                     </div>
+                    <h6 class="fw-bold mt-4 mb-2">Danh sách vé đã đặt</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr class="text-center">
+                                    <th style="width: 50px;">ID Vé</th>
+                                    <th style="width: 100px;">Mã ghế</th>
+                                    <th style="width: 100px;">Giá/Vé</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-tickets-list">
+                                {{-- Nội dung sẽ được nạp bằng JavaScript --}}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
@@ -408,30 +436,55 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // ... (Logic Modal Chi Tiết Vé - Giữ nguyên) ...
-            var ticketModal = document.getElementById('ticketDetailModal');
-            ticketModal.addEventListener('show.bs.modal', function(event) {
-                // ... (Logic nạp dữ liệu vào ticketDetailModal) ...
+            // ... (logic success modal - giữ nguyên) ...
+
+            var bookingModal = document.getElementById('bookingDetailModal'); // Đã đổi ID
+            bookingModal.addEventListener('show.bs.modal', function(event) {
                 var button = event.relatedTarget;
+
+                // Lấy dữ liệu chung
                 var id = button.getAttribute('data-id');
                 var route = button.getAttribute('data-route');
                 var time = button.getAttribute('data-time');
                 var bus = button.getAttribute('data-bus');
-                var seats = button.getAttribute('data-seats');
                 var pickup = button.getAttribute('data-pickup');
                 var dropoff = button.getAttribute('data-dropoff');
                 var total = button.getAttribute('data-total');
                 var payment = button.getAttribute('data-payment');
 
-                document.getElementById('modal-ticket-id').textContent = id;
+                // Lấy danh sách tickets (JSON string)
+                var ticketsJson = button.getAttribute('data-tickets');
+                var tickets = ticketsJson ? JSON.parse(ticketsJson) : [];
+
+                // Nạp dữ liệu chung vào Modal
+                document.getElementById('modal-booking-id').textContent = id; // Đã đổi ID
                 document.getElementById('modal-route').textContent = route;
                 document.getElementById('modal-time').textContent = time;
                 document.getElementById('modal-bus').textContent = bus;
-                document.getElementById('modal-seats').textContent = seats;
                 document.getElementById('modal-pickup').textContent = pickup;
                 document.getElementById('modal-dropoff').textContent = dropoff;
                 document.getElementById('modal-total').textContent = total;
                 document.getElementById('modal-payment').textContent = payment;
+
+                // Nạp danh sách vé con
+                const ticketsListBody = document.getElementById('modal-tickets-list');
+                ticketsListBody.innerHTML = ''; // Xóa nội dung cũ
+
+                if (tickets.length > 0) {
+                    tickets.forEach(ticket => {
+                        const row = ticketsListBody.insertRow();
+                        row.className = 'text-center';
+                        row.insertCell().textContent = `#${ticket.id}`;
+                        row.insertCell().textContent = ticket.seat_code;
+                        row.insertCell().textContent = ticket.price;
+                    });
+                } else {
+                    const row = ticketsListBody.insertRow();
+                    const cell = row.insertCell();
+                    cell.colSpan = 3;
+                    cell.textContent = 'Không tìm thấy thông tin vé chi tiết.';
+                    cell.className = 'text-center text-muted';
+                }
             });
 
 

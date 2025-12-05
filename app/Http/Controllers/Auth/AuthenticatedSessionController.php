@@ -95,50 +95,71 @@ class AuthenticatedSessionController extends Controller
     {
         $user = Auth::user();
 
-        $code = trim($request->input('code'));      // mã vé (id hoặc code)
+        // Lấy các tham số filter
+        $code = trim($request->input('code'));      // mã Booking (id)
         $date = $request->input('date');            // ngày đi (Y-m-d)
-        $routeQ = trim($request->input('route'));     // tuyến đường (tên TP)
-        $status = $request->input('status');          // trạng thái vé
+        $routeQ = trim($request->input('route'));   // tuyến đường (tên TP)
+        $status = $request->input('status');        // trạng thái Booking
 
-        $query = $user->tickets()
+        // 1. CHUYỂN TRUY VẤN CHÍNH SANG BOOKING
+        $query = $user->bookings()
             ->with([
+                'tickets', // Eager load tất cả các vé con
                 'trip.route.fromCity',
                 'trip.route.toCity',
+                'trip.bus'
             ])
             ->orderByDesc('created_at');
 
+        // 2. ÁP DỤNG CÁC FILTER
+
+        // Lọc theo Mã Booking (tương đương Mã vé trước đây, nhưng giờ là Booking ID)
         if ($request->filled('code')) {
-            // tạm thời lọc theo id vé
+            // Lọc trực tiếp theo ID của Booking
             $query->where('id', $code);
         }
 
+        // Lọc theo Ngày đi (Tìm chuyến đi thuộc Booking)
         if ($request->filled('date')) {
             $query->whereHas('trip', function ($q) use ($date) {
                 $q->whereDate('departure_date', $date);
             });
         }
 
+        // Lọc theo Tuyến đường
         if ($request->filled('route')) {
+            // Truy vấn qua mối quan hệ trip -> route -> city
             $query->whereHas('trip.route', function ($q) use ($routeQ) {
-                $q->where('diem_di', 'like', "%{$routeQ}%")
-                    ->orWhere('diem_den', 'like', "%{$routeQ}%");
+                // Lọc theo tên thành phố đi hoặc đến (giả định route có tên)
+                $q->where(function ($subQ) use ($routeQ) {
+                    $subQ->whereHas('fromCity', function ($c) use ($routeQ) {
+                        $c->where('name', 'like', "%{$routeQ}%");
+                    })
+                        ->orWhereHas('toCity', function ($c) use ($routeQ) {
+                            $c->where('name', 'like', "%{$routeQ}%");
+                        });
+                });
             });
         }
 
+        // Lọc theo Trạng thái (Trạng thái của Booking)
         if ($request->filled('status')) {
-            $query->where('trang_thai', $status);
+            $query->where('status', $status);
         }
 
-        $tickets = $query->paginate(10)->withQueryString();
+        // 3. THỰC HIỆN PHÂN TRANG
+        $bookings = $query->paginate(10)->withQueryString();
 
-        return view('client.account.tickets', compact(
-            'user',
-            'tickets',
-            'code',
-            'date',
-            'routeQ',
-            'status'
-        ));
+        // 4. TRẢ VỀ VIEW
+        // Đổi biến $tickets thành $bookings để khớp với view đã sửa đổi
+        return view('client.account.tickets', [
+            'user' => $user,
+            'bookings' => $bookings, // Đã đổi tên biến
+            'code' => $code,
+            'date' => $date,
+            'routeQ' => $routeQ,
+            'status' => $status
+        ]);
     }
 
     /**
