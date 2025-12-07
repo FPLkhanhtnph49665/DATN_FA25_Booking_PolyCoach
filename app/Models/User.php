@@ -48,7 +48,7 @@ class User extends Authenticatable
             if (empty($user->user_code)) {
                 $lastUser = static::latest('id')->first();
                 $number   = $lastUser ? $lastUser->id + 1 : 1;
-                $user->user_code = 'DATN_FA25_PoLyCoach_' . str_pad($number, 4, '0', STR_PAD_LEFT);
+                $user->user_code = 'DATN-FA25-' . str_pad($number, 4, '0', STR_PAD_LEFT);
             }
 
             // 2. Tự ghép full_name nếu chưa truyền từ form

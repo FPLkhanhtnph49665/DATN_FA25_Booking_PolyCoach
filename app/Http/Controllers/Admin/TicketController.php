@@ -41,7 +41,7 @@ class TicketController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'code' => 'TKT-' . strtoupper(uniqid()),
+            'code' => 'datn-' . strtoupper(uniqid()),
             'trip_id' => 'required|exists:trips,id',
             'user_id' => 'required|exists:users,id', // 👈 sửa đúng
             'seat_code' => 'required|string|max:10',

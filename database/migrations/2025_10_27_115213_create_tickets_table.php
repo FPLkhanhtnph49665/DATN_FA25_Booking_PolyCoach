@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
 
             // Mã vé duy nhất (VD: TCK20251207-ABC123)
-            $table->string('code', 50)->unique();
+            $table->string('code', length: 20)->unique();
 
             // Quan hệ chuyến xe
             $table->foreignId('trip_id')

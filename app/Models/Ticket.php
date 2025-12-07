@@ -66,7 +66,7 @@ class Ticket extends Model
 
         static::creating(function ($ticket) {
             if (!$ticket->code) {
-                $ticket->code = 'POLYCOACH-' . strtoupper(uniqid());
+                $ticket->code = 'datn-' . strtoupper(uniqid());
             }
         });
     }

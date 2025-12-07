@@ -32,7 +32,7 @@ class BusController extends Controller
 {
     $data = $request->validate([
         'plate_number' => 'required|string|max:20|unique:buses,plate_number',
-        'seat_count'   => 'required|integer|min:4|max:100',
+        'seat_count'   => 'required|integer|min:16|max:50',
         'type'         => 'required|in:Seat,Sleeper,Limousine',
         'status'       => 'nullable|in:0,1',
     ]);
