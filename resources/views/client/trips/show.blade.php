@@ -468,7 +468,7 @@
                                         @if ($route->pickupPoints && $route->pickupPoints->count() > 0)
                                             @foreach ($route->pickupPoints as $point)
                                                 <option value="{{ $point->id }}">
-                                                    {{ $point->ten_diem_don }} - {{ $point->dia_chi }}
+                                                    {{ $point->name }} - {{ $point->address }}
                                                 </option>
                                             @endforeach
                                         @endif
@@ -490,7 +490,7 @@
                                         @if ($route->dropoffPoints && $route->dropoffPoints->count() > 0)
                                             @foreach ($route->dropoffPoints as $point)
                                                 <option value="{{ $point->id }}">
-                                                    {{ $point->ten_diem_tra }} - {{ $point->dia_chi }}
+                                                    {{ $point->name }} - {{ $point->address }}
                                                 </option>
                                             @endforeach
                                         @endif

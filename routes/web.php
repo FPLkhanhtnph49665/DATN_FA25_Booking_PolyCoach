@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PassengerController;
+use App\Http\Controllers\Admin\PickupDropoffPointController;
 use App\Http\Controllers\Admin\PointFareController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Client\TripController as ClientTripController;
@@ -47,7 +48,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/thong-tin-tai-khoan/lich-su-mua-ve', [AuthenticatedSessionController::class, 'ticketHistory'])
         ->name('client.account.tickets');
-        
+
     Route::post('/dat-ve', [ClientBookingController::class, 'store'])
         ->name('client.bookings.store');
 
@@ -66,6 +67,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', AdminMiddleware::cla
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', UserController::class);
     route::resource('cities', CityController::class);
+    route::resource('pickup-dropoff-points', PickupDropoffPointController::class);
     route::resource('point_fares', PointFareController::class);
     Route::resource('routes', RouteController::class);
     Route::resource('buses', BusController::class);
