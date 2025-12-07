@@ -8,35 +8,94 @@ use Illuminate\Http\Request;
 
 class TicketCheckController extends Controller
 {
-    public function index()
-    {
-        $tickets = Ticket::latest()->paginate(20);
-        return view('checker.tickets', compact('tickets'));
+    /**
+     * Danh sách vé
+     */
+    public function index(Request $request)
+{
+    $query = Ticket::query()->with(['trip.route.fromCity', 'trip.route.toCity', 'passengers']);
+
+    // Lọc theo mã vé
+    if ($request->code) {
+        $query->where('code', 'LIKE', '%' . $request->code . '%');
     }
 
+    // Lọc trạng thái
+    if ($request->status === 'checked') {
+        $query->whereNotNull('checked_at');
+    } elseif ($request->status === 'unchecked') {
+        $query->whereNull('checked_at');
+    }
+
+    // Lọc theo chuyến
+    if ($request->route_id) {
+        $query->whereHas('trip.route', function ($q) use ($request) {
+            $q->where('id', $request->route_id);
+        });
+    }
+
+    $tickets = $query->latest()->paginate(20);
+
+    // Danh sách tuyến để đổ vào filter
+    $routes = \App\Models\Route::with(['fromCity', 'toCity'])->get();
+
+    return view('checker.tickets', compact('tickets', 'routes'));
+}
+
+
+    /**
+     * Chi tiết vé
+     */
     public function show($id)
     {
-        $ticket = Ticket::findOrFail($id);
+        $ticket = Ticket::with(['trip', 'user', 'passengers'])
+                        ->findOrFail($id);
+
         return view('checker.tickets.show', compact('ticket'));
     }
 
+    /**
+     * Form kiểm tra vé
+     */
     public function verify()
     {
         return view('checker.verify');
     }
 
+    /**
+     * Xử lý kiểm tra vé (scan hoặc nhập tay)
+     */
     public function checkTicket(Request $request)
     {
+        // Validate đầu vào
+        $request->validate([
+            'code' => 'required|string|max:50'
+        ], [
+            'code.required' => 'Vui lòng nhập mã vé',
+        ]);
+
+        // Tìm vé
         $ticket = Ticket::where('code', $request->code)->first();
 
         if (!$ticket) {
-            return back()->with('error', 'Vé không tồn tại');
+            return back()->with('error', '❌ Vé không tồn tại');
         }
 
+        // Vé phải được thanh toán mới hợp lệ
         if ($ticket->status !== 'paid') {
-            return back()->with('error', 'Vé chưa thanh toán hoặc không hợp lệ');
+            return back()->with('error', '⚠ Vé chưa thanh toán hoặc không hợp lệ');
         }
 
-        return back()->with('success', 'Vé hợp lệ!')->with('ticket', $ticket);
+        // Nếu muốn tránh quét trùng → đánh dấu đã check
+        if ($ticket->is_checked ?? false) {
+            return back()->with('error', '⚠ Vé này đã được quét trước đó!');
+        }
+
+        // Nếu muốn tự động đánh dấu check khi quét
+        $ticket->update(['is_checked' => true]);
+
+        return back()
+            ->with('success', '✅ Vé hợp lệ!')
+            ->with('ticket', $ticket);
     }
 }

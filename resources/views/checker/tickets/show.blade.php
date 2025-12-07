@@ -11,7 +11,7 @@
     <div class="card-body">
 
         {{-- Thông tin vé --}}
-        <h5 class="mb-3">Thông tin vé</h5>
+        <h5 class="mb-3 fw-bold">Thông tin vé</h5>
         <table class="table table-borderless">
             <tr>
                 <th>Mã vé:</th>
@@ -38,7 +38,7 @@
         </table>
 
         {{-- Thông tin chuyến --}}
-        <h5 class="mt-4 mb-3">Thông tin chuyến</h5>
+        <h5 class="mt-4 mb-3 fw-bold">Thông tin chuyến</h5>
         @if($ticket->trip)
             <table class="table table-borderless">
                 <tr>
@@ -67,7 +67,7 @@
         @endif
 
         {{-- Hành khách --}}
-        <h5 class="mt-4 mb-3">Hành khách</h5>
+        <h5 class="mt-4 mb-3 fw-bold">Hành khách</h5>
         @if($ticket->passengers && $ticket->passengers->count())
             <table class="table table-bordered align-middle">
                 <thead>
@@ -78,11 +78,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($ticket->passengers as $index => $p)
+                    @foreach($ticket->passengers as $p)
                         <tr>
-                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $loop->iteration }}</td>
                             <td>{{ $p->name ?? '---' }}</td>
-                            <td>{{ $p->seat_number ?? '---' }}</td>
+                            <td>{{ $p->seat_code ?? '---' }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -97,6 +97,7 @@
                 <i class="bi bi-arrow-left"></i> Quay lại danh sách vé
             </a>
         </div>
+
     </div>
 </div>
 

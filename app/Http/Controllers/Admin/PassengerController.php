@@ -47,7 +47,6 @@ public function store(Request $request)
     $request->validate([
         'name' => 'required|string|max:255',
         'phone' => 'nullable|string|max:20',
-        'age' => 'nullable|integer|min:1|max:120',
         'seat_number' => 'required|string|max:10',
         'ticket_id' => 'nullable|exists:tickets,id',
         'trip_id' => 'required|exists:trips,id',
@@ -60,7 +59,6 @@ public function store(Request $request)
     Passenger::create([
         'name' => $request->name,
         'phone' => $request->phone,
-        'age' => $request->age,
         'seat_number' => $request->seat_number,
         'ticket_id' => $request->ticket_id,
         'trip_id' => $request->trip_id,
@@ -100,7 +98,6 @@ public function store(Request $request)
             'email'     => 'nullable|email|max:255',
             'phone'     => 'required|string|max:15',
             'gender'    => 'required|in:male,female,other',
-            'age'       => 'nullable|integer|min:0|max:120',
             'ticket_id' => 'required|exists:tickets,id',
         ]);
 

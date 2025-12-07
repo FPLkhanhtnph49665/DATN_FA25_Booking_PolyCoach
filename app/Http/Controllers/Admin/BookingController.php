@@ -9,73 +9,93 @@ use App\Http\Controllers\Controller;
 class BookingController extends Controller
 {
     /**
-     * Display a listing of bookings.
+     * ------------------------------------------------------------------
+     * LIST BOOKING + SEARCH
+     * ------------------------------------------------------------------
      */
     public function index(Request $request)
     {
-        // Search by user name or trip ID
         $query = Booking::with(['user', 'trip']);
 
+        // SEARCH theo tên khách hoặc mã chuyến
         if ($request->filled('search')) {
-            $search = $request->search;
-            $query->whereHas('user', function ($q) use ($search) {
-                $q->where('full_name', 'like', "%$search%");
-            })->orWhereHas('trip', function ($q) use ($search) {
-                $q->where('id', $search);
+            $search = trim($request->search);
+
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('user', function ($userQ) use ($search) {
+                    $userQ->where('full_name', 'like', "%{$search}%");
+                })
+                ->orWhereHas('trip', function ($tripQ) use ($search) {
+                    $tripQ->where('id', $search);
+                });
             });
         }
 
-        $bookings = $query->orderByDesc('created_at')->paginate(10);
+        $bookings = $query->orderBy('created_at', 'desc')->paginate(10);
 
         return view('admin.bookings.index', compact('bookings'));
     }
 
     /**
-     * Show the form for creating a new booking.
-     */
-    public function create()
-    {
-        // TODO: implement if needed
-    }
-
-    /**
-     * Store a newly created booking in storage.
-     */
-    public function store(Request $request)
-    {
-        // TODO: implement store logic
-    }
-
-    /**
-     * Display the specified booking.
+     * ------------------------------------------------------------------
+     * SHOW BOOKING DETAIL
+     * ------------------------------------------------------------------
      */
     public function show(Booking $booking)
     {
-        $booking->load(['user', 'trip']);
+        $booking->load(['user', 'trip', 'tickets']);
         return view('admin.bookings.show', compact('booking'));
     }
 
     /**
-     * Show the form for editing the specified booking.
+     * ------------------------------------------------------------------
+     * EDIT BOOKING
+     * ------------------------------------------------------------------
      */
     public function edit(Booking $booking)
     {
+        $booking->load(['user', 'trip']);
         return view('admin.bookings.edit', compact('booking'));
     }
 
     /**
-     * Update the specified booking in storage.
+     * ------------------------------------------------------------------
+     * UPDATE BOOKING
+     * ------------------------------------------------------------------
      */
     public function update(Request $request, Booking $booking)
     {
-        // TODO: implement update logic
+        $request->validate([
+            'status'          => 'required|in:pending,confirmed,paid,cancelled',
+            'payment_method'  => 'nullable|string|max:50',
+            'total_amount'    => 'required|numeric|min:0',
+        ], [
+            'status.required' => 'Trạng thái không được để trống',
+            'total_amount.numeric' => 'Tổng tiền phải là số',
+        ]);
+
+        $booking->update([
+            'status'         => $request->status,
+            'payment_method' => $request->payment_method,
+            'total_amount'   => $request->total_amount,
+        ]);
+
+        return redirect()
+            ->route('admin.bookings.index')
+            ->with('success', 'Cập nhật booking thành công!');
     }
 
     /**
-     * Remove the specified booking from storage.
+     * ------------------------------------------------------------------
+     * DELETE (SOFT DELETE)
+     * ------------------------------------------------------------------
      */
     public function destroy(Booking $booking)
     {
-        // TODO: implement soft delete if needed
+        $booking->delete();
+
+        return redirect()
+            ->route('admin.bookings.index')
+            ->with('success', 'Đã xóa booking thành công!');
     }
 }

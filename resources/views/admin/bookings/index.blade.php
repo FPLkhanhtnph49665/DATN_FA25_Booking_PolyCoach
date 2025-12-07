@@ -145,8 +145,8 @@
                                 {{-- Số ghế --}}
                                 <td>
                                     @php
-                                        // ưu tiên dùng field mới nếu ông có, fallback về so_ghe
-                                        $seatInfo = $booking->seat_numbers ?? $booking->so_ghe ?? null;
+                                        // ưu tiên dùng field mới nếu ông có, fallback về
+                                        $seatInfo = $booking->seat_numbers ??  null;
                                     @endphp
 
                                     @if(is_array($seatInfo))

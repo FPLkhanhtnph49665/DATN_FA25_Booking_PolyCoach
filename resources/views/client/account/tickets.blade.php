@@ -312,7 +312,7 @@
 
                                         {{-- TRẠNG THÁI (Lấy từ Booking) --}}
                                         <td class="text-center">
-                                            {!! $booking->trang_thai_label ?? ucfirst($booking->status) !!}
+                                            {!! $booking->status ?? ucfirst($booking->status) !!}
                                         </td>
 
                                         {{-- CỘT HÀNH ĐỘNG MỚI --}}

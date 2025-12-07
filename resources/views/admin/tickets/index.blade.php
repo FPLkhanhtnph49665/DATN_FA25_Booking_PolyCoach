@@ -142,7 +142,7 @@
                                 {{-- Số ghế --}}
                                 <td>
                                     @php
-                                        $seatInfo = $ticket->seat_number ?? $ticket->seat_number ?? null;
+                                        $seatInfo = $ticket->seat_code ?? $ticket->seat_code ?? null;
                                     @endphp
 
                                     @if(is_array($seatInfo))

@@ -14,7 +14,6 @@ class Passenger extends Model
         'ticket_id',
         'name',
         'phone',
-        'age',
         'seat_number',
     ];
 
@@ -62,10 +61,5 @@ class Passenger extends Model
     public function getSeatLabelAttribute()
     {
         return strtoupper($this->seat_number);
-    }
-
-    public function getDisplayNameAttribute()
-    {
-        return $this->name . ($this->age ? " ({$this->age} tuổi)" : '');
     }
 }

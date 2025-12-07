@@ -24,69 +24,78 @@ class Booking extends Model
         'total_amount' => 'integer',
     ];
 
-    // -------------------------------
-    // RELATIONSHIPS
-    // -------------------------------
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONSHIPS
+    |--------------------------------------------------------------------------
+    */
+
+    // Người dùng đặt vé
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function customer()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
+    // Thuộc một chuyến xe
     public function trip()
     {
         return $this->belongsTo(Trip::class);
     }
+
+    // Booking có nhiều vé
     public function tickets()
     {
         return $this->hasMany(Ticket::class);
     }
-    // -------------------------------
-    // ACCESSORS / HELPERS
-    // -------------------------------
+
+    // Lấy toàn bộ hành khách của booking thông qua tickets (ĐÚNG CHUẨN)
+    public function passengers()
+    {
+        return $this->hasManyThrough(
+            Passenger::class,
+            Ticket::class,
+            'booking_id',   // FK của tickets
+            'ticket_id',    // FK của passengers
+            'id',           // PK của bookings
+            'id'            // PK của tickets
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACCESSORS & HELPERS
+    |--------------------------------------------------------------------------
+    */
+
+    // Format tiền
     public function getFormattedTotalAttribute(): string
     {
         return number_format($this->total_amount, 0, ',', '.') . ' ₫';
     }
 
-    public function isPending(): bool
-    {
-        return $this->status === 'pending';
-    }
-
-    public function isConfirmed(): bool
-    {
-        return $this->status === 'confirmed';
-    }
-
-    public function isPaid(): bool
-    {
-        return $this->status === 'paid';
-    }
-
-    public function isCancelled(): bool
-    {
-        return $this->status === 'cancelled';
-    }
-
+    // Label trạng thái
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'pending' => '<span class="badge bg-warning">Đang chờ</span>',
+            'pending'   => '<span class="badge bg-warning">Đang chờ</span>',
             'confirmed' => '<span class="badge bg-primary">Đã xác nhận</span>',
-            'paid' => '<span class="badge bg-success">Đã thanh toán</span>',
+            'paid'      => '<span class="badge bg-success">Đã thanh toán</span>',
             'cancelled' => '<span class="badge bg-danger">Đã hủy</span>',
-            default => '<span class="badge bg-dark">Không xác định</span>',
+            default     => '<span class="badge bg-dark">Không xác định</span>',
         };
     }
 
-    // -------------------------------
-    // SCOPES
-    // -------------------------------
+    public function isPending(): bool    { return $this->status === 'pending'; }
+    public function isConfirmed(): bool  { return $this->status === 'confirmed'; }
+    public function isPaid(): bool       { return $this->status === 'paid'; }
+    public function isCancelled(): bool  { return $this->status === 'cancelled'; }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SCOPES
+    |--------------------------------------------------------------------------
+    */
+
     public function scopeStatus($query, string $status)
     {
         return $query->where('status', $status);
@@ -107,9 +116,12 @@ class Booking extends Model
         return $query->where('trip_id', $tripId);
     }
 
-    // -------------------------------
-    // Booted: tự động set ngày đặt nếu null
-    // -------------------------------
+    /*
+    |--------------------------------------------------------------------------
+    | BOOTED
+    |--------------------------------------------------------------------------
+    */
+
     protected static function booted()
     {
         static::creating(function ($booking) {

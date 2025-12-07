@@ -17,7 +17,7 @@ class TicketController extends Controller
      */
     public function index()
     {
-        $tickets = Ticket::with(['trip', 'user'])->paginate(25);
+        $tickets = Ticket::with(['trip.route.fromCity', 'trip.route.toCity', 'user'])->paginate(25);
         return view('admin.tickets.index', compact('tickets'));
     }
 
@@ -26,12 +26,14 @@ class TicketController extends Controller
      */
     public function create()
     {
-        return view('admin.tickets.create', [
-            'trips' => Trip::with(['route.fromCity', 'route.toCity'])->get(),
-            'users' => User::all(),
-        ]);
+        return view(
+            'admin.tickets.create',
+            [
+                'trips' => Trip::with(['route.fromCity', 'route.toCity'])->get(),
+                'users' => User::all(),   // 👈 Không dùng customer nữa
+            ]
+        );
     }
-
 
     /**
      * Store a newly created ticket in storage.
@@ -39,9 +41,10 @@ class TicketController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'code' => 'TKT-' . strtoupper(uniqid()),
             'trip_id' => 'required|exists:trips,id',
-            'user_id' => 'required|exists:users,id',
-            'seat_number' => 'required|string|max:10',
+            'user_id' => 'required|exists:users,id', // 👈 sửa đúng
+            'seat_code' => 'required|string|max:10',
             'status' => 'required|in:pending,paid,cancelled',
             'payment_method' => 'required|in:cash,banking',
         ]);
@@ -49,14 +52,13 @@ class TicketController extends Controller
         Ticket::create([
             'trip_id' => $request->trip_id,
             'user_id' => $request->user_id,
-            'seat_number' => $request->seat_number,
+            'seat_code' => $request->seat_code,
             'status' => $request->status,
             'payment_method' => $request->payment_method,
         ]);
 
         return redirect()->route('admin.tickets.index')->with('success', 'Thêm vé thành công.');
     }
-
 
     /**
      * Display the specified ticket.
@@ -72,7 +74,11 @@ class TicketController extends Controller
      */
     public function edit(Ticket $ticket)
     {
-        return view('admin.tickets.edit', compact('ticket'));
+        return view('admin.tickets.edit', [
+            'ticket' => $ticket,
+            'trips' => Trip::with(['route.fromCity', 'route.toCity'])->get(),
+            'users' => User::all()
+        ]);
     }
 
     /**
@@ -81,7 +87,7 @@ class TicketController extends Controller
     public function update(Request $request, Ticket $ticket): RedirectResponse
     {
         $validated = $request->validate([
-            'seat_number'    => 'required|string|max:10',
+            'seat_code'    => 'required|string|max:10',
             'price'          => 'required|numeric|min:0',
             'payment_method' => 'required|string|max:50',
         ]);
@@ -92,6 +98,7 @@ class TicketController extends Controller
             if ($ticket->invoice_path && Storage::disk('public')->exists($ticket->invoice_path)) {
                 Storage::disk('public')->delete($ticket->invoice_path);
             }
+
             $path = $request->file('invoice')->store('invoices', 'public');
             $ticket->invoice_path = $path;
             $ticket->save();
@@ -134,6 +141,12 @@ class TicketController extends Controller
     public function forceDelete($id): RedirectResponse
     {
         $ticket = Ticket::onlyTrashed()->findOrFail($id);
+
+        // Xóa file đính kèm nếu có
+        if ($ticket->invoice_path && Storage::disk('public')->exists($ticket->invoice_path)) {
+            Storage::disk('public')->delete($ticket->invoice_path);
+        }
+
         $ticket->forceDelete();
         return redirect()->route('admin.tickets.trash')->with('success', 'Ticket permanently deleted!');
     }
