@@ -9,12 +9,38 @@
             <div class="col-lg-10">
                 <div class="card shadow-sm overflow-hidden auth-card">
                     <div class="row g-0">
-                        <div class="col-md-6 auth-left p-4 d-none d-md-flex flex-column justify-content-center align-items-start">
-                            <h2 class="brand mb-1">PolyCoach</h2>
-                            <p class="slogan text-white-80 mb-3">Cùng bạn trên mọi nẻo đường</p>
-                            <img src="{{ asset('images/bus-login.png') }}" alt="Bus" class="auth-image mb-3">
-                            <h5 class="text-white fw-semibold">XE TRUNG CHUYỂN — ĐÓN &amp; TRẢ TẬN NƠI</h5>
-                        </div>
+                        <div class="col-md-6 auth-left p-4 d-none d-md-flex flex-column justify-content-center">
+
+    <!-- Logo & Slogan -->
+    <div class="mb-4">
+        <h2 class="brand fw-bold text-danger mb-1" style="font-size: 2.3rem; letter-spacing: .5px;">
+            PolyCoach
+        </h2>
+        <p class="slogan text-white-80 mb-0" style="font-size: 1.1rem;">
+            Cùng bạn trên mọi nẻo đường
+        </p>
+    </div>
+
+    <!-- Ảnh minh họa -->
+    <div class="w-100 d-flex justify-content-center mb-4">
+        <img src="{{ asset('add_to_login.png') }}"
+             alt="Bus"
+             class="auth-image rounded-4 shadow-lg"
+             style="width: 88%; object-fit: cover; border: 1px solid rgba(255,255,255,0.12);">
+    </div>
+
+    <!-- Tiêu đề -->
+    <h5 class="text-danger fw-semibold mt-2"
+        style="font-size: 1.15rem; letter-spacing: 0.6px; text-transform: uppercase;">
+        Xe trung chuyển — Đón &amp; trả tận nơi
+    </h5>
+
+    <p class="text-white-70 mt-1" style="font-size: .95rem; max-width: 90%;">
+        Dịch vụ trung chuyển tiện lợi, hiện đại – đưa đón tận nơi nhanh chóng và an toàn.
+    </p>
+
+</div>
+
 
                         <div class="col-md-6 auth-right p-4">
                             <h3 class="text-center mb-3">Đăng ký</h3>

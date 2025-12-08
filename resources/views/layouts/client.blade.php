@@ -472,7 +472,7 @@
                     <h5 class="text-warning fw-bold mb-3">TRUNG TÂM HỖ TRỢ</h5>
                     <p class="display-6 fw-bold text-danger mb-2">1900 6067</p>
                     <p class="small mb-1"><strong>CÔNG TY CP XE KHÁCH POLYCOACH</strong></p>
-                    <p class="small text-muted mb-1">
+                    <p class="small text-white mb-1">
                         Tòa nhà FPT Polytechnic, Phố Trịnh Văn Bô, Nam Từ Liêm, Hà Nội.
                     </p>
                     <p class="small mb-1">
@@ -518,7 +518,7 @@
                         <a href="#" class="social-btn"><i class="fab fa-youtube"></i></a>
                         <a href="#" class="social-btn"><i class="fab fa-tiktok"></i></a>
                     </div>
-                    <img src="{{ asset('PolyCoach.gif') }}" alt="Logo" class="img-fluid" style="max-height: 60px;">
+                    <img src="{{ asset('logoPoLyCoach.png') }}" alt="Logo" class="img-fluid" style="max-height: 60px;">
                 </div>
             </div>
 
@@ -526,7 +526,7 @@
 
             <div class="row align-items-center small">
                 <div class="col-md-6 text-center text-md-start">
-                    © {{ date('Y') }} PolyCoach Group. All rights reserved.
+                    © {{ date('Y') }} Tập đoàn PolyCoach. Mọi quyền được bảo lưu.
                 </div>
                 <div class="col-md-6 text-center text-md-end">
                     Phát triển bởi <strong class="text-warning">DATN_FA25</strong>
