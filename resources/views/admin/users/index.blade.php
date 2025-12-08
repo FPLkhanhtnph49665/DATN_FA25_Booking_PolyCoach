@@ -29,7 +29,7 @@
         <div class="card-body">
             <form action="{{ route('admin.users.index') }}" method="GET" class="row g-3 align-items-end">
                 <div class="col-md-4">
-                    <label class="form-label text-muted small mb-1">Từ khóa</label>
+                    <label class="form-label text-light small mb-1">Từ khóa</label>
                     <input type="text"
                            name="keyword"
                            value="{{ request('keyword') }}"
@@ -38,7 +38,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label text-muted small mb-1">Vai trò</label>
+                    <label class="form-label text-light small mb-1">Vai trò</label>
                     <select name="role" class="form-select">
                         <option value="">-- Tất cả vai trò --</option>
                         <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Quản trị viên</option>
@@ -49,7 +49,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label text-muted small mb-1">Trạng thái</label>
+                    <label class="form-label text-light small mb-1">Trạng thái</label>
                     <select name="status" class="form-select">
                         <option value="">-- Tất cả trạng thái --</option>
                         <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Kích hoạt</option>
