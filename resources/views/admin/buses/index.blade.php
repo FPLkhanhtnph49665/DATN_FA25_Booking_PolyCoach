@@ -12,7 +12,7 @@
                 <i class="bi bi-bus-front-fill"></i>
                 Quản lý danh sách Xe
             </h2>
-            <p class="text-muted small mb-0">
+            <p class="text-white small mb-0">
                 Theo dõi đội xe: biển số, số ghế, loại xe và trạng thái hoạt động trong hệ thống PolyCoach.
             </p>
         </div>

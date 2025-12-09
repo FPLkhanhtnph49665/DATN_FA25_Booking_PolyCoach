@@ -9,7 +9,7 @@
         <div>
             <h2 class="mb-1 fw-semibold text-light d-flex align-items-center gap-2">
                 <i class="bi bi-person-gear"></i>
-                Chỉnh sửa User
+                Chỉnh sửa người dùng
             </h2>
             <p class="text-muted small mb-0">
                 Cập nhật thông tin tài khoản: họ tên, liên hệ, vai trò và trạng thái.

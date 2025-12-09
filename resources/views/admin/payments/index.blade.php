@@ -12,7 +12,7 @@
                 <i class="bi bi-credit-card-2-front-fill"></i>
                 Quản lý danh sách thanh toán
             </h2>
-            <p class="text-muted small mb-0">
+            <p class="text-white small mb-0">
                 Theo dõi các giao dịch thanh toán: vé, người dùng, số tiền, phương thức và trạng thái xử lý.
             </p>
         </div>
@@ -44,14 +44,14 @@
         <div class="card-body">
             <form method="GET" action="{{ route('admin.payments.index') }}" class="row g-3 align-items-end">
                 <div class="col-md-5">
-                    <label for="search" class="form-label text-muted small mb-1">Tìm kiếm</label>
+                    <label for="search" class="form-label text-white small mb-1">Tìm kiếm</label>
                     <input type="text" name="search" id="search" class="form-control"
                         placeholder="Tìm theo tên người dùng, email hoặc mã vé..."
                         value="{{ request('search') }}">
                 </div>
 
                 <div class="col-md-3">
-                    <label for="status" class="form-label text-muted small mb-1">Trạng thái</label>
+                    <label for="status" class="form-label text-white small mb-1">Trạng thái</label>
                     <select name="status" id="status" class="form-select">
                         <option value="">-- Tất cả --</option>
                         <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Chờ xử lý</option>

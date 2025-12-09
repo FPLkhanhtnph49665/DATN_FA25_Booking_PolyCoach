@@ -12,7 +12,7 @@
                 <i class="bi bi-star-half"></i>
                 Quản lý danh sách đánh giá
             </h2>
-            <p class="text-muted small mb-0">
+            <p class="text-white small mb-0">
                 Theo dõi đánh giá của khách hàng cho từng chuyến xe: số sao, nội dung và trạng thái duyệt.
             </p>
         </div>
@@ -52,7 +52,7 @@
         <div class="card-body">
             <form method="GET" action="{{ route('admin.reviews.index') }}" class="row g-3 align-items-end">
                 <div class="col-md-5">
-                    <label for="search" class="form-label text-muted small mb-1">Tìm kiếm</label>
+                    <label for="search" class="form-label text-white small mb-1">Tìm kiếm</label>
                     <input
                         type="text"
                         name="search"
@@ -64,7 +64,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label for="status" class="form-label text-muted small mb-1">Trạng thái</label>
+                    <label for="status" class="form-label text-white small mb-1">Trạng thái</label>
                     <select name="status" id="status" class="form-select">
                         <option value="">-- Tất cả --</option>
                         <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Chờ duyệt</option>

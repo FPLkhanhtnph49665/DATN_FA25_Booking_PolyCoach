@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('full_name', 200); // có thể auto generate
             $table->string('email', 150)->unique();
             $table->timestamp('email_verified_at')->nullable(); // từ Laravel mặc định
-            $table->string('phone', 20)->nullable();
+            $table->string('phone', 20)->unique()->nullable();
             $table->string('password'); // mật khẩu đã hash
             $table->string('image')->nullable();
             $table->enum('role', ['admin','user', 'staff', 'checker'])->default('user'); // phân quyền

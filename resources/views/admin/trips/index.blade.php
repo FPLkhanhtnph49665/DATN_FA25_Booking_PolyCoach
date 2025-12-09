@@ -12,7 +12,7 @@
                     <i class="bi bi-calendar2-week-fill"></i>
                     Danh sách chuyến
                 </h2>
-                <p class="text-muted small mb-0">
+                <p class="text-white small mb-0">
                     Quản lý các chuyến xe theo tuyến, xe, ngày giờ khởi hành và tình trạng ghế.
                 </p>
             </div>
@@ -38,14 +38,14 @@
                 <form action="{{ route('admin.trips.index') }}" method="GET" class="row g-3 align-items-end">
                     {{-- Tìm theo tuyến (thành phố đi / đến) --}}
                     <div class="col-md-5">
-                        <label for="search" class="form-label text-muted small mb-1">Tìm kiếm</label>
+                        <label for="search" class="form-label text-white small mb-1">Tìm kiếm</label>
                         <input type="text" name="search" id="search" value="{{ request('search') }}"
                             class="form-control" placeholder="Tuyến, thành phố đi / đến...">
                     </div>
 
                     {{-- Trạng thái --}}
                     <div class="col-md-3">
-                        <label for="status" class="form-label text-muted small mb-1">Trạng thái</label>
+                        <label for="status" class="form-label text-white small mb-1">Trạng thái</label>
                         <select name="status" id="status" class="form-select">
                             <option value="">-- Tất cả --</option>
                             <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Hoạt động</option>
