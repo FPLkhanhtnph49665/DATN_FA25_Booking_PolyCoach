@@ -3,8 +3,5 @@
             <directory>tests/Feature</directory>
         </testsuite>
     </testsuites>
-     <testsuite name="Feature">
-            <directory>tests/Feature</directory>
-        </testsuite>
-    </testsuites>
+     
     
