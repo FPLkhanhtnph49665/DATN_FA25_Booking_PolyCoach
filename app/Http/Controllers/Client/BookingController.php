@@ -88,6 +88,7 @@ class BookingController extends Controller
                     'booking_id'     => $booking->id,
                     'seat_code'      => $seatCode,
                     'seat_number'    => $seatNumber,
+                    'price'          => $unitPrice,
                     'status'         => 'pending',
                     'payment_method' => $request->payment_method,
                 ]);
