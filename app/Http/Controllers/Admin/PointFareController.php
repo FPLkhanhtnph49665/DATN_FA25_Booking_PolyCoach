@@ -16,7 +16,7 @@ class PointFareController extends Controller
      */
     public function index()
     {
-        $pointFares = PointFare::with(['route.fromCity', 'route.toCity', 'pickupPoint', 'dropoffPoint'])
+        $pointFares = PointFare::with(['route', 'route.fromCity', 'route.toCity', 'pickupPoint', 'dropoffPoint'])
             ->orderByDesc('created_at')
             ->paginate(15);
 

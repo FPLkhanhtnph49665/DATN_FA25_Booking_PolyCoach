@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('point_fares', function (Blueprint $table) {
             $table->id();
             $table->foreignId('route_id')->constrained('routes')->onDelete('cascade');
-            $table->foreignId('pickup_point_id')->constrained('pickup_points')->onDelete('cascade');
-            $table->foreignId('dropoff_point_id')->constrained('dropoff_points')->onDelete('cascade');
+            $table->foreignId('pickup_point_id')->constrained('pickup_dropoff_points')->onDelete('cascade');
+            $table->foreignId('dropoff_point_id')->constrained('pickup_dropoff_points')->onDelete('cascade');
             $table->decimal('price', 10, 2);
             $table->timestamps();
 

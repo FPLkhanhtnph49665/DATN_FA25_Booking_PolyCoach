@@ -17,14 +17,12 @@ class PointFare extends Model
     {
         return $this->belongsTo(Route::class);
     }
-
     public function pickupPoint()
     {
-        return $this->belongsTo(PickupPoint::class);
+        return $this->belongsTo(PickupDropoffPoint::class, 'pickup_point_id');
     }
-
     public function dropoffPoint()
     {
-        return $this->belongsTo(DropoffPoint::class);
+        return $this->belongsTo(PickupDropoffPoint::class, 'dropoff_point_id');
     }
 }

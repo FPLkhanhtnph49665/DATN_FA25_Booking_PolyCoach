@@ -33,13 +33,12 @@ class Route extends Model
     // Một Route có nhiều điểm đón
     public function pickupPoints()
     {
-        return $this->hasMany(PickupPoint::class)->orderBy('order');
+        return $this->hasMany(PickupDropoffPoint::class)->where('type', 'pickup');
     }
-
     // Một Route có nhiều điểm trả
     public function dropoffPoints()
     {
-        return $this->hasMany(DropoffPoint::class)->orderBy('order');
+        return $this->hasMany(PickupDropoffPoint::class)->where('type', 'dropoff');
     }
     public function fromCity()
     {
