@@ -14,6 +14,7 @@ class Ticket extends Model
         'code',
         'trip_id',
         'user_id',
+        'booking_id',
         'price',
         'status',
         'payment_method',

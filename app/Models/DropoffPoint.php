@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DropoffPoint extends Model
 {
-    use SoftDeletes;
+    // use SoftDeletes;
 
     protected $fillable = [
         'route_id',

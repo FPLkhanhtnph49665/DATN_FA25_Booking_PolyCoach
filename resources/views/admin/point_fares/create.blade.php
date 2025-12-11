@@ -34,7 +34,7 @@
             <label for="pickup_point_id" class="form-label">Điểm đón <span class="text-danger">*</span></label>
             <select name="pickup_point_id" id="pickup_point_id" class="form-select" required>
                 <option value="">-- Chọn điểm đón --</option>
-                @foreach($pickupPoints as $point)
+                @foreach($points->where('type', 'pickup') as $point)
                     <option value="{{ $point->id }}" {{ old('pickup_point_id') == $point->id ? 'selected' : '' }}>
                         {{ $point->name }} - {{ $point->address }}
                     </option>
@@ -46,7 +46,7 @@
             <label for="dropoff_point_id" class="form-label">Điểm trả <span class="text-danger">*</span></label>
             <select name="dropoff_point_id" id="dropoff_point_id" class="form-select" required>
                 <option value="">-- Chọn điểm trả --</option>
-                @foreach($dropoffPoints as $point)
+                @foreach($points->where('type', 'dropoff') as $point)
                     <option value="{{ $point->id }}" {{ old('dropoff_point_id') == $point->id ? 'selected' : '' }}>
                         {{ $point->name }} - {{ $point->address }}
                     </option>

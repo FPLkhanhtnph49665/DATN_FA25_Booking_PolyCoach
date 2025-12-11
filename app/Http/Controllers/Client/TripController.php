@@ -142,12 +142,14 @@ class TripController extends Controller
         $bookedSeats = $trip->getBookedSeats();
 
         // Điểm đón / trả
-        $pickupPoints = PickupPoint::where('route_id', $route->id)
-            ->orderBy('order')
+        $pickupPoints = PickupDropoffPoint::where('route_id', $route->id)
+            ->where('type', 'pickup')
+            ->orderBy('created_at')
             ->get();
 
-        $dropoffPoints = DropoffPoint::where('route_id', $route->id)
-            ->orderBy('order')
+        $dropoffPoints = PickupDropoffPoint::where('route_id', $route->id)
+            ->where('type', 'dropoff')
+            ->orderBy('created_at')
             ->get();
 
         return view('client.trips.show', [
