@@ -11,15 +11,45 @@ use Illuminate\Http\Request;
 class PointFareController extends Controller
 {
     /**
-     * Hiển thị danh sách giá vé
+     * Hiển thị danh sách giá vé (kèm bộ lọc)
      */
-    public function index()
+    public function index(Request $request)
     {
-        $pointFares = PointFare::with(['route', 'route.fromCity', 'route.toCity', 'pickupPoint', 'dropoffPoint'])
-            ->orderByDesc('created_at')
-            ->paginate(15);
+        // 1. Khởi tạo Query Builder
+        $query = PointFare::with(['route', 'route.fromCity', 'route.toCity', 'pickupPoint', 'dropoffPoint']);
 
-        return view('admin.point_fares.index', compact('pointFares'));
+        // 2. Xử lý bộ lọc từ Request
+        if ($request->filled('route_id')) {
+            $query->where('route_id', $request->route_id);
+        }
+
+        if ($request->filled('pickup_point_id')) {
+            $query->where('pickup_point_id', $request->pickup_point_id);
+        }
+
+        if ($request->filled('dropoff_point_id')) {
+            $query->where('dropoff_point_id', $request->dropoff_point_id);
+        }
+
+        // 3. Lấy dữ liệu và phân trang (giữ lại tham số lọc trên URL)
+        $pointFares = $query->orderByDesc('created_at')
+            ->paginate(15)
+            ->withQueryString();
+
+        // 4. Lấy dữ liệu cho các thẻ Select trong bộ lọc
+        $routes = Route::with(['fromCity', 'toCity'])->get();
+
+        // Giả sử bảng pickup_dropoff_points có cột 'type' ('pickup' hoặc 'dropoff')
+        // Nếu không có cột type, bạn dùng ::all()
+        $pickupPoints = PickupDropoffPoint::where('active', 1)->where('type', 'pickup')->orderBy('name')->get();
+        $dropoffPoints = PickupDropoffPoint::where('active', 1)->where('type', 'dropoff')->orderBy('name')->get();
+
+        // Nếu bảng không chia type, dùng chung biến này cho cả 2 dropdown:
+        if ($pickupPoints->isEmpty() && $dropoffPoints->isEmpty()) {
+            $pickupPoints = $dropoffPoints = PickupDropoffPoint::where('active', 1)->orderBy('name')->get();
+        }
+
+        return view('admin.point_fares.index', compact('pointFares', 'routes', 'pickupPoints', 'dropoffPoints'));
     }
 
     /**

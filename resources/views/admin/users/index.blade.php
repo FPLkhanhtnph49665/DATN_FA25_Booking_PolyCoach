@@ -82,7 +82,7 @@
                             <th class="text-muted small">Mã User</th>
                             <th class="text-muted small">Họ</th>
                             <th class="text-muted small">Tên</th>
-                            <th class="text-muted small">Full Name</th>
+                            {{-- <th class="text-muted small">Full Name</th> --}}
                             <th class="text-muted small">Ảnh</th>
                             <th class="text-muted small">Email</th>
                             <th class="text-muted small">SĐT</th>
@@ -103,7 +103,7 @@
                                 </td>
                                 <td>{{ $user->first_name }}</td>
                                 <td>{{ $user->last_name }}</td>
-                                <td class="fw-semibold">{{ $user->full_name }}</td>
+                                {{-- <td class="fw-semibold">{{ $user->full_name }}</td> --}}
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <img src="{{ $user->image ? asset('storage/' . $user->image) : asset('default-avatar.png') }}"
