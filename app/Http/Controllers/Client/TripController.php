@@ -3,161 +3,106 @@
 namespace App\Http\Controllers\Client;
 
 use App\Models\Trip;
-use App\Models\Ticket;
+use App\Models\City;
 use App\Models\PickupDropoffPoint;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\PickupPoint;
-use App\Models\DropoffPoint;
-use App\Models\City;
 
 class TripController extends Controller
 {
+    /**
+     * Tìm kiếm và hiển thị danh sách chuyến đi
+     */
+    public function index(Request $request)
+    {
+        // 1. Chuẩn hóa dữ liệu đầu vào
+        $from = $request->integer('from_city_id');
+        $to = $request->integer('to_city_id');
+        $date = $request->input('departure_date');
+        $seatsRequired = $request->integer('seats', 1);
+        $timeFilters = (array) $request->input('time', []);
+        $busTypes = (array) $request->input('bus_type', []);
+        $rows = (array) $request->input('row', []);
+
+        // 2. Xây dựng Query với Eager Loading toàn diện (Nested Relations)
+        $query = Trip::with([
+            'bus',
+            'tickets',
+            'route.fromCity',
+            'route.toCity',
+            // Nạp đồng thời cả 2 quan hệ riêng biệt
+            'route.pickupPoints' => fn($q) => $q->where('active', 1)->orderBy('time'),
+            'route.dropoffPoints' => fn($q) => $q->where('active', 1)->orderBy('time'),
+        ])->where('status', 1);
+
+        // 3. Áp dụng các bộ lọc tại tầng Database
+        $query->when($from, fn($q) => $q->whereHas('route', fn($qr) => $qr->where('from_city_id', $from)))
+            ->when($to, fn($q) => $q->whereHas('route', fn($qr) => $qr->where('to_city_id', $to)))
+            ->when($date, fn($q) => $q->whereDate('departure_date', $date))
+            ->when($busTypes, fn($q) => $q->whereHas('bus', fn($qr) => $qr->whereIn('type', $busTypes)));
+
+        // Bộ lọc khung giờ
+        if (!empty($timeFilters)) {
+            $query->where(function ($q) use ($timeFilters) {
+                if (in_array('sang', $timeFilters))
+                    $q->orWhereBetween('departure_time', ['00:00:00', '06:00:00']);
+                if (in_array('sang2', $timeFilters))
+                    $q->orWhereBetween('departure_time', ['06:00:01', '12:00:00']);
+                if (in_array('chieu', $timeFilters))
+                    $q->orWhereBetween('departure_time', ['12:00:01', '18:00:00']);
+                if (in_array('toi', $timeFilters))
+                    $q->orWhereBetween('departure_time', ['18:00:01', '23:59:59']);
+            });
+        }
+
+        $trips = $query->orderBy('departure_date')->orderBy('departure_time')->get();
+
+        // 4. Lọc trên Collection (Bộ nhớ PHP) để tối ưu các logic phức tạp
+        if ($seatsRequired > 0 || !empty($rows)) {
+            $trips = $trips->filter(function ($trip) use ($seatsRequired, $rows) {
+                $hasSeats = $trip->availableSeats() >= $seatsRequired;
+                $hasRows = empty($rows) || $trip->availableSeatsInRows($rows) >= $seatsRequired;
+                return $hasSeats && $hasRows;
+            })->values();
+        }
+
+        // 5. Lấy danh sách tỉnh thành cho Form (Cache hoặc Eager Load nếu cần)
+        $cities = City::where('status', 1)->orderBy('name')->get();
+
+        return view('client.trips.index', [
+            'trips' => $trips,
+            'allFrom' => $cities,
+            'allTo' => $cities,
+        ]);
+    }
+
     public function searchTrips(Request $request)
     {
         return $this->index($request);
     }
 
-    public function index(Request $request)
-    {
-        // Lấy dữ liệu từ Request
-        // Dùng intval() cho ID để đảm bảo chúng là số và tránh lỗi LIKE
-        $from = intval(trim($request->input('from_city_id')));
-        $to = intval(trim($request->input('to_city_id')));
-        $date = $request->input('departure_date');
-        $seats = (int) $request->input('seats', 1);
-        $timeFilters = (array) $request->input('time', []);
-        $busTypes = (array) $request->input('bus_type', []);
-        $rows = (array) $request->input('row', []);
-
-        $query = Trip::with([
-            'route.fromCity',       // Thêm load City
-            'route.toCity',         // Thêm load City
-            'route.pickupPoints',
-            'route.dropoffPoints',
-            'bus',
-            // Chỉ load tickets nếu cần tính availableSeats, nếu không thì nên tối ưu
-            'tickets'
-        ])
-            ->where('status', 1) // Chỉ lấy các chuyến đi đang hoạt động (Active)
-            ->when($from, fn($q) => $q->whereHas(
-                'route',
-                // Sửa LỖI: Dùng toán tử bằng (=) cho ID
-                fn($qr) => $qr->where('from_city_id', $from)
-            ))
-            ->when($to, fn($q) => $q->whereHas(
-                'route',
-                // Sửa LỖI: Dùng toán tử bằng (=) cho ID
-                fn($qr) => $qr->where('to_city_id', $to)
-            ))
-            ->when(
-                $date,
-                fn($q) => $q->whereDate('departure_date', $date)
-            )
-            ->when($timeFilters, function ($q) use ($timeFilters) {
-                // Nhóm các điều kiện OR cho thời gian
-                $q->where(function ($query) use ($timeFilters) {
-                    if (in_array('morning', $timeFilters)) {
-                        $query->orWhereBetween('departure_time', ['00:00:00', '11:59:59']);
-                    }
-                    if (in_array('afternoon', $timeFilters)) {
-                        $query->orWhereBetween('departure_time', ['12:00:00', '17:59:59']);
-                    }
-                    if (in_array('evening', $timeFilters)) {
-                        $query->orWhereBetween('departure_time', ['18:00:00', '23:59:59']);
-                    }
-                });
-            })
-            ->when(
-                $busTypes,
-                fn($q) => $q->whereHas(
-                    'bus',
-                    fn($qr) => $qr->whereIn('type', $busTypes)
-                )
-            );
-
-        $trips = $query
-            ->orderBy('departure_date')
-            ->orderBy('departure_time')
-            ->get();
-
-        // --- Lọc trên Collection (Bộ nhớ PHP) ---
-
-        // 1. Filter theo số ghế trống
-        if ($seats > 0) {
-            // Giả định $trip->availableSeats() là method tồn tại trong model Trip
-            $trips = $trips->filter(fn($trip) => $trip->availableSeats() >= $seats)->values();
-        }
-
-        // 2. Filter theo dãy ghế
-        if (!empty($rows)) {
-            // Giả định $trip->availableSeatsInRows($rows) là method tồn tại trong model Trip
-            $trips = $trips->filter(fn($trip) => $trip->availableSeatsInRows($rows) >= $seats)->values();
-        }
-
-        // Tải lại danh sách cities cho form tìm kiếm/lọc trên view
-        $allFrom = City::where('status', 1)->orderBy('name', 'asc')->get();
-        $allTo = City::where('status', 1)->orderBy('name', 'asc')->get();
-
-        // Trả về view kết quả tìm kiếm
-        return view('client.trips.index', compact('trips', 'allFrom', 'allTo'));
-    }
-
     /**
-     * Show chi tiết chuyến + chọn ghế.
-     * Route hiện tại dùng ?trip_id=... nên mình giữ lại cho đỡ phải sửa route.
+     * Hiển thị chi tiết chuyến xe và chọn ghế
      */
     public function show(Request $request)
     {
-        // Lấy trip_id từ request
         $tripId = $request->input('trip_id');
 
-        // Lấy trip theo ID, load quan hệ
+        // Eager load mọi thứ cần thiết cho trang chi tiết trong 1 lần fetch
         $trip = Trip::with([
+            'bus',
             'route.fromCity',
             'route.toCity',
-            'route.pickupPoints',
-            'route.dropoffPoints',
-            'bus',
-            'tickets',
-            'bookings',
+            'route.pickupPoints', // Nạp điểm đón
+            'route.dropoffPoints', // Nạp điểm trả
+            'tickets'
         ])->findOrFail($tripId);
-
-        // Gọi method selectSeat, có thể truyền tripId hoặc $trip trực tiếp
-        return $this->selectSeat($tripId);
-    }
-
-
-    /**
-     * Trang chọn ghế cho 1 trip cụ thể.
-     * Có thể gắn thêm route kiểu /trips/{trip}/select-seat dùng method này luôn.
-     */
-    public function selectSeat($tripId)
-    {
-        // Loại bỏ 'tickets.passengers' khỏi Eager Loading
-        $trip = Trip::with(['route', 'tickets'])->findOrFail($tripId);
-        $route = $trip->route;
-
-        // Ghế đã bán
-        $bookedSeats = $trip->getBookedSeats();
-
-        // Điểm đón / trả
-        $pickupPoints = PickupDropoffPoint::where('route_id', $route->id)
-            ->where('type', 'pickup')
-            ->orderBy('created_at')
-            ->get();
-
-        $dropoffPoints = PickupDropoffPoint::where('route_id', $route->id)
-            ->where('type', 'dropoff')
-            ->orderBy('created_at')
-            ->get();
 
         return view('client.trips.show', [
             'trip' => $trip,
-            'bookedSeats' => $bookedSeats,
-            'pickupPoints' => $pickupPoints,
-            'dropoffPoints' => $dropoffPoints,
+            'bookedSeats' => $trip->getBookedSeats(),
+            'pickupPoints' => $trip->route->pickupPoints,
+            'dropoffPoints' => $trip->route->dropoffPoints,
         ]);
     }
-
 }
