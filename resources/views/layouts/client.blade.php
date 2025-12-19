@@ -329,12 +329,12 @@
                                 <button class="btn btn-outline-danger btn-sm rounded-pill px-3 dropdown-toggle"
                                     type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fas fa-user-circle me-1"></i>
-                                    {{ auth()->user()->full_name ?? auth()->user()->name ?? 'Tài khoản' }}
+                                    {{ auth()->user()->full_name ?? (auth()->user()->name ?? 'Tài khoản') }}
                                 </button>
 
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
                                     {{-- Link quản trị nếu là admin --}}
-                                    @if(auth()->user()->role === 'admin' || (auth()->user()->is_admin ?? false))
+                                    @if (auth()->user()->role === 'admin' || (auth()->user()->is_admin ?? false))
                                         <li>
                                             <a class="dropdown-item" href="{{ route('admin.dashboard') }}">
                                                 <i class="fas fa-gauge-high me-1"></i> Quản trị
@@ -346,7 +346,7 @@
                                     @endif
 
                                     {{-- Nếu là nhân viên checker --}}
-                                    @if(auth()->user()->role === 'checker')
+                                    @if (auth()->user()->role === 'checker')
                                         <li>
                                             <a class="dropdown-item" href="{{ route('checker.dashboard') }}">
                                                 <i class="fas fa-qrcode me-1"></i> Checker
@@ -462,7 +462,8 @@
     <main>
         @yield('content')
     </main>
-
+    
+    @stack('scripts')
     <!-- ====== FOOTER ====== -->
     <footer class="footer text-white">
         <div class="container">
@@ -518,7 +519,8 @@
                         <a href="#" class="social-btn"><i class="fab fa-youtube"></i></a>
                         <a href="#" class="social-btn"><i class="fab fa-tiktok"></i></a>
                     </div>
-                    <img src="{{ asset('logoPoLyCoach.png') }}" alt="Logo" class="img-fluid" style="max-height: 60px;">
+                    <img src="{{ asset('logoPoLyCoach.png') }}" alt="Logo" class="img-fluid"
+                        style="max-height: 60px;">
                 </div>
             </div>
 
@@ -541,7 +543,7 @@
     <!-- Optional: Add smooth scroll -->
     <script>
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
+            anchor.addEventListener('click', function(e) {
                 const target = document.querySelector(this.getAttribute('href'));
                 if (!target) return;
                 e.preventDefault();

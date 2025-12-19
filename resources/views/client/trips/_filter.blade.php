@@ -1,82 +1,77 @@
-<div class="card p-3 shadow-sm">
-    <h6 class="fw-bold mb-3">BỘ LỌC TÌM KIẾM</h6>
+<div class="card border-0 shadow-sm p-4 rounded-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h6 class="fw-bold mb-0 text-uppercase letter-spacing-1">Bộ lọc</h6>
+        <a href="{{ url()->current() }}" class="text-decoration-none small text-primary">Xóa tất cả</a>
+    </div>
 
     <form method="GET" action="{{ route('client.trips') }}">
-        {{-- Giữ lại các tham số tìm kiếm chính --}}
-        <input type="hidden" name="from"  value="{{ request('from') }}">
-        <input type="hidden" name="to"    value="{{ request('to') }}">
-        <input type="hidden" name="date"  value="{{ request('date') }}">
-        <input type="hidden" name="seats" value="{{ request('seats', 1) }}">
+        {{-- Giữ tham số cũ --}}
+        <input type="hidden" name="from" value="{{ request('from') }}">
+        <input type="hidden" name="to" value="{{ request('to') }}">
+        <input type="hidden" name="date" value="{{ request('date') }}">
 
-        {{-- Giờ đi --}}
-        <div class="mb-3">
-            <label class="form-label fw-semibold">Giờ đi</label>
-            <div class="d-flex flex-column gap-1 small">
-                <label>
-                    <input type="checkbox" name="time[]" value="sang"
-                           {{ in_array('sang', (array)request('time')) ? 'checked' : '' }}>
-                    Sáng sớm 00:00 - 06:00
+        {{-- Section: Giờ đi --}}
+        <div class="filter-section mb-4">
+            <label class="form-label fw-bold small text-muted mb-3">GIỜ ĐI</label>
+            <div class="filter-options d-flex flex-column gap-2">
+                @php
+                    $times = [
+                        'sang' => ['label' => 'Sáng sớm', 'range' => '00:00 - 06:00'],
+                        'sang2' => ['label' => 'Buổi sáng', 'range' => '06:00 - 12:00'],
+                        'chieu' => ['label' => 'Buổi chiều', 'range' => '12:00 - 18:00'],
+                        'toi' => ['label' => 'Buổi tối', 'range' => '18:00 - 24:00'],
+                    ];
+                @endphp
+                @foreach($times as $key => $val)
+                <label class="d-flex align-items-center cursor-pointer">
+                    <input type="checkbox" class="form-check-input me-2" name="time[]" value="{{ $key }}"
+                           {{ in_array($key, (array)request('time')) ? 'checked' : '' }}>
+                    <div class="small">
+                        <span class="d-block fw-semibold">{{ $val['label'] }}</span>
+                        <span class="text-muted" style="font-size: 11px;">{{ $val['range'] }}</span>
+                    </div>
                 </label>
-                <label>
-                    <input type="checkbox" name="time[]" value="sang2"
-                           {{ in_array('sang2', (array)request('time')) ? 'checked' : '' }}>
-                    Buổi sáng 06:00 - 12:00
-                </label>
-                <label>
-                    <input type="checkbox" name="time[]" value="chieu"
-                           {{ in_array('chieu', (array)request('time')) ? 'checked' : '' }}>
-                    Buổi chiều 12:00 - 18:00
-                </label>
-                <label>
-                    <input type="checkbox" name="time[]" value="toi"
-                           {{ in_array('toi', (array)request('time')) ? 'checked' : '' }}>
-                    Buổi tối 18:00 - 24:00
-                </label>
+                @endforeach
             </div>
         </div>
 
-        {{-- Loại xe --}}
-        <div class="mb-3">
-            <label class="form-label fw-semibold">Loại xe</label>
-            <div class="d-flex flex-wrap gap-2">
-                <input type="checkbox" class="btn-check" id="type-ghe" name="bus_type[]" value="ghe"
-                       autocomplete="off"
-                       {{ in_array('ghe', (array)request('bus_type')) ? 'checked' : '' }}>
-                <label class="btn btn-outline-secondary btn-sm" for="type-ghe">Ghế</label>
+        <hr class="my-4 opacity-50">
 
-                <input type="checkbox" class="btn-check" id="type-giuong" name="bus_type[]" value="giuong"
-                       autocomplete="off"
-                       {{ in_array('giuong', (array)request('bus_type')) ? 'checked' : '' }}>
-                <label class="btn btn-outline-secondary btn-sm" for="type-giuong">Giường</label>
-
-                <input type="checkbox" class="btn-check" id="type-limo" name="bus_type[]" value="limousine"
-                       autocomplete="off"
-                       {{ in_array('limousine', (array)request('bus_type')) ? 'checked' : '' }}>
-                <label class="btn btn-outline-secondary btn-sm" for="type-limo">Limousine</label>
+        {{-- Section: Loại xe --}}
+        <div class="filter-section mb-4">
+            <label class="form-label fw-bold small text-muted mb-3">LOẠI XE</label>
+            <div class="row g-2">
+                @php
+                    $types = [
+                        'ghe' => 'Ghế ngồi',
+                        'giuong' => 'Giường nằm',
+                        'limousine' => 'Limousine'
+                    ];
+                @endphp
+                @foreach($types as $val => $label)
+                <div class="col-12">
+                    <input type="checkbox" class="btn-check" id="type-{{ $val }}" name="bus_type[]" value="{{ $val }}"
+                           {{ in_array($val, (array)request('bus_type')) ? 'checked' : '' }}>
+                    <label class="btn btn-outline-light text-dark border btn-sm w-100 text-start px-3 py-2" for="type-{{ $val }}">
+                        {{ $label }}
+                    </label>
+                </div>
+                @endforeach
             </div>
         </div>
 
-        {{-- Hàng ghế --}}
-        <div class="mb-3">
-            <label class="form-label fw-semibold">Hàng ghế</label>
-            <div class="d-flex flex-wrap gap-2">
-                <input type="checkbox" class="btn-check" id="row-front" name="row[]" value="front"
-                       autocomplete="off"
-                       {{ in_array('front', (array)request('row')) ? 'checked' : '' }}>
-                <label class="btn btn-outline-secondary btn-sm" for="row-front">Hàng đầu</label>
-
-                <input type="checkbox" class="btn-check" id="row-middle" name="row[]" value="middle"
-                       autocomplete="off"
-                       {{ in_array('middle', (array)request('row')) ? 'checked' : '' }}>
-                <label class="btn btn-outline-secondary btn-sm" for="row-middle">Hàng giữa</label>
-
-                <input type="checkbox" class="btn-check" id="row-back" name="row[]" value="back"
-                       autocomplete="off"
-                       {{ in_array('back', (array)request('row')) ? 'checked' : '' }}>
-                <label class="btn btn-outline-secondary btn-sm" for="row-back">Hàng cuối</label>
-            </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary w-100">Áp dụng</button>
+        <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm mt-2">
+            ÁP DỤNG LỌC
+        </button>
     </form>
 </div>
+
+<style>
+    .btn-check:checked + .btn-outline-light {
+        background-color: #e7f1ff !important;
+        border-color: #0d6efd !important;
+        color: #0d6efd !important;
+    }
+    .cursor-pointer { cursor: pointer; }
+    .letter-spacing-1 { letter-spacing: 1px; }
+</style>

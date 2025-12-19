@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Trip;
 use App\Models\Route;
-use App\Models\City; // Cần import model City
+use App\Models\City;
 
 class HomeController extends Controller
 {
@@ -16,7 +16,6 @@ class HomeController extends Controller
     public function index()
     {
         // 1. Lấy 8 chuyến đi phổ biến (Dựa trên số lượng vé đã bán)
-        // Lưu ý: Vẫn cần đảm bảo model Trip có function tickets() return hasMany
         $popularTrips = Trip::with(['route.fromCity', 'route.toCity', 'bus'])
             ->where('status', 1) // Chỉ lấy các chuyến đi đang hoạt động (Active)
             ->where('departure_date', '>=', now()->toDateString()) // Chỉ lấy các chuyến chưa khởi hành
@@ -26,7 +25,6 @@ class HomeController extends Controller
             ->get();
 
         // 2. Lấy tất cả các thành phố để làm điểm đi / điểm đến (từ bảng cities)
-        // Lấy tên và ID của tất cả các thành phố đang hoạt động
         $allCities = City::select('id', 'name')
                             ->where('status', 1)
                             ->orderBy('name', 'asc')
