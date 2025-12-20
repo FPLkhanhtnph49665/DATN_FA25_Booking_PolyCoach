@@ -25,12 +25,17 @@ class Bus extends Model
     // 🔗 RELATIONSHIPS
     // -------------------------------
 
-    public function seats(){
+    public function seats()
+    {
         return $this->hasMany(BusSeat::class);
     }
     public function trips()
     {
         return $this->hasMany(Trip::class);
+    }
+    public function images()
+    {
+        return $this->hasMany(BusImage::class, 'bus_id');
     }
 
     // -------------------------------
@@ -41,9 +46,9 @@ class Bus extends Model
     {
         return match ($this->type) {
             'sleeper' => 'Sleeper',
-            'seat'    => 'Seat',
+            'seat' => 'Seat',
             'limousine' => 'Limousine',
-            default   => ucfirst(str_replace('_', ' ', $this->type ?? 'Unknown')),
+            default => ucfirst(str_replace('_', ' ', $this->type ?? 'Unknown')),
         };
     }
 
@@ -73,7 +78,7 @@ class Bus extends Model
     }
     // Bus.php
 
-public function generateDefaultSeats(): void
+    public function generateDefaultSeats(): void
     {
         // Nếu xe đã có ghế rồi thì không sinh nữa (tránh trùng)
         if ($this->seats()->exists()) {
@@ -109,16 +114,16 @@ public function generateDefaultSeats(): void
                 }
 
                 $seatNumber = $i + 1; // 1..N trên từng tầng
-                $code       = $prefix . str_pad($seatNumber, 2, '0', STR_PAD_LEFT);
+                $code = $prefix . str_pad($seatNumber, 2, '0', STR_PAD_LEFT);
 
                 $row = (int) floor($i / $cols) + 1;
                 $col = ($i % $cols) + 1;
 
                 $this->seats()->create([
-                    'code'   => $code,
-                    'floor'  => $floor + 1, // 1-based
-                    'row'    => $row,
-                    'col'    => $col,
+                    'code' => $code,
+                    'floor' => $floor + 1, // 1-based
+                    'row' => $row,
+                    'col' => $col,
                     'status' => 1,
                 ]);
 

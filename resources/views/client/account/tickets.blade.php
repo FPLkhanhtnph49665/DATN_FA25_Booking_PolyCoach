@@ -295,15 +295,16 @@
                                         {{-- NGÀY ĐI --}}
                                         <td class="text-center">
                                             @if ($trip)
-                                                {{ \Carbon\Carbon::parse($trip->depature_date)->format('d/m/Y') }}
+                                                {{ \Carbon\Carbon::parse($trip->departure_date)->format('d/m/Y') }}
                                                 <br>
                                                 <span class="text-muted small">
-                                                    {{ $trip->depature_time }}
+                                                    {{ \Carbon\Carbon::parse($trip->departure_time)->format('H:i') }}
                                                 </span>
                                             @else
                                                 —
                                             @endif
                                         </td>
+
 
                                         {{-- TỔNG TIỀN --}}
                                         <td class="text-end fw-bold text-danger">

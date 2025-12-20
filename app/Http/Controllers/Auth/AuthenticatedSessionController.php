@@ -104,6 +104,7 @@ class AuthenticatedSessionController extends Controller
         // 1. CHUYỂN TRUY VẤN CHÍNH SANG BOOKING
         $query = $user->bookings()
             ->with([
+                'trip',
                 'tickets', // Eager load tất cả các vé con
                 'trip.route.fromCity',
                 'trip.route.toCity',
@@ -151,10 +152,9 @@ class AuthenticatedSessionController extends Controller
         $bookings = $query->paginate(10)->withQueryString();
 
         // 4. TRẢ VỀ VIEW
-        // Đổi biến $tickets thành $bookings để khớp với view đã sửa đổi
         return view('client.account.tickets', [
             'user' => $user,
-            'bookings' => $bookings, // Đã đổi tên biến
+            'bookings' => $bookings,
             'code' => $code,
             'date' => $date,
             'routeQ' => $routeQ,

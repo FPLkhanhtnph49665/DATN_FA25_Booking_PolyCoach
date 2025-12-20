@@ -78,6 +78,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', AdminMiddleware::cla
     Route::resource('payments', PaymentController::class);
     Route::resource('reviews', ReviewController::class);
     Route::resource('contacts', ContactController::class);
+    Route::delete('bus-images/{id}', [BusController::class, 'destroyImage'])->name('bus-images.destroy');
 
 });
 Route::prefix('checker')->name('checker.')

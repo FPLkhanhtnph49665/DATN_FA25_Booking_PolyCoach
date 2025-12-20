@@ -150,18 +150,24 @@
 
                                         {{-- 2. Tab Chính sách --}}
                                         <div class="tab-pane-custom d-none" id="chinhsach-{{ $trip->id }}">
-                                            <h6 class="fw-bold mb-3">Chính sách chuyến đi</h6>
-                                            @if ($trip->policy)
-                                                <div class="small text-muted" style="white-space: pre-line;">
-                                                    {!! $trip->policy !!}
-                                                </div>
-                                            @else
-                                                <div class="text-center py-3">
-                                                    <i class="bi bi-info-circle text-muted d-block mb-2"></i>
-                                                    <span class="text-muted small">Thông tin chính sách đang được cập
-                                                        nhật...</span>
-                                                </div>
-                                            @endif
+                                            <h6 class="fw-bold mb-3 text-primary">Chính sách chuyến đi</h6>
+                                            <div class="small text-muted">
+                                                <p class="mb-2">
+                                                    <i class="bi bi-clock-history me-2"></i>
+                                                    Quý khách vui lòng có mặt tại bến xuất phát trước ít nhất <strong>30
+                                                        phút</strong> so với giờ khởi hành.
+                                                </p>
+                                                <p class="mb-2">
+                                                    <i class="bi bi-telephone-outbound me-2"></i>
+                                                    Nếu có nhu cầu trung chuyển, vui lòng liên hệ tổng đài để được tư vấn
+                                                    thêm.
+                                                </p>
+                                                <p class="mb-0">
+                                                    <i class="bi bi-info-circle me-2"></i>
+                                                    Trường hợp thay đổi thông tin hành trình, vui lòng gọi tổng đài để được
+                                                    hỗ trợ theo chính sách giá vé tốt nhất.
+                                                </p>
+                                            </div>
                                         </div>
 
                                         {{-- 3. Tab Hình ảnh --}}
@@ -171,7 +177,7 @@
                                                 <div class="row g-2">
                                                     @foreach ($trip->bus->images as $img)
                                                         <div class="col-md-3">
-                                                            <img src="{{ asset($img) }}"
+                                                            <img src="{{ asset($img->image_path) }}"
                                                                 class="img-fluid rounded shadow-sm" alt="Bus Image">
                                                         </div>
                                                     @endforeach
