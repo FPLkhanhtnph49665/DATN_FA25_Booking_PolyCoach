@@ -27,7 +27,8 @@
                     <select name="status" class="form-select">
                         <option value="">-- Tất cả --</option>
                         <option value="checked" {{ request('status') == 'checked' ? 'selected' : '' }}>Đã kiểm</option>
-                        <option value="unchecked" {{ request('status') == 'unchecked' ? 'selected' : '' }}>Chưa kiểm</option>
+                        <option value="unchecked" {{ request('status') == 'unchecked' ? 'selected' : '' }}>Chưa kiểm
+                        </option>
                     </select>
                 </div>
 
@@ -36,7 +37,7 @@
                     <label class="form-label">Tuyến</label>
                     <select name="route_id" class="form-select">
                         <option value="">-- Tất cả tuyến --</option>
-                        @foreach($routes as $r)
+                        @foreach ($routes as $r)
                             <option value="{{ $r->id }}" {{ request('route_id') == $r->id ? 'selected' : '' }}>
                                 {{ $r->fromCity->name }} → {{ $r->toCity->name }}
                             </option>
@@ -65,11 +66,12 @@
                 <tr>
                     <th>Mã vé</th>
                     <th>Chuyến</th>
-                    <th>SL</th>
+                    <th>xe đi</th>
+                    <th>số ghế</th>
                     <th>Giá</th>
                     <th>Trạng thái</th>
-                    <th>Ngày tạo</th>
-                    <th class="text-center" style="width: 70px;">Xem</th>
+                    <th>giờ khởi hành</th>
+                    <th class="text-center" style="width: 70px;"></th>
                 </tr>
             </thead>
 
@@ -93,7 +95,7 @@
 
                         {{-- Chuyến --}}
                         <td>
-                            @if($trip && $route)
+                            @if ($trip && $route)
                                 <div>
                                     <i class="bi bi-geo-alt text-primary"></i>
                                     {{ $route->fromCity->name }} → {{ $route->toCity->name }}
@@ -101,20 +103,28 @@
 
                                 <small class="text-muted">
                                     <i class="bi bi-clock"></i>
-                                    {{ $trip->departure_date?->format('d/m/Y') }} • {{ $trip->departure_time }}
+                                    {{ $trip->departure_date?->format('d/m/Y') }}
                                 </small>
                             @else
                                 ---
                             @endif
                         </td>
-
-                        {{-- SL hành khách & ghế --}}
+                        {{-- Xe đi --}}
                         <td>
-                            <span data-bs-toggle="tooltip"
-                                title="Ghế: {{ $ticket->passengers->pluck('seat_number')->join(', ') }}">
-                                <i class="bi bi-people"></i> {{ $pCount }} khách
-                                <br>
-                                <i class="bi bi-chair"></i> {{ $pCount }} ghế
+                            @if ($trip && $trip->bus)
+                                <div>
+                                    <i class="bi bi-bus-front text-primary"></i>
+                                    {{ $trip->bus->plate_number }}
+                                </div>
+                            @else
+                                ---
+                            @endif
+                        </td>
+
+                        {{-- Số ghế --}}
+                        <td>
+                            <span class="fw-bold" data-bs-toggle="tooltip" title="Mã ghế: {{ $ticket->seat_code }}">
+                                {{ $ticket->seat_code }}
                             </span>
                         </td>
 
@@ -123,7 +133,7 @@
 
                         {{-- Trạng thái với màu Vexere-style --}}
                         <td>
-                            @if($ticket->checked_at)
+                            @if ($ticket->checked_at)
                                 <span class="badge bg-success px-3 py-2">
                                     <i class="bi bi-check-circle"></i> Đã kiểm
                                 </span>
@@ -134,8 +144,14 @@
                             @endif
                         </td>
 
-                        {{-- Ngày tạo --}}
-                        <td>{{ $ticket->created_at->format('d/m/Y H:i') }}</td>
+                        {{-- giờ đi --}}
+                        <td class="text-center">
+                            <i class="fa-regular fa-clock text-primary me-1"></i>
+                            <strong>
+                                {{ \Carbon\Carbon::parse($trip->departure_time)->format('H:i') }}
+                            </strong>
+                        </td>
+
 
                         {{-- Action --}}
                         <td class="text-center">
@@ -143,6 +159,13 @@
                                 data-bs-toggle="tooltip" title="Xem chi tiết">
                                 <i class="bi bi-eye"></i>
                             </a>
+                            {{-- Thay đổi nút kiểm tra vé --}}
+                            <button type="button" class="btn btn-sm btn-success mt-2 btn-check-ticket"
+                                data-bs-toggle="modal" data-bs-target="#checkTicketModal" data-id="{{ $ticket->id }}"
+                                data-status="{{ $ticket->status }}" data-code="{{ $ticket->code }}"
+                                data-url="{{ route('checker.tickets.updateStatus', ':id') }}" title="Kiểm tra vé">
+                                <i class="bi bi-check2-circle"></i>
+                            </button>
                         </td>
 
                     </tr>
@@ -153,7 +176,6 @@
                             Không có vé nào.
                         </td>
                     </tr>
-
                 @endforelse
 
             </tbody>
@@ -164,14 +186,94 @@
     <div class="d-flex justify-content-end mt-3">
         {{ $tickets->withQueryString()->links('pagination::bootstrap-4') }}
     </div>
+    <div class="modal fade" id="checkTicketModal" tabindex="-1" aria-labelledby="checkTicketModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form id="updateStatusForm" method="POST" action="">
+                @csrf
+                @method('PATCH')
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="checkTicketModalLabel">Cập nhật trạng thái vé</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Chọn trạng thái mới cho vé mã: <strong id="modal-ticket-code"></strong></p>
 
+                        <div class="mb-3">
+                            <label class="form-label">Trạng thái</label>
+                            <select name="status" id="modal-status-select" class="form-select">
+                                <option value="pending">Đang chờ xử lý</option>
+                                <option value="paid">Đã thanh toán</option>
+                                <option value="cancelled">Đã hủy</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-primary">Xác nhận thay đổi</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl)
         })
+        // Xử lý nút kiểm tra vé
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkButtons = document.querySelectorAll('.btn-check-ticket');
+            const statusForm = document.getElementById('updateStatusForm');
+            const statusSelect = document.getElementById('modal-status-select');
+            const ticketCodeText = document.getElementById('modal-ticket-code');
+
+            checkButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 1. Lấy dữ liệu từ thuộc tính data-
+                    const ticketId = this.getAttribute('data-id');
+                    const ticketCode = this.getAttribute('data-code');
+                    const currentStatus = this.getAttribute('data-status');
+                    const baseUrl = this.getAttribute('data-url');
+
+                    // 2. Thay thế :id trong URL mẫu bằng ID thật
+                    // Ví dụ: /tickets/:id/status -> /tickets/10/status
+                    statusForm.action = baseUrl.replace(':id', ticketId);
+
+                    // 3. Hiển thị thông tin lên Modal cho người dùng dễ nhìn
+                    ticketCodeText.innerText = ticketCode;
+                    statusSelect.value = currentStatus;
+                });
+            });
+        });
     </script>
+    {{-- Thông báo thành công --}}
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công!',
+                text: {!! json_encode(session('success')) !!},
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true
+            });
+        </script>
+    @endif
+
+    {{-- Thông báo lỗi (nếu có) --}}
+    @if (session('error'))
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi!',
+                text: {!! json_encode(session('error')) !!},
+                confirmButtonText: 'Đóng'
+            });
+        </script>
+    @endif
 @endpush

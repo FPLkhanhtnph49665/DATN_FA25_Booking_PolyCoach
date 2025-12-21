@@ -98,6 +98,9 @@ Route::prefix('checker')->name('checker.')
 
         Route::post('/verify-ticket', [TicketCheckController::class, 'checkTicket'])
             ->name('check');
+        // Cập nhật trạng thái vé
+        Route::patch('/tickets/{id}/update-status', [TicketCheckController::class, 'updateStatus'])
+            ->name('tickets.updateStatus');
     });
 
 

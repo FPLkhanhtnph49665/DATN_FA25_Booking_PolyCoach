@@ -48,6 +48,10 @@ class Route extends Model
     {
         return $this->belongsTo(City::class, 'to_city_id');
     }
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'route_id');
+    }
     
     
     // =====================
