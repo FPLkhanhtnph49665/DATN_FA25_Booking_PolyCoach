@@ -70,7 +70,7 @@
                         @foreach ($routes as $route)
                             <option value="{{ $route->id }}"
                                 {{ old('route_id') == $route->id ? 'selected' : '' }}>
-                                {{ $route->name ?? ('Tuyến #' . $route->id) }}
+                                {{ $route->fromCity->name ?? '' }} - {{ $route->toCity->name ?? '' }}
                             </option>
                         @endforeach
                     </select>

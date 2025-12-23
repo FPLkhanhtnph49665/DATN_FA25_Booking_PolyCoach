@@ -24,6 +24,7 @@ use App\Http\Controllers\Client\BookingController as ClientBookingController;
 
 use App\Http\Controllers\Client\ContactController as ClientContactController;
 use App\Http\Controllers\Checker\TicketCheckController as TicketCheckController;
+use App\Http\Controllers\Checker\TripCheckController as TripCheckController;
 use App\Http\Controllers\Checker\DashboardController as CheckerDashboardController;
 
 
@@ -98,6 +99,15 @@ Route::prefix('checker')->name('checker.')
 
         Route::post('/verify-ticket', [TicketCheckController::class, 'checkTicket'])
             ->name('check');
+        // Cập nhật trạng thái vé
+        Route::patch('/tickets/{id}/update-status', [TicketCheckController::class, 'updateStatus'])
+            ->name('tickets.updateStatus');
+        // Chuyến
+        Route::resource('trips', TripCheckController::class)
+            ->only(['index', 'show']);
+        //cập nhật trạng thái chuyến
+        Route::patch('/trips/{id}/update-status', [TripCheckController::class, 'updateStatus'])
+            ->name('trips.updateStatus');
     });
 
 

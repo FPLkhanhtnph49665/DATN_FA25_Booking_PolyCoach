@@ -26,21 +26,21 @@ class BookingController extends Controller
 
         // 2. Validate dữ liệu đầu vào
         $request->validate([
-            'trip_id'            => 'required|exists:trips,id',
-            'seat_codes'         => 'required|string',
-            'customer_name'      => 'required|string|max:255',
-            'customer_phone'     => 'required|string|max:20',
-            'customer_email'     => 'nullable|email',
-            'pickup_point_id'    => 'nullable',
-            'dropoff_point_id'   => 'nullable',
-            'payment_method'     => 'required|in:cash,vnpay,momo',
+            'trip_id' => 'required|exists:trips,id',
+            'seat_codes' => 'required|string',
+            'customer_name' => 'required|string|max:255',
+            'customer_phone' => 'required|string|max:20',
+            'customer_email' => 'nullable|email',
+            'pickup_point_id' => 'nullable',
+            'dropoff_point_id' => 'nullable',
+            'payment_method' => 'required|in:cash,vnpay,momo',
         ]);
 
         $trip = Trip::with('bus')->findOrFail($request->trip_id);
 
         // 3. Xử lý danh sách ghế
         $seatCodes = collect(explode(',', $request->seat_codes))
-            ->map(fn ($s) => trim($s))
+            ->map(fn($s) => trim($s))
             ->unique()
             ->filter()
             ->values();
@@ -62,20 +62,20 @@ class BookingController extends Controller
             ])->withInput();
         }
 
-        // 5. Tính giá vé
-        $unitPrice   = $this->calculateUnitPrice($trip, $request->pickup_point_id, $request->dropoff_point_id);
-        $totalAmount = $unitPrice * $seatCodes->count();
+        // 5. Lấy thông tin giá vé (Cập nhật ở đây)
+        $fareInfo = $this->calculateFareInfo($trip, $request->pickup_point_id, $request->dropoff_point_id);
+        $totalAmount = $fareInfo->price * $seatCodes->count();
 
         DB::beginTransaction();
         try {
             // 6. Tạo Booking
             $booking = Booking::create([
-                'user_id'          => Auth::id(),
-                'trip_id'          => $trip->id,
+                'user_id' => Auth::id(),
+                'trip_id' => $trip->id,
                 'booking_datetime' => now(),
-                'total_amount'     => $totalAmount,
-                'status'           => 'pending',
-                'payment_method'   => $request->payment_method,
+                'total_amount' => $totalAmount,
+                'status' => 'pending',
+                'payment_method' => $request->payment_method,
             ]);
 
             // 7. Tạo Ticket cho từng ghế
@@ -83,24 +83,25 @@ class BookingController extends Controller
                 $seatNumber = (int) preg_replace('/[^0-9]/', '', $seatCode);
 
                 $ticket = Ticket::create([
-                    'trip_id'        => $trip->id,
-                    'user_id'        => Auth::id(),
-                    'booking_id'     => $booking->id,
-                    'seat_code'      => $seatCode,
-                    'seat_number'    => $seatNumber,
-                    'price'          => $unitPrice,
-                    'status'         => 'pending',
+                    'trip_id' => $trip->id,
+                    'user_id' => Auth::id(),
+                    'booking_id' => $booking->id,
+                    'point_fare_id' => $fareInfo->point_fare_id,
+                    'seat_code' => $seatCode,
+                    'seat_number' => $seatNumber,
+                    'price' => $fareInfo->price,
+                    'status' => 'pending',
                     'payment_method' => $request->payment_method,
                 ]);
 
                 // 8. Tạo Passenger cho từng ghế
                 Passenger::create([
-                    'ticket_id'      => $ticket->id,
-                    'name'           => $request->customer_name,
-                    'phone'          => $request->customer_phone,
-                    'email'          => $request->customer_email,
-                    'age'            => null,
-                    'seat_number'    => $seatNumber,
+                    'ticket_id' => $ticket->id,
+                    'name' => $request->customer_name,
+                    'phone' => $request->customer_phone,
+                    'email' => $request->customer_email,
+                    'age' => null,
+                    'seat_number' => $seatNumber,
                 ]);
             }
 
@@ -120,19 +121,15 @@ class BookingController extends Controller
      */
     public function getFare(Request $request)
     {
-        $request->validate([
-            'trip_id'    => 'required|exists:trips,id',
-            'pickup_id'  => 'nullable',
-            'dropoff_id' => 'nullable',
-        ]);
-
         $trip = Trip::find($request->trip_id);
 
-        $price = $this->calculateUnitPrice($trip, $request->pickup_id, $request->dropoff_id);
+        // Gọi hàm mới
+        $fareInfo = $this->calculateFareInfo($trip, $request->pickup_id, $request->dropoff_id);
 
         return response()->json([
-            'price'           => $price,
-            'formatted_price' => number_format($price, 0, ',', '.') . 'đ',
+            'price' => $fareInfo->price,
+            'point_fare_id' => $fareInfo->point_fare_id,
+            'formatted_price' => number_format($fareInfo->price, 0, ',', '.') . 'đ',
         ]);
     }
 
@@ -140,19 +137,26 @@ class BookingController extends Controller
     /**
      * Hàm tính đơn giá
      */
-    private function calculateUnitPrice($trip, $pickupId, $dropoffId)
+    private function calculateFareInfo($trip, $pickupId, $dropoffId)
     {
-        if (empty($pickupId) || empty($dropoffId)) {
-            return (int) ($trip->ticket_price ?? $trip->price ?? 0);
+        // Mặc định
+        $info = [
+            'price' => (int) ($trip->ticket_price ?? $trip->price ?? 0),
+            'point_fare_id' => null
+        ];
+
+        if (!empty($pickupId) && !empty($dropoffId)) {
+            $pf = PointFare::where('route_id', $trip->route_id)
+                ->where('pickup_point_id', $pickupId)
+                ->where('dropoff_point_id', $dropoffId)
+                ->first();
+
+            if ($pf) {
+                $info['price'] = (int) $pf->price;
+                $info['point_fare_id'] = $pf->id;
+            }
         }
 
-        $pf = PointFare::where('route_id', $trip->route_id)
-            ->where('pickup_point_id', $pickupId)
-            ->where('dropoff_point_id', $dropoffId)
-            ->first();
-
-        if ($pf) return (int) $pf->price;
-
-        return (int) ($trip->ticket_price ?? $trip->price ?? 0);
+        return (object) $info;
     }
 }

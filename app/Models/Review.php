@@ -13,6 +13,7 @@ class Review extends Model
     protected $fillable = [
         'user_id',
         'trip_id',
+        'route_id',
         'rating',    // rating score (1-5)
         'content',   // review content
         'status',    // pending | approved | rejected
@@ -44,6 +45,11 @@ class Review extends Model
     public function trip()
     {
         return $this->belongsTo(Trip::class);
+    }
+    // Route being reviewed
+    public function route()
+    {
+        return $this->belongsTo(Route::class, 'route_id');
     }
 
     // -------------------------------

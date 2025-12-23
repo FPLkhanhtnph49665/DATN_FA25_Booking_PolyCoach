@@ -57,7 +57,13 @@
                             <i class="bi bi-ticket-perforated me-2"></i> Kiểm tra vé
                         </a>
                     </li>
-
+                    {{-- kiểm tra chuyến --}}
+                    <li>
+                        <a href="{{ route('checker.trips.index') }}"
+                        class="nav-link admin-nav-link {{ request()->routeIs('checker.trips.*') ? 'active' : '' }}">
+                            <i class="bi bi-bus-front-fill me-2"></i> Kiểm tra chuyến
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a href="{{ route('checker.verify') }}"
                         class="nav-link admin-nav-link {{ request()->routeIs('checker.verify') ? 'active' : '' }}">
