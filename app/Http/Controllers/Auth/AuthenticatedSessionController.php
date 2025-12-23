@@ -104,11 +104,12 @@ class AuthenticatedSessionController extends Controller
         // 1. CHUYỂN TRUY VẤN CHÍNH SANG BOOKING
         $query = $user->bookings()
             ->with([
-                'trip',
-                'tickets', // Eager load tất cả các vé con
                 'trip.route.fromCity',
                 'trip.route.toCity',
-                'trip.bus'
+                'trip.bus',
+                // Load lồng nhau: Vé -> Giá chặng -> Điểm đón/trả cụ thể
+                'tickets.pointFare.pickupPoint',
+                'tickets.pointFare.dropoffPoint'
             ])
             ->orderByDesc('created_at');
 
