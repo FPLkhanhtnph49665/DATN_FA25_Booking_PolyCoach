@@ -33,7 +33,9 @@ class TripController extends Controller
             // Nạp đồng thời cả 2 quan hệ riêng biệt
             'route.pickupPoints' => fn($q) => $q->where('active', 1)->orderBy('time'),
             'route.dropoffPoints' => fn($q) => $q->where('active', 1)->orderBy('time'),
-        ])->where('status', 1);
+        ])
+        ->withCount('tickets')
+        ->where('status', 1);
 
         // 3. Áp dụng các bộ lọc tại tầng Database
         $query->when($from, fn($q) => $q->whereHas('route', fn($qr) => $qr->where('from_city_id', $from)))

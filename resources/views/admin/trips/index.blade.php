@@ -79,12 +79,12 @@
                                 <th class="text-muted small">#</th>
                                 <th class="text-muted small">Tuyến</th>
                                 <th class="text-muted small">Xe</th>
-                                <th class="text-muted small">Ngày khởi hành</th>
-                                <th class="text-muted small">Giờ khởi hành</th>
+                                <th class="text-muted small">Ngày giờ khởi hành</th>
                                 <th class="text-muted small">Giờ đến dự kiến</th>
                                 <th class="text-muted small">Giá vé</th>
                                 <th class="text-muted small">Ghế còn trống</th>
                                 <th class="text-muted small">Trạng thái</th>
+                                <th class="text-muted small">Kiểm bởi</th>
                                 <th class="text-muted small text-center">Hành động</th>
                             </tr>
                         </thead>
@@ -108,14 +108,16 @@
                                         {{ $trip->bus?->plate_number ?? '-' }}
                                     </td>
 
-                                    {{-- Ngày khởi hành --}}
+                                    {{-- Ngày giờ khởi hành --}}
                                     <td class="text-muted small">
-                                        {{ $trip->departure_date ? \Carbon\Carbon::parse($trip->departure_date)->format('d/m/Y') : '-' }}
-                                    </td>
-
-                                    {{-- Giờ khởi hành & giờ đến dự kiến --}}
-                                    <td class="text-muted small">
-                                        {{ $trip->departure_time ? \Carbon\Carbon::parse($trip->departure_time)->format('H:i') : '-' }}
+                                        @if ($trip->departure_date)
+                                            <div>{{ \Carbon\Carbon::parse($trip->departure_date)->format('d/m/Y') }}</div>
+                                            <div class="fw-bold text-dark">
+                                                {{ $trip->departure_time ? \Carbon\Carbon::parse($trip->departure_time)->format('H:i') : '--:--' }}
+                                            </div>
+                                        @else
+                                            -
+                                        @endif
                                     </td>
 
                                     <td class="text-muted small">
@@ -130,33 +132,51 @@
                                     </td>
 
                                     {{-- Ghế còn trống --}}
-                                    <td>
-                                        @php
-                                            $availableSeats = $trip->available_seats ?? null;
-                                            $availableCount = is_array($availableSeats)
-                                                ? count($availableSeats)
-                                                : $trip->available_seats_count ?? 0;
-                                            $totalSeats = $trip->bus?->seat_count ?? 0;
-                                        @endphp
-                                        <span class="badge bg-info-subtle text-info border border-info-subtle">
-                                            {{ $availableCount }} / {{ $totalSeats }}
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary rounded-pill">
+                                            <i class="bi bi-people-fill"></i>
+                                            {{-- Sử dụng tickets_count để đếm chính xác số ghế đã đặt --}}
+                                            {{ $trip->tickets_count ?? 0 }}/{{ $trip->bus->seat_count ?? '?' }}
                                         </span>
                                     </td>
 
                                     {{-- Trạng thái --}}
                                     <td>
-                                        @if ($trip->status == 1)
-                                            <span class="badge bg-success-subtle text-success border border-success-subtle">
-                                                <i class="bi bi-circle-fill me-1" style="font-size: 0.55rem;"></i>
-                                                Hoạt động
-                                            </span>
-                                        @else
-                                            <span
-                                                class="badge bg-secondary-subtle text-light border border-secondary-subtle">
-                                                <i class="bi bi-slash-circle me-1"></i>
-                                                Khóa
-                                            </span>
-                                        @endif
+                                        @switch($trip->trip_status)
+                                            @case(1)
+                                                <span class="badge bg-info-subtle text-info border border-info-subtle">
+                                                    <i class="bi bi-clock-history me-1"></i> Chưa xuất phát
+                                                </span>
+                                            @break
+
+                                            @case(2)
+                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                                    <i class="bi bi-pause-circle me-1"></i> Đã tạm hoãn
+                                                </span>
+                                            @break
+
+                                            @case(3)
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                                                    <i class="bi bi-bus-front me-1"></i> Đã xuất phát
+                                                </span>
+                                            @break
+
+                                            @case(4)
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                                    <i class="bi bi-check-circle-fill me-1"></i> Đã hoàn thành
+                                                </span>
+                                            @break
+
+                                            @default
+                                                <span
+                                                    class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                                                    - Không xác định -
+                                                </span>
+                                        @endswitch
+                                    </td>
+                                    {{-- kiểm bởi --}}
+                                    <td>
+                                        {{ $trip->checker?->full_name ?? '-' }}
                                     </td>
 
                                     {{-- Hành động --}}
@@ -176,71 +196,72 @@
                                         </form>
                                     </td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="10" class="text-center py-4 text-muted">
-                                        Chưa có chuyến nào.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
 
-                {{-- Pagination --}}
-                <div class="d-flex justify-content-end mt-3 px-3 pb-3">
-                    {{ $trips->links('pagination::bootstrap-4') }}
+                                @empty
+                                    <tr>
+                                        <td colspan="10" class="text-center py-4 text-muted">
+                                            Chưa có chuyến nào.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {{-- Pagination --}}
+                    <div class="d-flex justify-content-end mt-3 px-3 pb-3">
+                        {{ $trips->links('pagination::bootstrap-4') }}
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-@endsection
+    @endsection
 
-@push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    @if (session('success'))
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Thành công!',
-                text: @json(session('success')),
-                showConfirmButton: false,
-                timer: 2000
-            });
-        </script>
-    @endif
-
-    @if (session('error'))
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi!',
-                text: @json(session('error')),
-                showConfirmButton: true
-            });
-        </script>
-    @endif
-
-    <script>
-        // SweetAlert2 confirm xóa chuyến
-        document.querySelectorAll('.delete-trip-form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
+        @if (session('success'))
+            <script>
                 Swal.fire({
-                    title: 'Bạn có chắc muốn xóa chuyến này?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Xóa',
-                    cancelButtonText: 'Hủy'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
+                    icon: 'success',
+                    title: 'Thành công!',
+                    text: @json(session('success')),
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            </script>
+        @endif
+
+        @if (session('error'))
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: @json(session('error')),
+                    showConfirmButton: true
+                });
+            </script>
+        @endif
+
+        <script>
+            // SweetAlert2 confirm xóa chuyến
+            document.querySelectorAll('.delete-trip-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Bạn có chắc muốn xóa chuyến này?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Xóa',
+                        cancelButtonText: 'Hủy'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
                 });
             });
-        });
-    </script>
-@endpush
+        </script>
+    @endpush

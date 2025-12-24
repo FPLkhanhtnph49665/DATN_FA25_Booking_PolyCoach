@@ -27,8 +27,33 @@
                                         <span class="badge rounded-pill bg-primary-subtle text-primary px-3">
                                             <i class="bi bi-bus-front me-1"></i> {{ $trip->bus->type ?? 'Xe giường nằm' }}
                                         </span>
-                                        <span class="text-muted small"><i class="bi bi-shield-check me-1"></i> Xác nhận tức
-                                            thì</span>
+                                        {{-- trạng thái --}}
+                                        @switch((int)$trip->trip_status)
+                                            @case(1)
+                                                <span class="text-success small">
+                                                    <i class="bi bi-clock-history me-1"></i> Chưa xuất phát
+                                                </span>
+                                            @break
+
+                                            @case(2)
+                                                <span class="text-warning small">
+                                                    <i class="bi bi-clock-history me-1"></i> Chuyến tạm hoãn
+                                                </span>
+                                            @break
+
+                                            @case(3)
+                                                <span class="text-info small">
+                                                    <i class="bi bi-check-circle me-1"></i> Đã xuất phát
+                                                </span>
+                                            @break
+
+                                            @case(4)
+                                                <span class="text-danger small">
+                                                    <i class="bi bi-x-circle me-1"></i> Chuyến đi đã kết thúc
+                                                </span>
+                                            @break
+                                        @endswitch
+
                                     </div>
 
                                     <div class="row align-items-center">
@@ -73,13 +98,63 @@
                                     class="col-md-3 p-4 bg-light-subtle border-start d-flex flex-column justify-content-center text-end">
                                     <div class="price-tag text-primary mb-1">
                                         {{ number_format($trip->ticket_price, 0, '.', '.') }}đ</div>
-                                    <div class="text-success small fw-bold mb-3">
-                                        Còn {{ $trip->availableSeats() }} chỗ trống
+                                    {{-- ghế trống --}}
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="text-muted small">
+                                                <i class="bi bi-person-workspace me-1"></i> Ghế trống:
+                                                <span class="fw-bold text-dark">
+                                                    {{ ($trip->bus->seat_count ?? 0) - ($trip->tickets_count ?? 0) }}
+                                                </span>
+                                            </span>
+                                            <span class="badge rounded-pill bg-success-soft text-success small">
+                                                {{ $trip->tickets_count ?? 0 }}/{{ $trip->bus->seat_count ?? '?' }}
+                                            </span>
+                                        </div>
+
+                                        {{-- Thanh hiển thị độ lấp đầy --}}
+                                        @php
+                                            $percent =
+                                                $trip->bus && $trip->bus->seat_count > 0
+                                                    ? ($trip->tickets_count / $trip->bus->seat_count) * 100
+                                                    : 0;
+                                        @endphp
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar bg-success" role="progressbar"
+                                                style="width: {{ $percent }}%" aria-valuenow="{{ $percent }}"
+                                                aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
                                     </div>
-                                    <a href="{{ route('client.trips.show', ['trip_id' => $trip->id]) }}"
-                                        class="btn btn-primary fw-bold py-2">
-                                        Chọn chuyến
-                                    </a>
+                                    {{-- Logic nút bấm: Chỉ hiện nút Active khi status = 1 (Chưa xuất phát) --}}
+                                    @if ((int) $trip->trip_status === 1)
+                                        {{-- Nút Active --}}
+                                        <a href="{{ route('client.trips.show', ['trip_id' => $trip->id]) }}"
+                                            class="btn btn-primary fw-bold py-2 btn-booking-action">
+                                            Chọn chuyến
+                                        </a>
+                                    @else
+                                        {{-- Nút Disabled (bị khóa) cho các trạng thái khác --}}
+                                        <button type="button" class="btn btn-secondary fw-bold py-2 disabled" disabled
+                                            style="cursor: not-allowed; opacity: 0.6;">
+                                            @switch((int)$trip->trip_status)
+                                                @case(2)
+                                                    Tạm hoãn
+                                                @break
+
+                                                @case(3)
+                                                    Đã xuất phát
+                                                @break
+
+                                                @case(4)
+                                                    Đã kết thúc
+                                                @break
+
+                                                @default
+                                                    Không khả dụng
+                                            @endswitch
+                                        </button>
+                                    @endif
                                 </div>
                             </div>
 
@@ -193,14 +268,40 @@
                                         {{-- 4. Tab Đánh giá --}}
                                         <div class="tab-pane-custom d-none" id="danhgia-{{ $trip->id }}">
                                             <h6 class="fw-bold mb-3">Đánh giá từ hành khách</h6>
-                                            @if (isset($trip->reviews) && count($trip->reviews) > 0)
-                                                {{-- Loop qua đánh giá ở đây --}}
+
+                                            @if (isset($trip->route->reviews) && $trip->route->reviews->count() > 0)
+                                                <div class="review-list">
+                                                    @foreach ($trip->route->reviews as $review)
+                                                        {{-- Chỉ hiển thị các đánh giá đã được duyệt (status = approved) --}}
+                                                        @if ($review->status == 'approved')
+                                                            <div class="review-item border-bottom pb-3 mb-3">
+                                                                <div
+                                                                    class="d-flex justify-content-between align-items-center mb-1">
+                                                                    <span
+                                                                        class="fw-bold small">{{ $review->user->full_name ?? 'Hành khách' }}</span>
+                                                                    <span class="text-muted" style="font-size: 0.8rem;">
+                                                                        {{ $review->created_at ? $review->created_at->format('d/m/Y') : '' }}
+                                                                    </span>
+                                                                </div>
+
+                                                                <div class="text-warning mb-1" style="font-size: 0.8rem;">
+                                                                    @for ($i = 1; $i <= 5; $i++)
+                                                                        <i
+                                                                            class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>
+                                                                    @endfor
+                                                                </div>
+
+                                                                <p class="mb-0 small text-secondary">
+                                                                    {{ $review->content }}
+                                                                </p>
+                                                            </div>
+                                                        @endif
+                                                    @endforeach
+                                                </div>
                                             @else
-                                                <div class="text-center py-3">
-                                                    <div class="text-warning mb-2">
-                                                        <i class="bi bi-star"></i><i class="bi bi-star"></i><i
-                                                            class="bi bi-star"></i><i class="bi bi-star"></i><i
-                                                            class="bi bi-star"></i>
+                                                <div class="text-center py-4">
+                                                    <div class="text-light mb-2">
+                                                        <i class="bi bi-chat-left-dots" style="font-size: 2rem;"></i>
                                                     </div>
                                                     <span class="text-muted small">Chưa có đánh giá nào cho chuyến đi
                                                         này.</span>
@@ -323,21 +424,66 @@
         .tab-pane-custom.active {
             display: block !important;
         }
+
+        .btn-detail-toggle {
+            transition: all 0.3s ease;
+        }
+
+        .spinner-border-sm {
+            width: 0.8rem;
+            height: 0.8rem;
+            border-width: 0.15em;
+        }
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 1. Toggle hiển thị nguyên cái Panel chi tiết
+            // 1. Toggle hiển thị nguyên cái Panel chi tiết (Có hiệu ứng Loading 1.5s)
             document.querySelectorAll('.btn-detail-toggle').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    const tripId = this.dataset.tripId;
+                    const _this = this; // Lưu lại biến nút hiện tại
+                    const tripId = _this.dataset.tripId;
                     const panel = document.getElementById(`detail-trip-${tripId}`);
+                    const icon = _this.querySelector('i');
 
-                    const isVisible = panel.style.display === 'block';
-                    panel.style.display = isVisible ? 'none' : 'block';
+                    // Kiểm tra xem panel đang đóng hay mở
+                    const isCurrentlyVisible = panel.style.display === 'block';
 
-                    // Xoay icon mũi tên (nếu có)
-                    const icon = this.querySelector('i');
-                    if (icon) icon.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+                    // Bước 1: Khóa nút và hiển thị trạng thái loading
+                    _this.style.pointerEvents = 'none'; // Ngăn bấm liên tục
+                    _this.classList.add('text-muted'); // Làm mờ nút một chút
+
+                    // Lưu lại nội dung gốc của nút để tí nữa trả lại
+                    const originalContent =
+                        `Thông tin chi tiết <i class="bi bi-chevron-down ms-1"></i>`;
+
+                    _this.innerHTML = `
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            Đang tải...
+        `;
+
+                    // Bước 2: Chờ 1.5 giây
+                    setTimeout(() => {
+                        // Bước 3: Thực hiện ẩn/hiện panel
+                        if (isCurrentlyVisible) {
+                            panel.style.display = 'none';
+                            _this.innerHTML = originalContent; // Trả lại text ban đầu
+                        } else {
+                            panel.style.display = 'block';
+                            _this.innerHTML =
+                                `Đóng chi tiết <i class="bi bi-chevron-up ms-1"></i>`;
+                        }
+
+                        // Bước 4: Mở khóa nút
+                        _this.style.pointerEvents = 'auto';
+                        _this.classList.remove('text-muted');
+
+                        // Xử lý xoay icon nếu cần (nếu bạn dùng nội dung gốc thì không cần đoạn này)
+                        const newIcon = _this.querySelector('i');
+                        if (newIcon) {
+                            newIcon.style.transform = isCurrentlyVisible ? 'rotate(0deg)' :
+                                'rotate(0deg)';
+                        }
+                    }, 500);
                 });
             });
 
@@ -365,6 +511,31 @@
                         targetPane.classList.add('active');
                     }
                 });
+            });
+        });
+        // 3. Xử lý hiệu ứng Loading + Delay 1.5 giây
+        document.querySelectorAll('.btn-booking-action').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                // 1. NGĂN CHẶN chuyển trang ngay lập tức
+                e.preventDefault();
+
+                // 2. Lấy đường dẫn đích từ thẻ a
+                const targetUrl = this.getAttribute('href');
+
+                // 3. Khóa nút và hiện loading spinner
+                this.style.pointerEvents = 'none'; // Không cho bấm tiếp
+                this.classList.add('disabled'); // Thêm style mờ đi (nếu muốn)
+
+                // Lưu lại nội dung cũ nếu muốn, hoặc thay thế luôn
+                this.innerHTML = `
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Đang xử lý...
+        `;
+
+                // 4. Đợi 1.5 giây (1500ms) rồi mới chuyển trang
+                setTimeout(() => {
+                    window.location.href = targetUrl;
+                }, 1000);
             });
         });
     </script>

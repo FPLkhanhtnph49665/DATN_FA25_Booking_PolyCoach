@@ -16,6 +16,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -284,6 +285,123 @@
                 padding: 1.5rem;
             }
         }
+
+        /* Trang Thái Màn Hình Khi Đang Chuyển */
+        body.loading {
+            filter: blur(5px) grayscale(50%);
+            /* Làm mờ và xám màn hình */
+            pointer-events: none;
+            /* Không cho click khi đang loading */
+            user-select: none;
+            /* Không cho chọn chữ */
+        }
+
+        /* Lớp phủ Loading */
+        #page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.85);
+            /* Nền trắng trong suốt */
+            display: flex;
+            flex-direction: column;
+            /* Xếp dọc icon và text */
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            /* Mặc định ẩn */
+            visibility: hidden;
+            /* Mặc định ẩn */
+            transition: opacity 0.4s ease-out, visibility 0.4s;
+            /* Hiệu ứng hiện/ẩn mượt mà */
+        }
+
+        /* Khi loader đang hoạt động */
+        #page-loader.is-active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* -- LOADER ANIMATION -- */
+        .loader-circle {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 60px;
+            /* Kích thước tổng thể của animation */
+            height: 60px;
+        }
+
+        .loader-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #0d6efd;
+            /* Màu xanh primary của Bootstrap */
+            margin: 0 4px;
+            /* Khoảng cách giữa các chấm */
+            animation: bounce 1.4s infinite ease-in-out both;
+            /* Hiệu ứng nảy */
+        }
+
+        .loader-dot.dot1 {
+            animation-delay: -0.32s;
+            /* Chấm 1 nảy trước */
+        }
+
+        .loader-dot.dot2 {
+            animation-delay: -0.16s;
+            /* Chấm 2 nảy giữa */
+        }
+
+        .loader-dot.dot3 {
+            animation-delay: 0s;
+            /* Chấm 3 nảy cuối */
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+                /* Ban đầu và cuối thu nhỏ */
+                opacity: 0.5;
+            }
+
+            40% {
+                transform: scale(1);
+                /* Giữa phình to */
+                opacity: 1;
+            }
+        }
+
+        .loader-text {
+            font-size: 1.1rem;
+            color: #0d6efd;
+            animation: fadeInOut 2s infinite alternate;
+            /* Hiệu ứng chữ mờ dần/hiện lên */
+        }
+
+        @keyframes fadeInOut {
+            0% {
+                opacity: 0.7;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* CSS cho spinner border của bootstrap, để spinner nhỏ hơn */
+        .spinner-border-sm {
+            width: 0.8rem;
+            height: 0.8rem;
+            border-width: 0.15em;
+        }
     </style>
 </head>
 
@@ -465,7 +583,15 @@
     <main>
         @yield('content')
     </main>
-    
+    <div id="page-loader">
+        <div class="loader-circle">
+            <div class="loader-dot dot1"></div>
+            <div class="loader-dot dot2"></div>
+            <div class="loader-dot dot3"></div>
+        </div>
+        <div class="loader-text mt-4 fw-bold text-primary">Đang tải trang...</div>
+    </div>
+
     @stack('scripts')
     <!-- ====== FOOTER ====== -->
     <footer class="footer text-white">
@@ -552,6 +678,112 @@
                 e.preventDefault();
                 target.scrollIntoView({
                     behavior: 'smooth'
+                });
+            });
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const pageLoader = document.getElementById('page-loader');
+
+            // Hàm để kích hoạt trạng thái loading
+            function activateLoader() {
+                document.body.classList.add('loading'); // Kích hoạt blur và pointer-events: none cho body
+                pageLoader.classList.add('is-active'); // Hiển thị overlay loader
+            }
+
+            // Hàm để vô hiệu hóa trạng thái loading
+            function deactivateLoader() {
+                pageLoader.classList.remove('is-active'); // Ẩn overlay loader
+                // Remove 'loading' class sau khi overlay đã mờ đi hoàn toàn
+                setTimeout(() => {
+                    document.body.classList.remove('loading');
+                }, 400); // Phù hợp với transition-duration của overlay
+            }
+
+            // 1. Khi trang đã load xong (lần đầu hoặc sau khi chuyển trang) -> Ẩn hiệu ứng loading
+            window.addEventListener('load', function() {
+                deactivateLoader();
+            });
+
+            // 2. Bắt sự kiện click vào tất cả các thẻ <a> hợp lệ trên trang
+            document.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+
+                    // Chỉ tạo hiệu ứng nếu link hợp lệ (không phải link nội bộ #, javascript:, hay mở tab mới)
+                    // Và không phải là một nút có hành động JS riêng biệt đã được xử lý (như nút "Chọn chuyến" có delay)
+                    if (href &&
+                        !href.startsWith('#') &&
+                        !href.startsWith('javascript') &&
+                        this.target !== '_blank' &&
+                        !this.classList.contains(
+                        'btn-booking-action') // Bỏ qua nếu là nút đặt vé có delay riêng
+                    ) {
+                        e.preventDefault(); // Chặn chuyển trang ngay
+                        activateLoader(); // Hiện loader và blur
+
+                        // Đợi một khoảng thời gian ngắn để hiệu ứng blur và loader kịp xuất hiện
+                        setTimeout(() => {
+                            window.location.href = href;
+                        }, 400); // Thời gian này nên bằng hoặc lớn hơn transition của #page-loader
+                    }
+                });
+            });
+
+            // 3. Xử lý hiệu ứng Loading + Delay 1.5 giây cho nút "Chọn chuyến"
+            // (Giữ nguyên logic cũ nhưng điều chỉnh để nó gọi `activateLoader` nếu muốn blur)
+            document.querySelectorAll('.btn-booking-action').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetUrl = this.getAttribute('href');
+
+                    // Hiển thị loader toàn trang (có blur)
+                    activateLoader();
+
+                    this.style.pointerEvents = 'none';
+                    this.classList.add('disabled');
+                    this.innerHTML = `
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Đang xử lý...
+            `;
+
+                    setTimeout(() => {
+                        window.location.href = targetUrl;
+                    }, 1500); // Giữ nguyên delay 1.5s cho nút này
+                });
+            });
+
+            // 4. Xử lý hiệu ứng Loading + Delay 1.5s cho nút "Thông tin chi tiết"
+            // (Giữ nguyên logic cũ, nhưng cần ensure rằng nó không bị blur toàn màn hình nếu không phải chuyển trang)
+            document.querySelectorAll('.btn-detail-toggle').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const _this = this;
+                    const tripId = _this.dataset.tripId;
+                    const panel = document.getElementById(`detail-trip-${tripId}`);
+                    const isCurrentlyVisible = panel.style.display === 'block';
+
+                    _this.style.pointerEvents = 'none';
+                    _this.classList.add('text-muted');
+
+                    const originalContent =
+                        `Thông tin chi tiết <i class="bi bi-chevron-down ms-1"></i>`;
+
+                    _this.innerHTML = `
+                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                Đang tải...
+            `;
+
+                    setTimeout(() => {
+                        if (isCurrentlyVisible) {
+                            panel.style.display = 'none';
+                            _this.innerHTML = originalContent;
+                        } else {
+                            panel.style.display = 'block';
+                            _this.innerHTML =
+                                `Đóng chi tiết <i class="bi bi-chevron-up ms-1"></i>`;
+                        }
+                        _this.style.pointerEvents = 'auto';
+                        _this.classList.remove('text-muted');
+                    }, 1500);
                 });
             });
         });

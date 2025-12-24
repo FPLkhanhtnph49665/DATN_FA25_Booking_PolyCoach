@@ -320,7 +320,15 @@
 
                                         {{-- TRẠNG THÁI (Lấy từ Booking) --}}
                                         <td class="text-center">
-                                            {!! $booking->status ?? ucfirst($booking->status) !!}
+                                            @if ($booking->status == 'pending')
+                                                <span class="badge bg-warning text-dark">Chờ xử lý</span>
+                                            @elseif($booking->status == 'paid')
+                                                <span class="badge bg-success">Đã hoàn thành</span>
+                                            @elseif($booking->status == 'cancelled')
+                                                <span class="badge bg-danger">Đã hủy</span>
+                                            @else
+                                                <span class="badge bg-secondary">Không xác định</span>
+                                            @endif
                                         </td>
 
                                         {{-- CỘT HÀNH ĐỘNG MỚI --}}
@@ -346,6 +354,16 @@
                                                 ) }}">
                                                 <i class="bi bi-eye"></i> Chi tiết
                                             </button>
+                                            {{-- Nút Đánh giá (Chỉ hiển thị khi trạng thái là paid) --}}
+                                            @if ($booking->status == 'paid')
+                                                <button type="button"
+                                                    class="btn btn-sm btn-warning text-white btn-review mt-2"
+                                                    data-bs-toggle="modal" data-bs-target="#reviewModal"
+                                                    data-trip-id="{{ $booking->trip_id }}"
+                                                    data-route-id="{{ $booking->trip->route_id }}">
+                                                    <i class="bi bi-star-fill"></i> Đánh giá
+                                                </button>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty
@@ -448,6 +466,44 @@
             </div>
         </div>
     </div>
+    {{-- MODAL ĐÁNH GIÁ --}}
+    <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <form action="{{ route('client.reviews.store') }}" method="POST">
+                @csrf
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Gửi đánh giá chuyến đi</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="trip_id" id="review_trip_id">
+                        <input type="hidden" name="route_id" id="review_route_id">
+
+                        <div class="mb-3">
+                            <label class="form-label">Số sao (1-5)</label>
+                            <select name="rating" class="form-select" required>
+                                <option value="5">5 sao - Rất tốt</option>
+                                <option value="4">4 sao - Tốt</option>
+                                <option value="3">3 sao - Bình thường</option>
+                                <option value="2">2 sao - Tệ</option>
+                                <option value="1">1 sao - Rất tệ</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Nội dung đánh giá</label>
+                            <textarea name="content" class="form-control" rows="3" placeholder="Chia sẻ cảm nhận của bạn..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-warning text-white">Gửi đánh giá</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // ... (logic success modal - giữ nguyên) ...
@@ -456,7 +512,7 @@
             bookingModal.addEventListener('show.bs.modal', function(event) {
                 var button = event.relatedTarget;
                 var seats = button.getAttribute('data-seats');
-                
+
                 // Lấy dữ liệu chung
                 var id = button.getAttribute('data-id');
                 var route = button.getAttribute('data-route');
@@ -524,6 +580,22 @@
                     console.error('Bootstrap Modal object not found or successModal element missing.');
                     // alert(successMessage); // Có thể dùng alert tạm thời để kiểm tra session
                 }
+            }
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const reviewModal = document.getElementById('reviewModal');
+            if (reviewModal) {
+                reviewModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget; // Nút vừa được nhấn
+
+                    // Lấy ID từ data-attributes
+                    const tripId = button.getAttribute('data-trip-id');
+                    const routeId = button.getAttribute('data-route-id');
+
+                    // Gán giá trị vào input ẩn trong modal
+                    document.getElementById('review_trip_id').value = tripId;
+                    document.getElementById('review_route_id').value = routeId;
+                });
             }
         });
     </script>

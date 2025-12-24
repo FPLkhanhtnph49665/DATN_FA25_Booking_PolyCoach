@@ -17,7 +17,7 @@ class TripCheckController extends Controller
         // withCount('bookings') giúp lấy số lượng khách mà không cần load hết data vé
         $query = Trip::query()
             ->with(['route.fromCity', 'route.toCity', 'bus'])
-            ->withCount('bookings');
+            ->withCount('tickets');
 
         // 2. Lọc theo Mã chuyến (code) - Khớp với input name="code"
         if ($request->filled('code')) {
