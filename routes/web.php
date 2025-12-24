@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PassengerController;
+use App\Http\Controllers\Admin\PickupDropoffPointController;
 use App\Http\Controllers\Admin\PointFareController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Client\TripController as ClientTripController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\Client\TripController as ClientTripController;
 use App\Http\Controllers\Client\BookingController as ClientBookingController;
 use App\Http\Controllers\Client\ContactController as ClientContactController;
 use App\Http\Controllers\Checker\TicketCheckController as TicketCheckController;
+use App\Http\Controllers\Checker\TripCheckController as TripCheckController;
 use App\Http\Controllers\Checker\DashboardController as CheckerDashboardController;
 
 
@@ -72,6 +74,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', AdminMiddleware::cla
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', UserController::class);
     route::resource('cities', CityController::class);
+    route::resource('pickup-dropoff-points', PickupDropoffPointController::class);
     route::resource('point_fares', PointFareController::class);
     Route::resource('routes', RouteController::class);
     Route::resource('buses', BusController::class);
@@ -82,6 +85,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', AdminMiddleware::cla
     Route::resource('payments', PaymentController::class);
     Route::resource('reviews', ReviewController::class);
     Route::resource('contacts', ContactController::class);
+    Route::delete('bus-images/{id}', [BusController::class, 'destroyImage'])->name('bus-images.destroy');
 
 });
 Route::prefix('checker')->name('checker.')
@@ -101,6 +105,15 @@ Route::prefix('checker')->name('checker.')
 
         Route::post('/verify-ticket', [TicketCheckController::class, 'checkTicket'])
             ->name('check');
+        // Cập nhật trạng thái vé
+        Route::patch('/tickets/{id}/update-status', [TicketCheckController::class, 'updateStatus'])
+            ->name('tickets.updateStatus');
+        // Chuyến
+        Route::resource('trips', TripCheckController::class)
+            ->only(['index', 'show']);
+        //cập nhật trạng thái chuyến
+        Route::patch('/trips/{id}/update-status', [TripCheckController::class, 'updateStatus'])
+            ->name('trips.updateStatus');
     });
 
 

@@ -62,6 +62,13 @@
                     </li>
 
                     <li class="nav-item">
+                        <a href="{{ route('admin.pickup-dropoff-points.index') }}"
+                           class="nav-link admin-nav-link {{ request()->routeIs('admin.pickup-dropoff-points.*') ? 'active' : '' }}">
+                            <i class="bi bi-pin-map me-2"></i> Điểm đón/trả
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
                         <a href="{{ route('admin.point_fares.index') }}"
                            class="nav-link admin-nav-link {{ request()->routeIs('admin.point_fares.*') ? 'active' : '' }}">
                             <i class="bi bi-pin-map me-2"></i> Giá vé chặng

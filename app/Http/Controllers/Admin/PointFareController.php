@@ -3,140 +3,191 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\PickupPoint;
-use App\Models\DropoffPoint;
-use App\Models\City;
+use App\Models\PickupDropoffPoint;
 use App\Models\Route;
-use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB; // Dùng cho transaction
 use App\Models\PointFare;
+use Illuminate\Http\Request;
 
 class PointFareController extends Controller
 {
-    //lấy danh sách điểm đón trả
-
-    public function index()
-    {
-        $pointFares = PointFare::with(['pickupPoint', 'dropoffPoint', 'route'])
-            ->paginate(15);
-
-        return view('admin.point_fares.index', compact('pointFares'));
-    }
-
     /**
-     * Hiển thị form tạo mới. Bắt buộc phải có tham số 'type' (pickup/dropoff).
+     * Hiển thị danh sách giá vé (kèm bộ lọc)
      */
-    public function create(Request $request)
+    public function index(Request $request)
     {
-        // 1. Lấy danh sách Tuyến xe đang hoạt động để người dùng chọn
-        $routes = Route::where('trang_thai', 1)->orderBy('diem_di')->get();
+        // 1. Khởi tạo Query Builder
+        $query = PointFare::with(['route', 'route.fromCity', 'route.toCity', 'pickupPoint', 'dropoffPoint']);
 
-        // 2. Lấy danh sách Điểm đón (từ bảng pickup_points)
-        $pickupPoints = PickupPoint::with('city')->orderBy('ten_diem_don')->get();
+        // 2. Xử lý bộ lọc từ Request
+        if ($request->filled('route_id')) {
+            $query->where('route_id', $request->route_id);
+        }
 
-        // 3. Lấy danh sách Điểm trả (từ bảng dropoff_points)
-        $dropoffPoints = DropoffPoint::with('city')->orderBy('ten_diem_tra')->get();
+        if ($request->filled('pickup_point_id')) {
+            $query->where('pickup_point_id', $request->pickup_point_id);
+        }
 
-        return view('admin.point_fares.create', compact('routes', 'pickupPoints', 'dropoffPoints'));
+        if ($request->filled('dropoff_point_id')) {
+            $query->where('dropoff_point_id', $request->dropoff_point_id);
+        }
+
+        // 3. Lấy dữ liệu và phân trang (giữ lại tham số lọc trên URL)
+        $pointFares = $query->orderByDesc('created_at')
+            ->paginate(15)
+            ->withQueryString();
+
+        // 4. Lấy dữ liệu cho các thẻ Select trong bộ lọc
+        $routes = Route::with(['fromCity', 'toCity'])->get();
+
+        // Giả sử bảng pickup_dropoff_points có cột 'type' ('pickup' hoặc 'dropoff')
+        // Nếu không có cột type, bạn dùng ::all()
+        $pickupPoints = PickupDropoffPoint::where('active', 1)->where('type', 'pickup')->orderBy('name')->get();
+        $dropoffPoints = PickupDropoffPoint::where('active', 1)->where('type', 'dropoff')->orderBy('name')->get();
+
+        // Nếu bảng không chia type, dùng chung biến này cho cả 2 dropdown:
+        if ($pickupPoints->isEmpty() && $dropoffPoints->isEmpty()) {
+            $pickupPoints = $dropoffPoints = PickupDropoffPoint::where('active', 1)->orderBy('name')->get();
+        }
+
+        return view('admin.point_fares.index', compact('pointFares', 'routes', 'pickupPoints', 'dropoffPoints'));
     }
 
+    /**
+     * Hiển thị form tạo giá vé mới
+     */
+    public function create()
+    {
+        // Sửa cột orderBy
+        $routes = Route::where('status', 1)->orderBy('id')->get();
+        $points = PickupDropoffPoint::where('active', 1)
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.point_fares.create', compact('routes', 'points'));
+    }
 
     /**
-     * Lưu điểm mới vào CSDL (table pickup_points HOẶC dropoff_points).
+     * Lưu giá vé mới
      */
     public function store(Request $request)
     {
-        $type = $request->string('type')->trim();
-        if (!in_array($type, ['pickup', 'dropoff'])) {
-            return back()->with('error', 'Loại điểm không xác định.')->withInput();
+        // Giả định tên bảng chung trong database là 'pickup_dropoff_points'
+        $data = $request->validate([
+            'route_id' => 'required|exists:routes,id',
+
+            // Sửa: Trỏ cả hai trường về bảng chung 'pickup_dropoff_points'
+            'pickup_point_id' => 'required|exists:pickup_dropoff_points,id',
+            'dropoff_point_id' => 'required|exists:pickup_dropoff_points,id',
+
+            'price' => 'required|numeric|min:0',
+            'status' => 'required|boolean',
+        ], [
+            'route_id.required' => 'Vui lòng chọn tuyến xe.',
+            'route_id.exists' => 'Tuyến xe không hợp lệ.', // Nên thêm
+
+            'pickup_point_id.required' => 'Vui lòng chọn điểm đón.',
+            'pickup_point_id.exists' => 'Điểm đón không hợp lệ.', // Nên thêm
+
+            'dropoff_point_id.required' => 'Vui lòng chọn điểm trả.',
+            'dropoff_point_id.exists' => 'Điểm trả không hợp lệ.', // Nên thêm
+
+            'price.required' => 'Vui lòng nhập giá vé.',
+            'price.numeric' => 'Giá vé phải là số.', // Nên thêm
+            'price.min' => 'Giá vé phải lớn hơn hoặc bằng 0.', // Nên thêm
+            'status.required' => 'Vui lòng chọn trạng thái.', // Nên thêm
+            'status.boolean' => 'Trạng thái không hợp lệ.', // Nên thêm
+        ]);
+
+        // Thêm kiểm tra trùng lặp (Tùy chọn nhưng RẤT NÊN làm)
+        // Ví dụ: Kiểm tra xem cặp Tuyến - Đón - Trả này đã tồn tại chưa
+        $existingFare = PointFare::where('route_id', $data['route_id'])
+            ->where('pickup_point_id', $data['pickup_point_id'])
+            ->where('dropoff_point_id', $data['dropoff_point_id'])
+            ->first();
+
+        if ($existingFare) {
+            return redirect()->back()->withInput()
+                ->withErrors(['combination' => 'Giá vé cho cặp tuyến, điểm đón và điểm trả này đã tồn tại.']);
         }
 
+
+        PointFare::create($data);
+
+        return redirect()->route('admin.point_fares.index')
+            ->with('success', 'Tạo mới giá vé thành công!');
+    }
+
+    /**
+     * Hiển thị form chỉnh sửa giá vé
+     */
+    public function edit(PointFare $pointFare)
+    {
+        $routes = Route::where('status', 1)->orderBy('id')->get();
+        $points = PickupDropoffPoint::where('active', 1)
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.point_fares.edit', compact('pointFare', 'routes', 'points'));
+    }
+
+    /**
+     * Cập nhật giá vé
+     */
+    public function update(Request $request, PointFare $pointFare)
+    {
+        // Giả định tên bảng chung trong database là 'pickup_dropoff_points'
         $data = $request->validate([
-            'city_id' => 'nullable|exists:cities,id',
             'route_id' => 'required|exists:routes,id',
-            // Dùng tên cột thực tế của bạn
-            'ten_diem_tra' => 'required|string|max:255',
-            'dia_chi' => 'nullable|string|max:255',
-            'order' => 'nullable|integer|min:0', // Thêm validation cho cột order
-            'active' => 'boolean',
+
+            // Sửa: Trỏ cả hai trường về bảng chung 'pickup_dropoff_points'
+            'pickup_point_id' => 'required|exists:pickup_dropoff_points,id',
+            'dropoff_point_id' => 'required|exists:pickup_dropoff_points,id',
+
+            'price' => 'required|numeric|min:0',
+            'status' => 'required|boolean',
         ], [
-            'ten_diem_tra.required' => 'Tên điểm không được để trống.',
+            // Thông báo lỗi chi tiết
+            'route_id.required' => 'Vui lòng chọn tuyến xe.',
+            'route_id.exists' => 'Tuyến xe không hợp lệ.',
+            'pickup_point_id.required' => 'Vui lòng chọn điểm đón.',
+            'pickup_point_id.exists' => 'Điểm đón không hợp lệ.',
+            'dropoff_point_id.required' => 'Vui lòng chọn điểm trả.',
+            'dropoff_point_id.exists' => 'Điểm trả không hợp lệ.',
+            'price.required' => 'Vui lòng nhập giá vé.',
+            'price.numeric' => 'Giá vé phải là số.',
+            'price.min' => 'Giá vé phải lớn hơn hoặc bằng 0.',
+            'status.required' => 'Vui lòng chọn trạng thái.',
+            'status.boolean' => 'Trạng thái không hợp lệ.',
         ]);
 
-        $model = $this->resolveModel($type);
-        $model->create($data);
+        // Kiểm tra trùng lặp: Ngăn việc cập nhật thành một cặp (Tuyến - Đón - Trả) đã tồn tại.
+        $existingFare = PointFare::where('route_id', $data['route_id'])
+            ->where('pickup_point_id', $data['pickup_point_id'])
+            ->where('dropoff_point_id', $data['dropoff_point_id'])
+            // Quan trọng: Loại trừ bản ghi hiện tại đang được cập nhật
+            ->where('id', '!=', $pointFare->id)
+            ->first();
 
-        return redirect()->route('admin.pickup-dropoff-points.index', ['type' => $type])
-            ->with('success', 'Đã tạo điểm ' . ($type === 'pickup' ? 'đón' : 'trả') . ' mới!');
-    }
+        if ($existingFare) {
+            return redirect()->back()->withInput()
+                ->withErrors(['combination' => 'Cặp tuyến, điểm đón và điểm trả này đã có giá vé khác tồn tại. Vui lòng kiểm tra lại.']);
+        }
 
-    // Show không thay đổi nhiều, cần dùng Route Model Binding nhưng phức tạp hơn, ta dùng cách thủ công.
-    public function show($type, $id)
-    {
-        $model = $this->resolveModel($type);
-        $point = $model->newQuery()->with(['city', 'route'])->findOrFail($id);
+        // Cập nhật dữ liệu
+        $pointFare->update($data);
 
-        return view('admin.pickup-dropoff-points.show', compact('point', 'type'));
+        return redirect()->route('admin.point_fares.index')
+            ->with('success', 'Cập nhật giá vé thành công!');
     }
 
     /**
-     * Hiển thị form chỉnh sửa.
+     * Xóa giá vé
      */
-    public function edit(Request $request, $type, $id)
+    public function destroy(PointFare $pointFare)
     {
-        $model = $this->resolveModel($type);
-        $point = $model->newQuery()->findOrFail($id);
+        $pointFare->delete();
 
-        $cities = City::orderBy('name')->get();
-        $routes = Route::orderBy('id')->get();
-
-        return view('admin.pickup-dropoff-points.edit', [
-            'point' => $point,
-            'cities' => $cities,
-            'routes' => $routes,
-            'type' => $type, // Truyền type xuống view
-        ]);
-    }
-
-
-    /**
-     * Cập nhật điểm.
-     */
-    public function update(Request $request, $type, $id)
-    {
-        $model = $this->resolveModel($type);
-        $point = $model->newQuery()->findOrFail($id);
-
-        $data = $request->validate([
-            'city_id' => 'nullable|exists:cities,id',
-            'route_id' => 'required|exists:routes,id',
-            'ten_diem_tra' => 'required|string|max:255',
-            'dia_chi' => 'nullable|string|max:255',
-            'order' => 'nullable|integer|min:0',
-            'active' => 'boolean',
-        ], [
-            'ten_diem_tra.required' => 'Tên điểm không được để trống.',
-        ]);
-
-        $point->update($data);
-
-        return redirect()->route('admin.pickup-dropoff-points.index', ['type' => $type])
-            ->with('success', 'Đã cập nhật điểm ' . ($type === 'pickup' ? 'đón' : 'trả') . '!');
-    }
-
-    /**
-     * Xóa điểm.
-     */
-    public function destroy($type, $id)
-    {
-        $model = $this->resolveModel($type);
-        $point = $model->newQuery()->findOrFail($id);
-
-        // Dùng Soft Deletes (nếu bạn dùng SoftDeletes trong model)
-        $point->delete();
-
-        return redirect()->route('admin.pickup-dropoff-points.index', ['type' => $type])
-            ->with('success', 'Đã xóa điểm ' . ($type === 'pickup' ? 'đón' : 'trả') . '!');
+        return redirect()->route('admin.point_fares.index')
+            ->with('success', 'Xóa giá vé thành công!');
     }
 }

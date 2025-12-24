@@ -1,28 +1,15 @@
 {{-- resources/views/admin/point_fares/create.blade.php --}}
 @extends('layouts.admin')
 
-@section('title', 'Thêm giá vé chặng')
+@section('title', 'Thêm giá vé mới')
 
 @section('content')
-<div class="mb-4">
-    {{-- Header --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-        <div>
-            <h2 class="mb-1 fw-semibold text-light d-flex align-items-center gap-2">
-                <i class="bi bi-currency-dollar"></i>
-                Thiết lập Giá vé chặng
-            </h2>
-            <p class="text-light small mb-0">
-                Tạo mới giá vé áp dụng cho một tuyến đường cụ thể.
-            </p>
-        </div>
-    </div>
+<div class="container-fluid">
+    <h1 class="h3 mb-3">Thêm giá vé mới</h1>
 
-    {{-- Hiển thị lỗi validate chung --}}
     @if ($errors->any())
         <div class="alert alert-danger">
-            <div class="fw-semibold mb-1">Đã có lỗi xảy ra:</div>
-            <ul class="mb-0 small">
+            <ul class="mb-0">
                 @foreach ($errors->all() as $error)
                     <li>- {{ $error }}</li>
                 @endforeach
@@ -30,149 +17,133 @@
         </div>
     @endif
 
-    {{-- Form tạo mới --}}
-    <div class="card border-0">
-        <div class="card-body">
-            <form action="{{ route('admin.point_fares.store') }}" method="POST" class="row g-3">
-                @csrf
-
-                {{-- 1. TUYẾN XE (MỚI THÊM) --}}
-                <div class="col-12">
-                    <label for="route_id" class="form-label small text-light mb-1">
-                        Thuộc Tuyến xe <span class="text-danger">*</span>
-                    </label>
-                    <select
-                        name="route_id"
-                        id="route_id"
-                        class="form-select @error('route_id') is-invalid @enderror"
-                        required
-                    >
-                        <option value="">-- Chọn tuyến xe áp dụng --</option>
-                        @if(isset($routes))
-                            @foreach ($routes as $route)
-                                <option 
-                                    value="{{ $route->id }}" 
-                                    {{ old('route_id') == $route->id ? 'selected' : '' }}
-                                >
-                                    {{ $route->diem_di }} → {{ $route->diem_den }}
-                                </option>
-                            @endforeach
-                        @endif
-                    </select>
-                    @error('route_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                    <div class="form-text text-muted small">
-                        Chọn tuyến xe mà giá vé này sẽ được áp dụng.
-                    </div>
-                </div>
-
-                {{-- 2. Điểm đón (Pickup Point) --}}
-                <div class="col-md-6">
-                    <label for="pickup_point_id" class="form-label small text-light mb-1">
-                        Điểm đón (Nơi xuất phát) <span class="text-danger">*</span>
-                    </label>
-                    <select
-                        name="pickup_point_id"
-                        id="pickup_point_id"
-                        class="form-select @error('pickup_point_id') is-invalid @enderror"
-                        required
-                    >
-                        <option value="">-- Chọn điểm đón --</option>
-                        @if(isset($pickupPoints))
-                            @foreach ($pickupPoints as $point)
-                                <option 
-                                    value="{{ $point->id }}" 
-                                    {{ old('pickup_point_id') == $point->id ? 'selected' : '' }}
-                                >
-                                    {{-- Sử dụng ten_diem_don và dia_chi --}}
-                                    {{ $point->ten_diem_don }} - {{ $point->dia_chi }}
-                                </option>
-                            @endforeach
-                        @endif
-                    </select>
-                    @error('pickup_point_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                {{-- 3. Điểm trả (Dropoff Point) --}}
-                <div class="col-md-6">
-                    <label for="dropoff_point_id" class="form-label small text-light mb-1">
-                        Điểm trả (Nơi đến) <span class="text-danger">*</span>
-                    </label>
-                    <select
-                        name="dropoff_point_id"
-                        id="dropoff_point_id"
-                        class="form-select @error('dropoff_point_id') is-invalid @enderror"
-                        required
-                    >
-                        <option value="">-- Chọn điểm trả --</option>
-                        @if(isset($dropoffPoints))
-                            @foreach ($dropoffPoints as $point)
-                                <option 
-                                    value="{{ $point->id }}" 
-                                    {{ old('dropoff_point_id') == $point->id ? 'selected' : '' }}
-                                >
-                                    {{-- Sử dụng ten_diem_tra và dia_chi --}}
-                                    {{ $point->ten_diem_tra }} - {{ $point->dia_chi }}
-                                </option>
-                            @endforeach
-                        @endif
-                    </select>
-                    @error('dropoff_point_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                {{-- 4. Giá vé (Price) --}}
-                <div class="col-md-6">
-                    <label for="price" class="form-label small text-light mb-1">
-                        Giá vé (VND) <span class="text-danger">*</span>
-                    </label>
-                    <input
-                        type="number"
-                        name="price"
-                        id="price"
-                        value="{{ old('price') }}"
-                        class="form-control @error('price') is-invalid @enderror"
-                        placeholder="Ví dụ: 80000"
-                        required
-                        min="0"
-                    >
-                    @error('price')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                {{-- 5. Trạng thái --}}
-                <div class="col-md-6">
-                    <label for="status" class="form-label small text-light mb-1">Trạng thái</label>
-                    <select
-                        name="status"
-                        id="status"
-                        class="form-select @error('status') is-invalid @enderror"
-                    >
-                        <option value="1" {{ old('status', 1) == 1 ? 'selected' : '' }}>Hoạt động</option>
-                        <option value="0" {{ old('status', 1) == 0 ? 'selected' : '' }}>Ngưng hoạt động</option>
-                    </select>
-                    @error('status')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                {{-- Nút hành động --}}
-                <div class="col-12 d-flex justify-content-end gap-2 mt-3">
-                    <a href="{{ route('admin.point_fares.index') }}" class="btn btn-outline-light">
-                        Hủy
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save me-1"></i>
-                        Lưu giá vé chặng
-                    </button>
-                </div>
-            </form>
+    <form action="{{ route('admin.point_fares.store') }}" method="POST">
+        @csrf
+        
+        {{-- Chọn Tuyến Xe --}}
+        <div class="mb-3">
+            <label for="route_id" class="form-label">Tuyến xe <span class="text-danger">*</span></label>
+            <select name="route_id" id="route_id" class="form-select" required>
+                <option value="">-- Chọn tuyến xe --</option>
+                @foreach($routes as $route)
+                    <option value="{{ $route->id }}" {{ old('route_id') == $route->id ? 'selected' : '' }}>
+                        {{ $route->fromCity->name ?? '---' }} → {{ $route->toCity->name ?? '---' }}
+                    </option>
+                @endforeach
+            </select>
         </div>
-    </div>
+
+        {{-- Chọn Điểm Đón --}}
+        <div class="mb-3">
+            <label for="pickup_point_id" class="form-label">Điểm đón <span class="text-danger">*</span></label>
+            <select name="pickup_point_id" id="pickup_point_id" class="form-select" required>
+                <option value="">-- Vui lòng chọn tuyến trước --</option>
+                {{-- Lưu ý: Thêm data-route-id vào từng option --}}
+                @foreach($points->where('type', 'pickup') as $point)
+                    <option value="{{ $point->id }}" 
+                            data-route-id="{{ $point->route_id }}"
+                            {{ old('pickup_point_id') == $point->id ? 'selected' : '' }}>
+                        {{ $point->name }} - {{ $point->address }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- Chọn Điểm Trả --}}
+        <div class="mb-3">
+            <label for="dropoff_point_id" class="form-label">Điểm trả <span class="text-danger">*</span></label>
+            <select name="dropoff_point_id" id="dropoff_point_id" class="form-select" required>
+                <option value="">-- Vui lòng chọn tuyến trước --</option>
+                {{-- Lưu ý: Thêm data-route-id vào từng option --}}
+                @foreach($points->where('type', 'dropoff') as $point)
+                    <option value="{{ $point->id }}" 
+                            data-route-id="{{ $point->route_id }}"
+                            {{ old('dropoff_point_id') == $point->id ? 'selected' : '' }}>
+                        {{ $point->name }} - {{ $point->address }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="price" class="form-label">Giá vé (VNĐ) <span class="text-danger">*</span></label>
+            <input type="number" name="price" id="price" class="form-control" value="{{ old('price') }}" min="0" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="status" class="form-label">Trạng thái</label>
+            <select name="status" id="status" class="form-select">
+                <option value="1" {{ old('status', 1) == 1 ? 'selected' : '' }}>Hoạt động</option>
+                <option value="0" {{ old('status', 1) == 0 ? 'selected' : '' }}>Ngưng hoạt động</option>
+            </select>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="{{ route('admin.point_fares.index') }}" class="btn btn-secondary">Hủy</a>
+            <button type="submit" class="btn btn-primary">Lưu giá vé</button>
+        </div>
+    </form>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const routeSelect = document.getElementById('route_id');
+        const pickupSelect = document.getElementById('pickup_point_id');
+        const dropoffSelect = document.getElementById('dropoff_point_id');
+
+        // 1. Sao chép danh sách options gốc ban đầu (để dùng lại khi filter)
+        // Bỏ qua option đầu tiên (là option placeholder "-- Chọn ... --")
+        const allPickupOptions = Array.from(pickupSelect.querySelectorAll('option:not(:first-child)'));
+        const allDropoffOptions = Array.from(dropoffSelect.querySelectorAll('option:not(:first-child)'));
+
+        // Hàm lọc options
+        function filterPointsByRoute(routeId) {
+            // Reset 2 ô select về trạng thái rỗng (chỉ giữ lại placeholder)
+            pickupSelect.innerHTML = '<option value="">-- Chọn điểm đón --</option>';
+            dropoffSelect.innerHTML = '<option value="">-- Chọn điểm trả --</option>';
+
+            if (!routeId) return; // Nếu chưa chọn tuyến thì dừng
+
+            // Lọc và thêm lại các option điểm đón khớp route_id
+            allPickupOptions.forEach(option => {
+                if (option.getAttribute('data-route-id') == routeId) {
+                    pickupSelect.appendChild(option);
+                }
+            });
+
+            // Lọc và thêm lại các option điểm trả khớp route_id
+            allDropoffOptions.forEach(option => {
+                if (option.getAttribute('data-route-id') == routeId) {
+                    dropoffSelect.appendChild(option);
+                }
+            });
+            
+            // Nếu có giá trị old() từ server (trường hợp validate lỗi), JS cần chọn lại đúng giá trị đó
+            const oldPickupId = "{{ old('pickup_point_id') }}";
+            const oldDropoffId = "{{ old('dropoff_point_id') }}";
+            
+            if(oldPickupId) pickupSelect.value = oldPickupId;
+            if(oldDropoffId) dropoffSelect.value = oldDropoffId;
+        }
+
+        // 2. Lắng nghe sự kiện thay đổi tuyến xe
+        routeSelect.addEventListener('change', function() {
+            filterPointsByRoute(this.value);
+            // Reset giá trị đã chọn về rỗng khi đổi tuyến để tránh lỗi dữ liệu
+            pickupSelect.value = "";
+            dropoffSelect.value = "";
+        });
+
+        // 3. Kích hoạt lọc ngay khi tải trang (để xử lý trường hợp Form Submit lỗi và redirect lại)
+        if (routeSelect.value) {
+            filterPointsByRoute(routeSelect.value);
+        } else {
+            // Nếu chưa chọn tuyến, xóa hết option để giao diện sạch sẽ
+            pickupSelect.innerHTML = '<option value="">-- Vui lòng chọn tuyến trước --</option>';
+            dropoffSelect.innerHTML = '<option value="">-- Vui lòng chọn tuyến trước --</option>';
+        }
+    });
+</script>
+@endpush
