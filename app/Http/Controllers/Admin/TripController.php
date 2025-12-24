@@ -16,7 +16,9 @@ class TripController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Trip::with(['route', 'bus'])->orderByDesc('departure_date');
+        $query = Trip::with(['route', 'bus'])
+        ->withCount('tickets')
+        ->orderByDesc('departure_date');
 
         // Filter by route
         if ($request->filled('route_id')) {

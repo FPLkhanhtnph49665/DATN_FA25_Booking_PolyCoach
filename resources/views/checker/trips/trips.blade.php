@@ -105,12 +105,12 @@
                             @endif
                         </td>
 
-                        {{-- Số khách (Giả sử bạn có relationship bookings hoặc booked_seats) --}}
+                        {{-- Số khách (Đếm theo số lượng vé đã bán) --}}
                         <td class="text-center">
-                            {{-- Cách đơn giản hiển thị số vé đã đặt --}}
                             <span class="badge bg-secondary rounded-pill">
                                 <i class="bi bi-people-fill"></i>
-                                {{ $trip->bookings_count ?? 0 }}/{{ $trip->bus->seat_count ?? '?' }}
+                                {{-- Sử dụng tickets_count để đếm chính xác số ghế đã đặt --}}
+                                {{ $trip->tickets_count ?? 0 }}/{{ $trip->bus->seat_count ?? '?' }}
                             </span>
                         </td>
 

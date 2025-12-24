@@ -38,7 +38,7 @@ class Review extends Model
     // Author of the review
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     // Trip being reviewed

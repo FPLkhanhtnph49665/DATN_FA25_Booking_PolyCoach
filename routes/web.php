@@ -26,6 +26,7 @@ use App\Http\Controllers\Client\ContactController as ClientContactController;
 use App\Http\Controllers\Checker\TicketCheckController as TicketCheckController;
 use App\Http\Controllers\Checker\TripCheckController as TripCheckController;
 use App\Http\Controllers\Checker\DashboardController as CheckerDashboardController;
+use App\Http\Controllers\Client\ReviewController as ClientReviewController;
 
 
 // Route::get('/', function () {
@@ -49,6 +50,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/thong-tin-tai-khoan/lich-su-mua-ve', [AuthenticatedSessionController::class, 'ticketHistory'])
         ->name('client.account.tickets');
+    // đánh giá
+    Route::post('/reviews', [ClientReviewController::class, 'store'])
+        ->name('client.reviews.store');
 
     Route::post('/dat-ve', [ClientBookingController::class, 'store'])
         ->name('client.bookings.store');
