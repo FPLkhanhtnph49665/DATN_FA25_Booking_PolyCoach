@@ -60,7 +60,7 @@ class DatabaseSeeder extends Seeder
                 ['email' => $u['email']],
                 [
                     'user_code' => 'DATN_FA25_PoLyCoach_' . ucfirst($u['role']) . '_4953',
-                    'first_name'=> $u['first_name'],
+                    'first_name' => $u['first_name'],
                     'last_name' => $u['last_name'],
                     'full_name' => $u['first_name'] . ' ' . $u['last_name'],
                     'password'  => Hash::make('1'),
@@ -142,15 +142,15 @@ class DatabaseSeeder extends Seeder
         // =========================
         $routeData = [
             ['from' => 'HN', 'to' => 'HCM', 'distance' => 1700, 'estimated_time' => '22:00:00'],
-            ['from' => 'HCM','to' => 'HN', 'distance' => 1700, 'estimated_time' => '23:00:00'],
+            ['from' => 'HCM', 'to' => 'HN', 'distance' => 1700, 'estimated_time' => '23:00:00'],
             ['from' => 'HN', 'to' => 'DN', 'distance' => 800,  'estimated_time' => '15:00:00'],
-            ['from' => 'DN', 'to' => 'HCM','distance' => 960,  'estimated_time' => '18:00:00'],
-            ['from' => 'HCM','to' => 'CT', 'distance' => 170,  'estimated_time' => '04:00:00'],
-            ['from' => 'HCM','to' => 'NT', 'distance' => 430,  'estimated_time' => '09:00:00'],
-            ['from' => 'HCM','to' => 'DL', 'distance' => 300,  'estimated_time' => '08:00:00'],
+            ['from' => 'DN', 'to' => 'HCM', 'distance' => 960,  'estimated_time' => '18:00:00'],
+            ['from' => 'HCM', 'to' => 'CT', 'distance' => 170,  'estimated_time' => '04:00:00'],
+            ['from' => 'HCM', 'to' => 'NT', 'distance' => 430,  'estimated_time' => '09:00:00'],
+            ['from' => 'HCM', 'to' => 'DL', 'distance' => 300,  'estimated_time' => '08:00:00'],
             ['from' => 'HN', 'to' => 'HP', 'distance' => 120,  'estimated_time' => '03:00:00'],
-            ['from' => 'HN', 'to' => 'VINH','distance' => 300,  'estimated_time' => '06:00:00'],
-            ['from' => 'HUE','to' => 'DN', 'distance' => 100,  'estimated_time' => '02:30:00'],
+            ['from' => 'HN', 'to' => 'VINH', 'distance' => 300,  'estimated_time' => '06:00:00'],
+            ['from' => 'HUE', 'to' => 'DN', 'distance' => 100,  'estimated_time' => '02:30:00'],
         ];
 
         $routes = collect();
@@ -171,19 +171,19 @@ class DatabaseSeeder extends Seeder
         // 3. Seed Buses
         // =========================
         $busData = [
-            ['plate_number'=>'29B-88888','seat_count'=>32,'type'=>'sleeper','status'=>1],
-            ['plate_number'=>'51B-12345','seat_count'=>32,'type'=>'sleeper','status'=>1],
-            ['plate_number'=>'43B-54953','seat_count'=>32,'type'=>'limousine','status'=>1],
-            ['plate_number'=>'29A-34953','seat_count'=>32,'type'=>'seat','status'=>1],
-            ['plate_number'=>'29A-44953','seat_count'=>32,'type'=>'seat','status'=>0],
+            ['plate_number' => '29B-88888', 'seat_count' => 32, 'type' => 'sleeper', 'status' => 1],
+            ['plate_number' => '51B-12345', 'seat_count' => 32, 'type' => 'sleeper', 'status' => 1],
+            ['plate_number' => '43B-54953', 'seat_count' => 32, 'type' => 'limousine', 'status' => 1],
+            ['plate_number' => '29A-34953', 'seat_count' => 32, 'type' => 'seat', 'status' => 1],
+            ['plate_number' => '29A-44953', 'seat_count' => 32, 'type' => 'seat', 'status' => 0],
         ];
 
         $buses = collect();
         foreach ($busData as $data) {
             $buses->push(
                 Bus::updateOrCreate(
-                    ['plate_number'=>$data['plate_number']],
-                    ['seat_count'=>$data['seat_count'],'type'=>$data['type'],'status'=>$data['status']]
+                    ['plate_number' => $data['plate_number']],
+                    ['seat_count' => $data['seat_count'], 'type' => $data['type'], 'status' => $data['status']]
                 )
             );
         }
@@ -209,39 +209,43 @@ class DatabaseSeeder extends Seeder
 
             // Pickup Points
             PickupPoint::updateOrCreate(
-                ['route_id'=>$route->id,'name'=>'Bến xe '.$fromCity->name],
-                ['address'=>'Bến xe trung tâm '.$fromCity->name,'order'=>1]
+                ['route_id' => $route->id, 'name' => 'Bến xe ' . $fromCity->name],
+                ['address' => 'Bến xe trung tâm ' . $fromCity->name, 'order' => 1]
             );
             PickupPoint::updateOrCreate(
-                ['route_id'=>$route->id,'name'=>'Văn phòng '.$fromCity->name],
-                ['address'=>'Văn phòng PoLyCoach tại '.$fromCity->name,'order'=>2]
+                ['route_id' => $route->id, 'name' => 'Văn phòng ' . $fromCity->name],
+                ['address' => 'Văn phòng PoLyCoach tại ' . $fromCity->name, 'order' => 2]
             );
 
             // Dropoff Points
             DropoffPoint::updateOrCreate(
-                ['route_id'=>$route->id,'name'=>'Bến xe '.$toCity->name],
-                ['address'=>'Bến xe trung tâm '.$toCity->name,'order'=>1]
+                ['route_id' => $route->id, 'name' => 'Bến xe ' . $toCity->name],
+                ['address' => 'Bến xe trung tâm ' . $toCity->name, 'order' => 1]
             );
             DropoffPoint::updateOrCreate(
-                ['route_id'=>$route->id,'name'=>'Văn phòng '.$toCity->name],
-                ['address'=>'Văn phòng PoLyCoach tại '.$toCity->name,'order'=>2]
+                ['route_id' => $route->id, 'name' => 'Văn phòng ' . $toCity->name],
+                ['address' => 'Văn phòng PoLyCoach tại ' . $toCity->name, 'order' => 2]
             );
         }
 
         // =========================
         // 6. Seed Point Fares (giá vé giữa các điểm)
         // =========================
-        $pickupPoints = PickupPoint::all();
-        $dropoffPoints = DropoffPoint::all();
+        $points = PickupDropoffPoint::all();
 
-        foreach ($pickupPoints as $pickup) {
-            foreach ($dropoffPoints->where('route_id',$pickup->route_id) as $dropoff) {
+        foreach ($points as $pickup) {
+            foreach ($points->where('route_id', $pickup->route_id) as $dropoff) {
                 PointFare::updateOrCreate(
-                    ['route_id'=>$pickup->route_id,'pickup_point_id'=>$pickup->id,'dropoff_point_id'=>$dropoff->id],
-                    ['price'=>rand(100000,500000)]
+                    [
+                        'route_id' => $pickup->route_id,
+                        'pickup_point_id' => $pickup->id,
+                        'dropoff_point_id' => $dropoff->id,
+                    ],
+                    ['price' => rand(100000, 500000)]
                 );
             }
         }
+
         News::create([
             'title' => 'Vé xe đón Tết sum vầy – Hành trình trở về nhà trọn vẹn',
             'slug' => 've-xe-don-tet-sum-vay',
