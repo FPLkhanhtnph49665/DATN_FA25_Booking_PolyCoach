@@ -31,4 +31,19 @@ class PickupDropoffPoint extends Model
     {
         return $this->belongsTo(Route::class);
     }
+    // Quan hệ với PointFare
+    public function pickupFares()
+    {
+        return $this->hasMany(PointFare::class, 'pickup_point_id');
+    }
+    public function dropoffFares()
+    {
+        return $this->hasMany(PointFare::class, 'dropoff_point_id');
+    }
+    public function allFares()
+    {
+        return PointFare::where('pickup_point_id', $this->id)
+            ->orWhere('dropoff_point_id', $this->id);
+    }
+
 }

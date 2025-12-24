@@ -8,8 +8,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Trip extends Model
 {
-    use HasFactory, SoftDeletes;
 
+    use HasFactory, SoftDeletes;
+    const STATUS_SCHEDULED = 1; // Chưa xuất phát
+    const STATUS_POSTPONED = 2; // Đã tạm hoãn
+    const STATUS_IN_TRANSIT = 3; // Đã xuất phát
+    const STATUS_COMPLETED = 4; // Đã hoàn thành
     protected $fillable = [
         'route_id',
         'bus_id',
@@ -19,7 +23,10 @@ class Trip extends Model
         'arrival_time',
         'ticket_price',
         'status',
+        'trip_status',
         'trip_code',
+        'checked_at',
+        'checked_by',
     ];
 
     protected $casts = [
@@ -27,6 +34,7 @@ class Trip extends Model
         'arrival_date' => 'date',
         'departure_time' => 'datetime:H:i',
         'arrival_time' => 'datetime:H:i',
+        'trip_status' => 'integer',
     ];
 
     // Relations
@@ -51,6 +59,11 @@ class Trip extends Model
     {
         return $this->hasMany(Booking::class, 'trip_id');
     }
+    public function checker()
+    {
+        return $this->belongsTo(User::class, 'checked_by');
+    }
+
 
     // Scopes
     public function scopeActive($query)
@@ -120,5 +133,32 @@ class Trip extends Model
     public function getArrivalTimeFormattedAttribute()
     {
         return $this->arrival_time?->format('H:i');
+    }
+
+    /**
+     * Lấy tên trạng thái tiếng Việt
+     */
+    public function getStatusTextAttribute()
+    {
+        return match ($this->trip_status) {
+            self::STATUS_SCHEDULED => 'Chưa xuất phát',
+            self::STATUS_POSTPONED => 'Đã tạm hoãn',
+            self::STATUS_IN_TRANSIT => 'Đã xuất phát',
+            self::STATUS_COMPLETED => 'Đã hoàn thành',
+            default => 'Không xác định',
+        };
+    }
+    /**
+     * Lấy class màu sắc (Sửa từ badge- thành bg- cho khớp Bootstrap 5)
+     */
+    public function getStatusBadgeAttribute()
+    {
+        return match ($this->trip_status) {
+            self::STATUS_SCHEDULED => 'bg-info text-dark',
+            self::STATUS_POSTPONED => 'bg-danger',
+            self::STATUS_IN_TRANSIT => 'bg-primary',
+            self::STATUS_COMPLETED => 'bg-success',
+            default => 'bg-secondary',
+        };
     }
 }

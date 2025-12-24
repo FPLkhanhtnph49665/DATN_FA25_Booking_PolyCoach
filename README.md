@@ -14,7 +14,7 @@ Mục tiêu của dự án là giúp người dùng dễ dàng **tìm kiếm, đ
 - Xem giá vé, loại xe, nhà xe  
 - Đăng ký tài khoản để đặt vé  
 
-### 👥 Người dùng đã đăng nhập (Customer)
+### 👥 Người dùng đã đăng nhập (User)
 - Đặt vé và thanh toán trực tuyến  
 - Hủy hoặc đổi vé  
 - Xem lịch sử đặt vé  

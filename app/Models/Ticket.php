@@ -14,6 +14,8 @@ class Ticket extends Model
         'code',
         'trip_id',
         'user_id',
+        'booking_id',
+        'point_fare_id',
         'price',
         'status',
         'payment_method',
@@ -53,6 +55,10 @@ class Ticket extends Model
     public function passengers()
     {
         return $this->hasMany(Booking::class, 'trip_id');
+    }
+    public function pointFare()
+    {
+        return $this->belongsTo(PointFare::class, 'point_fare_id');
     }
 
     /*

@@ -261,16 +261,23 @@
                                     @php
                                         $trip = $booking->trip;
                                         $route = $trip?->route;
-                                        // Lấy danh sách mã ghế/số ghế từ collection tickets
-                                        $seatCodes = $booking->tickets->pluck('seat_code')->implode(', ');
-                                        $total = $booking->total_amount; // Lấy từ booking
-                                        $paymentMethod = $booking->payment_method ?? 'Tiền mặt';
-                                        // Lấy một vé đại diện để có thông tin đón/trả
                                         $firstTicket = $booking->tickets->first();
 
-                                        // --- CHỈNH SỬA LOGIC DỮ LIỆU ---
-                                        // Cần đảm bảo Model Booking có quan hệ với Trip, và Booking có cột total_price, status
+                                        // 1. Lấy điểm đón
+                                        // Nếu có giá chặng -> lấy tên điểm đón từ chặng. Nếu không -> lấy tên thành phố đi.
+                                        $pickupName =
+                                            $firstTicket?->pointFare?->pickupPoint?->address ??
+                                            ($route->fromCity->name ?? '—');
 
+                                        // 2. Lấy điểm trả
+                                        // Nếu có giá chặng -> lấy tên điểm trả từ chặng. Nếu không -> lấy tên thành phố đến.
+                                        $dropoffName =
+                                            $firstTicket?->pointFare?->dropoffPoint?->address ??
+                                            ($route->toCity->name ?? '—');
+
+                                        $total = $booking->total_amount;
+                                        $seatCodes = $booking->tickets->pluck('seat_code')->implode(', ');
+                                        $paymentMethod = $booking->payment_method ?? 'Tiền mặt';
                                     @endphp
                                     <tr>
                                         {{-- MÃ BOOKING --}}
@@ -295,15 +302,16 @@
                                         {{-- NGÀY ĐI --}}
                                         <td class="text-center">
                                             @if ($trip)
-                                                {{ \Carbon\Carbon::parse($trip->depature_date)->format('d/m/Y') }}
+                                                {{ \Carbon\Carbon::parse($trip->departure_date)->format('d/m/Y') }}
                                                 <br>
                                                 <span class="text-muted small">
-                                                    {{ $trip->depature_time }}
+                                                    {{ \Carbon\Carbon::parse($trip->departure_time)->format('H:i') }}
                                                 </span>
                                             @else
                                                 —
                                             @endif
                                         </td>
+
 
                                         {{-- TỔNG TIỀN --}}
                                         <td class="text-end fw-bold text-danger">
@@ -319,17 +327,23 @@
                                         <td class="text-center">
                                             <button type="button" class="btn btn-sm btn-outline-primary btn-view-detail"
                                                 data-bs-toggle="modal" data-bs-target="#bookingDetailModal"
-                                                {{-- Truyền DỮ LIỆU BOOKING VÀ TICKETs VÀO data attribute --}} data-id="#{{ $booking->id }}"
+                                                data-id="#{{ $booking->id }}"
                                                 data-route="{{ $route->fromCity->name }} → {{ $route->toCity->name }}"
-                                                data-time="{{ \Carbon\Carbon::parse($trip->depature_date)->format('d/m/Y') }} - {{ $trip->depature_time }}"
+                                                data-time="{{ \Carbon\Carbon::parse($trip->departure_date)->format('d/m/Y') }} - {{ $trip->departure_time }}"
                                                 data-bus="{{ $trip->bus->plate_number ?? 'Đang cập nhật' }}"
-                                                data-seats="{{ $seatCodes }}" {{-- Lấy điểm đón/trả từ vé đầu tiên hoặc từ trip/route --}}
-                                                data-pickup="{{ $firstTicket->pickup_point->dia_chi ?? $route->fromCity->name }}"
-                                                data-dropoff="{{ $firstTicket->dropoff_point->dia_chi ?? $route->toCity->name }}"
+                                                data-seats="{{ $seatCodes }}" {{-- CẬP NHẬT Ở ĐÂY --}}
+                                                data-pickup="{{ $pickupName }}" data-dropoff="{{ $dropoffName }}"
                                                 data-total="{{ number_format($total, 0, ',', '.') }}đ"
-                                                data-payment="{{ $paymentMethod }}"
-                                                data-status="{{ $booking->trang_thai_label ?? ucfirst($booking->status) }}"
-                                                data-tickets="{{ json_encode($booking->tickets->map(fn($t) => ['id' => $t->id, 'seat_code' => $t->seat_code, 'price' => number_format($t->price, 0, ',', '.') . 'đ'])) }}">
+                                                data-payment="{{ $paymentMethod }}" data-status="{{ $booking->status }}"
+                                                data-tickets="{{ json_encode(
+                                                    $booking->tickets->map(
+                                                        fn($t) => [
+                                                            'id' => $t->id,
+                                                            'seat_code' => $t->seat_code,
+                                                            'price' => number_format($t->price, 0, ',', '.') . 'đ',
+                                                        ],
+                                                    ),
+                                                ) }}">
                                                 <i class="bi bi-eye"></i> Chi tiết
                                             </button>
                                         </td>
@@ -386,7 +400,7 @@
                             <div class="d-flex align-items-start">
                                 <div class="me-2 text-success"><i class="bi bi-geo-alt-fill"></i></div>
                                 <div>
-                                    <small class="text-muted">Điểm đón</small>
+                                    <small class="text-muted">Điểm đón cụ thể</small>
                                     <div class="fw-semibold" id="modal-pickup"></div>
                                 </div>
                             </div>
@@ -395,7 +409,7 @@
                             <div class="d-flex align-items-start">
                                 <div class="me-2 text-danger"><i class="bi bi-geo-alt-fill"></i></div>
                                 <div>
-                                    <small class="text-muted">Điểm trả</small>
+                                    <small class="text-muted">Điểm trả cụ thể</small>
                                     <div class="fw-semibold" id="modal-dropoff"></div>
                                 </div>
                             </div>
@@ -441,7 +455,8 @@
             var bookingModal = document.getElementById('bookingDetailModal'); // Đã đổi ID
             bookingModal.addEventListener('show.bs.modal', function(event) {
                 var button = event.relatedTarget;
-
+                var seats = button.getAttribute('data-seats');
+                
                 // Lấy dữ liệu chung
                 var id = button.getAttribute('data-id');
                 var route = button.getAttribute('data-route');
@@ -465,6 +480,7 @@
                 document.getElementById('modal-dropoff').textContent = dropoff;
                 document.getElementById('modal-total').textContent = total;
                 document.getElementById('modal-payment').textContent = payment;
+                document.getElementById('modal-seats').textContent = seats;
 
                 // Nạp danh sách vé con
                 const ticketsListBody = document.getElementById('modal-tickets-list');
