@@ -419,10 +419,13 @@
                         </a>
                     </li>
                     <li>
-                        <a class="main-nav-link" href="#">
+                        <a class="main-nav-link {{ request()->is('tin-tuc*') ? 'active' : '' }}"
+                            href="{{ url('/tin-tuc') }}">
                             Tin tức
                         </a>
                     </li>
+
+
                     <li>
                         <a class="main-nav-link" href="#">
                             Hóa đơn

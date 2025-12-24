@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\TripController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RouteController;
 use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\Client\NewsController;
 use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\BookingController;
@@ -19,8 +20,8 @@ use App\Http\Controllers\Admin\PassengerController;
 use App\Http\Controllers\Admin\PointFareController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Client\TripController as ClientTripController;
-use App\Http\Controllers\Client\BookingController as ClientBookingController;
 
+use App\Http\Controllers\Client\BookingController as ClientBookingController;
 use App\Http\Controllers\Client\ContactController as ClientContactController;
 use App\Http\Controllers\Checker\TicketCheckController as TicketCheckController;
 use App\Http\Controllers\Checker\DashboardController as CheckerDashboardController;
@@ -37,6 +38,11 @@ Route::get('/tim-chuyen-di', [ClientTripController::class, 'searchTrips'])->name
 Route::get('/dat-ve', [ClientTripController::class, 'show'])->name('client.trips.show');
 Route::get('/lien-he', [ClientContactController::class, 'showForm'])->name('client.contact.show');
 Route::post('/lien-he', [ClientContactController::class, 'submit'])->name('client.contact.submit');
+Route::prefix('tin-tuc')->name('client.news.')->group(function () {
+    Route::get('/', [NewsController::class, 'index'])->name('index');
+    Route::get('{slug}', [NewsController::class, 'show'])->name('show');
+});
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/thong-tin-tai-khoan', [AuthenticatedSessionController::class, 'show'])
@@ -47,7 +53,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/thong-tin-tai-khoan/lich-su-mua-ve', [AuthenticatedSessionController::class, 'ticketHistory'])
         ->name('client.account.tickets');
-        
+
     Route::post('/dat-ve', [ClientBookingController::class, 'store'])
         ->name('client.bookings.store');
 

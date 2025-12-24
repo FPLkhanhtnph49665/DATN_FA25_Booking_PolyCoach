@@ -10,6 +10,7 @@ use App\Models\Route;
 use App\Models\Bus;
 use App\Models\Trip;
 use App\Models\PickupDropoffPoint;
+use App\Models\News;
 
 class DatabaseSeeder extends Seeder
 {
@@ -86,7 +87,7 @@ class DatabaseSeeder extends Seeder
                 'status'     => 1,
             ]
         );
-         User::updateOrCreate(
+        User::updateOrCreate(
             ['email' => 'checker@polycoach.test'],
             [
                 'user_code'  => 'DATN_FA25_PoLyCoach_Checker_4953',
@@ -370,5 +371,112 @@ class DatabaseSeeder extends Seeder
                 );
             }
         }
+        News::create([
+            'title' => 'Vé xe đón Tết sum vầy – Hành trình trở về nhà trọn vẹn',
+            'slug' => 've-xe-don-tet-sum-vay',
+            'thumbnail' => 'tintuc1.png',
+            'excerpt' => 'Hành trình trở về nhà dịp Tết không chỉ là chuyến đi, mà là sự đoàn viên và yêu thương.',
+            'content' => '
+        <p>Tết Nguyên Đán là dịp lễ quan trọng nhất trong năm đối với mỗi người Việt Nam.</p>
+
+        <p>Đặt vé xe về quê đón Tết không chỉ đơn thuần là mua một tấm vé, mà còn là sự chuẩn bị cho hành trình trở về nhà, nơi có gia đình đang mong ngóng.</p>
+
+        <p>Việc đặt vé sớm giúp hành khách chủ động thời gian, tránh tình trạng cháy vé và đảm bảo có chỗ ngồi tốt nhất.</p>
+
+        <h3>Lời khuyên khi đặt vé Tết</h3>
+        <ul>
+            <li>Đặt vé trước từ 2–4 tuần</li>
+            <li>Chọn nhà xe uy tín</li>
+            <li>Kiểm tra kỹ thông tin vé</li>
+        </ul>
+    ',
+            'category' => 'Nổi bật',
+            'is_featured' => true,
+            'published_at' => now(),
+        ]);
+        News::create([
+            'title' => 'Kinh nghiệm đặt vé xe dịp Tết tránh hết vé, tránh cò',
+            'slug' => 'kinh-nghiem-dat-ve-xe-dip-tet',
+            'thumbnail' => 'tintuc2.png',
+            'excerpt' => 'Những kinh nghiệm thực tế giúp bạn đặt vé xe dịp Tết nhanh chóng, an toàn và đúng giá.',
+            'content' => '
+        <p>Dịp Tết là thời điểm nhu cầu đi lại tăng cao, khiến vé xe thường xuyên trong tình trạng khan hiếm.</p>
+
+        <p>Để tránh tình trạng bị ép giá hoặc mua phải vé không hợp lệ, hành khách nên đặt vé qua các nền tảng uy tín.</p>
+
+        <h3>Mẹo đặt vé xe Tết hiệu quả</h3>
+        <ul>
+            <li>Đặt vé càng sớm càng tốt</li>
+            <li>Tránh mua vé qua trung gian không rõ nguồn gốc</li>
+            <li>Ưu tiên đặt vé online</li>
+        </ul>
+    ',
+            'category' => 'Kinh nghiệm',
+            'is_featured' => false,
+            'published_at' => now(),
+        ]);
+        News::create([
+            'title' => 'Những tuyến xe đông khách nhất dịp Tết Nguyên Đán',
+            'slug' => 'nhung-tuyen-xe-dong-khach-dip-tet',
+            'thumbnail' => 'tintuc3.png',
+            'excerpt' => 'Danh sách các tuyến xe thường xuyên cháy vé trong dịp Tết mà bạn cần lưu ý.',
+            'content' => '
+        <p>Mỗi dịp Tết đến, nhu cầu di chuyển tăng mạnh tại các tuyến xe liên tỉnh.</p>
+
+        <p>Các tuyến từ TP.HCM, Hà Nội đi các tỉnh miền Trung và Tây Nguyên thường xuyên kín chỗ.</p>
+
+        <h3>Các tuyến xe đông khách</h3>
+        <ul>
+            <li>TP.HCM – Quảng Ngãi</li>
+            <li>TP.HCM – Nghệ An</li>
+            <li>Hà Nội – Thanh Hóa</li>
+        </ul>
+    ',
+            'category' => 'Tuyến xe',
+            'is_featured' => false,
+            'published_at' => now(),
+        ]);
+        News::create([
+            'title' => 'Những lưu ý quan trọng khi đi xe đường dài ngày Tết',
+            'slug' => 'luu-y-khi-di-xe-duong-dai-ngay-tet',
+            'thumbnail' => 'tintuc4.png',
+            'excerpt' => 'Những điều cần biết để chuyến đi đường dài dịp Tết an toàn và thoải mái.',
+            'content' => '
+        <p>Di chuyển đường dài trong dịp Tết đòi hỏi sự chuẩn bị kỹ lưỡng.</p>
+
+        <p>Hành khách nên mang theo đồ dùng cá nhân, giữ sức khỏe và tuân thủ hướng dẫn của nhà xe.</p>
+
+        <h3>Lưu ý quan trọng</h3>
+        <ul>
+            <li>Ăn uống nhẹ trước chuyến đi</li>
+            <li>Giữ gìn tư trang cá nhân</li>
+            <li>Không chen lấn khi lên xe</li>
+        </ul>
+    ',
+            'category' => 'Lưu ý',
+            'is_featured' => false,
+            'published_at' => now(),
+        ]);
+        News::create([
+            'title' => 'Vì sao nên đặt vé xe sớm trước Tết Nguyên Đán',
+            'slug' => 'vi-sao-nen-dat-ve-xe-som-truoc-tet',
+            'thumbnail' => 'tintuc5.png',
+            'excerpt' => 'Đặt vé sớm giúp tiết kiệm chi phí và chủ động lịch trình trong dịp Tết.',
+            'content' => '
+        <p>Đặt vé xe sớm mang lại nhiều lợi ích cho hành khách trong dịp Tết.</p>
+
+        <p>Bạn sẽ có nhiều lựa chọn về chỗ ngồi, khung giờ và giá vé hợp lý.</p>
+
+        <h3>Lợi ích khi đặt vé sớm</h3>
+        <ul>
+            <li>Tránh tình trạng cháy vé</li>
+            <li>Giá vé ổn định</li>
+            <li>Chủ động kế hoạch di chuyển</li>
+        </ul>
+    ',
+            'category' => 'Mẹo hay',
+            'is_featured' => false,
+            'published_at' => now(),
+        ]);
     }
 }
