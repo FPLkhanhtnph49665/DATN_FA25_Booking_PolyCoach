@@ -1,39 +1,73 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('password.store') }}">
-        @csrf
+@extends('layouts.client')
 
-        <!-- Password Reset Token -->
-        <input type="hidden" name="token" value="{{ $request->route('token') }}">
+@section('title', 'Xác nhận mật khẩu')
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+@section('content')
+<div class="auth-wrapper d-flex align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8 col-sm-10">
+                <div class="card shadow border-0 rounded-4 p-4">
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+                    <!-- Title -->
+                    <h3 class="text-center mb-2 fw-bold">Xác nhận mật khẩu</h3>
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+                    <p class="text-muted text-center mb-4">
+                        Đây là khu vực bảo mật. Vui lòng nhập lại mật khẩu để tiếp tục.
+                    </p>
 
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
+                    <!-- Alert -->
+                    @if (session('status'))
+                        <div class="alert alert-success py-2">
+                            {{ session('status') }}
+                        </div>
+                    @endif
+
+                    <!-- Form -->
+                    <form method="POST" action="{{ route('password.confirm') }}">
+                        @csrf
+
+                        <!-- Password -->
+                        <div class="mb-3">
+                            <label for="password" class="form-label fw-semibold">Mật khẩu</label>
+                            <input
+                                id="password"
                                 type="password"
-                                name="password_confirmation" required autocomplete="new-password" />
+                                name="password"
+                                class="form-control form-control-lg @error('password') is-invalid @enderror"
+                                placeholder="Nhập mật khẩu của bạn"
+                                required
+                                autocomplete="current-password"
+                            >
+                            @error('password')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
 
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
+                        <!-- Button -->
+                        <div class="d-grid mt-3">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-3">
+                                Xác nhận
+                            </button>
+                        </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
+                    </form>
+
+                </div>
+            </div>
         </div>
-    </form>
-</x-guest-layout>
+    </div>
+</div>
+@endsection
+
+<style>
+.auth-wrapper {
+    min-height: calc(100vh - 160px);
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    background: #f5f7fa;
+}
+.card {
+    background: #ffffff;
+}
+</style>

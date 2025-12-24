@@ -141,8 +141,8 @@
                 </ul>
             </div>
 
-            <div class="sidebar-footer text-center py-3 small text-muted">
-                © {{ now()->year }} PolyCoach
+            <div class="sidebar-footer text-center py-3 small text-white">
+                © {{ now()->year }} DATN_FA25_PolyCoach
             </div>
         </nav>
 

@@ -17,18 +17,16 @@ class UserController extends Controller
     {
         $query = User::query();
 
-        // Tìm kiếm theo keyword
         if ($request->filled('keyword')) {
             $keyword = $request->keyword;
             $query->where(function ($q) use ($keyword) {
-                $q->where('user_code', 'like', "%$keyword%")
+                $q->where('phone', 'like', "%$keyword%")
                     ->orWhere('first_name', 'like', "%$keyword%")
                     ->orWhere('last_name', 'like', "%$keyword%")
                     ->orWhere('email', 'like', "%$keyword%");
             });
         }
 
-        // Lọc theo vai trò
         if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
@@ -59,10 +57,10 @@ class UserController extends Controller
         $data = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name'  => 'required|string|max:255',
-            'email'      => 'required|email|unique:users,email',
+            'email'      => 'required|email|unique:users,email,phone',
             'phone'      => 'nullable|string|max:20',
             'password'   => 'required|string|confirmed|min:6',
-            'role' => 'required|in:admin,user,staff,checker',
+            'role'       => 'required|in:admin,user,staff,checker',
             'status'     => 'required|in:0,1',
             'image'      => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -108,12 +106,16 @@ class UserController extends Controller
             'first_name' => 'required|string|max:100',
             'last_name'  => 'required|string|max:100',
             'email'      => 'required|email|unique:users,email,' . $user->id,
-            'role'       => 'required|in:admin,customer',
+            'phone'      => 'nullable|string|max:20',
+            'role'       => 'required|in:admin,user,staff,checker',
             'status'     => 'required|in:0,1',
             'image'      => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $data = $request->only(['first_name', 'last_name', 'email', 'phone', 'role', 'status']);
+
+        // 👉 Cập nhật full name
+        $data['full_name'] = $request->first_name . ' ' . $request->last_name;
 
         // Nếu có nhập mật khẩu mới
         if ($request->filled('password')) {
@@ -122,37 +124,39 @@ class UserController extends Controller
 
         // Nếu có upload ảnh mới
         if ($request->hasFile('image')) {
+
             // Xóa ảnh cũ nếu có
             if ($user->image && Storage::disk('public')->exists($user->image)) {
                 Storage::disk('public')->delete($user->image);
             }
 
-            // Lưu ảnh mới
             $file = $request->file('image');
             $filename = time() . '_' . $file->getClientOriginalName();
             $path = $file->storeAs('avatars', $filename, 'public');
+
             $data['image'] = $path;
         }
 
         $user->update($data);
 
-        return redirect()->route('admin.users.index')->with('success', 'Cập nhật người dùng thành công!');
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Cập nhật người dùng thành công!');
     }
+
 
     /**
      * Xóa user.
      */
     public function destroy(User $user)
-{
-    // Nếu muốn kiểm tra trước khi xóa (ví dụ: user có liên kết ticket, payment)
-    if ($user->tickets()->count() > 0 || $user->payments()->count() > 0) {
+    {
+        // Nếu muốn kiểm tra trước khi xóa (ví dụ: user có liên kết ticket, payment)
+        if ($user->tickets()->count() > 0 || $user->payments()->count() > 0) {
+            return redirect()->route('admin.users.index')
+                ->withErrors('Không thể xóa user vì đã có dữ liệu liên quan!');
+        }
+
+        $user->delete(); // Soft delete
         return redirect()->route('admin.users.index')
-            ->withErrors('Không thể xóa user vì đã có dữ liệu liên quan!');
+            ->with('success', 'User đã được xóa thành công!');
     }
-
-    $user->delete(); // Soft delete
-    return redirect()->route('admin.users.index')
-        ->with('success', 'User đã được xóa thành công!');
-}
-
 }

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Thêm User mới')
+@section('title', 'Thêm người dùng mới')
 
 @section('content')
 <div class="mb-4">
@@ -9,7 +9,7 @@
         <div>
             <h2 class="mb-1 fw-semibold text-light d-flex align-items-center gap-2">
                 <i class="bi bi-person-plus-fill"></i>
-                Thêm User mới
+                Thêm người dùng mới
             </h2>
             <p class="text-muted small mb-0">
                 Tạo tài khoản người dùng mới cho hệ thống PolyCoach.
@@ -174,12 +174,12 @@
                 </div>
 
                 <div class="mt-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save me-1"></i> Lưu User
-                    </button>
                     <a href="{{ route('admin.users.index') }}" class="btn btn-outline-light">
                         Hủy bỏ
                     </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i> Lưu người dùng
+                    </button>
                 </div>
             </form>
         </div>

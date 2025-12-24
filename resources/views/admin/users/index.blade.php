@@ -9,7 +9,7 @@
         <div>
             <h2 class="mb-1 fw-semibold text-light d-flex align-items-center gap-2">
                 <i class="bi bi-people-fill"></i>
-                Danh sách Users
+                Danh sách người dùng
             </h2>
             <p class="text-muted small mb-0">
                 Quản lý tài khoản người dùng hệ thống PolyCoach: tìm kiếm, lọc, cập nhật trạng thái & phân quyền.
@@ -19,7 +19,7 @@
         <div class="d-flex gap-2">
             <a href="{{ route('admin.users.create') }}" class="btn btn-primary d-flex align-items-center gap-1">
                 <i class="bi bi-person-plus-fill"></i>
-                <span>Thêm User mới</span>
+                <span>Thêm người dùng mới</span>
             </a>
         </div>
     </div>
@@ -79,7 +79,7 @@
                     <thead>
                         <tr>
                             <th class="text-muted small">#</th>
-                            <th class="text-muted small">Mã User</th>
+                            {{-- <th class="text-muted small">Mã User</th> --}}
                             <th class="text-muted small">Họ</th>
                             <th class="text-muted small">Tên</th>
                             {{-- <th class="text-muted small">Full Name</th> --}}
@@ -96,11 +96,11 @@
                         @forelse($users as $user)
                             <tr>
                                 <td class="text-muted small">{{ $loop->iteration + ($users->currentPage() - 1) * $users->perPage() }}</td>
-                                <td>
+                                {{-- <td>
                                     <span class="badge bg-secondary-subtle text-dark border border-primary-subtle">
                                         {{ $user->user_code }}
                                     </span>
-                                </td>
+                                </td> --}}
                                 <td>{{ $user->first_name }}</td>
                                 <td>{{ $user->last_name }}</td>
                                 {{-- <td class="fw-semibold">{{ $user->full_name }}</td> --}}

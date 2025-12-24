@@ -12,7 +12,7 @@
                 <i class="bi bi-pin-map-fill"></i>
                 Điểm đón / trả khách
             </h2>
-            <p class="text-muted small mb-0">
+            <p class="text-white small mb-0">
                 Quản lý hệ thống điểm đón và trả khách cho các tuyến xe trong PolyCoach: theo thành phố, tuyến, loại điểm & trạng thái.
             </p>
         </div>
@@ -33,7 +33,7 @@
 
                 {{-- Tìm kiếm --}}
                 <div class="col-md-3">
-                    <label for="search" class="form-label text-muted small mb-1">Tìm kiếm</label>
+                    <label for="search" class="form-label text-white small mb-1">Tìm kiếm</label>
                     <input
                         type="text"
                         name="search"
@@ -46,7 +46,7 @@
 
                 {{-- Thành phố --}}
                 <div class="col-md-2">
-                    <label for="city_id" class="form-label text-muted small mb-1">Thành phố</label>
+                    <label for="city_id" class="form-label text-white small mb-1">Thành phố</label>
                     <select name="city_id" id="city_id" class="form-select">
                         <option value="">-- Tất cả --</option>
                         @foreach ($cities as $city)
@@ -59,7 +59,7 @@
 
                 {{-- Tuyến xe --}}
                 <div class="col-md-2">
-                    <label for="route_id" class="form-label text-muted small mb-1">Tuyến xe</label>
+                    <label for="route_id" class="form-label text-white small mb-1">Tuyến xe</label>
                     <select name="route_id" id="route_id" class="form-select">
                         <option value="">-- Tất cả --</option>
                         @foreach ($routes as $route)
@@ -72,7 +72,7 @@
 
                 {{-- Loại điểm --}}
                 <div class="col-md-2">
-                    <label for="type" class="form-label text-muted small mb-1">Loại điểm</label>
+                    <label for="type" class="form-label text-white small mb-1">Loại điểm</label>
                     <select name="type" id="type" class="form-select">
                         <option value="">-- Tất cả --</option>
                         <option value="pickup" {{ request('type') === 'pickup' ? 'selected' : '' }}>Điểm đón</option>
@@ -82,7 +82,7 @@
 
                 {{-- Trạng thái --}}
                 <div class="col-md-2">
-                    <label for="active" class="form-label text-muted small mb-1">Trạng thái</label>
+                    <label for="active" class="form-label text-white small mb-1">Trạng thái</label>
                     <select name="active" id="active" class="form-select">
                         <option value="">-- Tất cả --</option>
                         <option value="1" {{ request('active') === '1' ? 'selected' : '' }}>Hoạt động</option>
