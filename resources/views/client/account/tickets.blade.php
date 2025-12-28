@@ -354,15 +354,23 @@
                                                 ) }}">
                                                 <i class="bi bi-eye"></i> Chi tiết
                                             </button>
-                                            {{-- Nút Đánh giá (Chỉ hiển thị khi trạng thái là paid) --}}
+                                            {{-- Thay thế đoạn code nút Đánh giá cũ --}}
                                             @if ($booking->status == 'paid')
-                                                <button type="button"
-                                                    class="btn btn-sm btn-warning text-white btn-review mt-2"
-                                                    data-bs-toggle="modal" data-bs-target="#reviewModal"
-                                                    data-trip-id="{{ $booking->trip_id }}"
-                                                    data-route-id="{{ $booking->trip->route_id }}">
-                                                    <i class="bi bi-star-fill"></i> Đánh giá
-                                                </button>
+                                                @if ($booking->reviews->isNotEmpty())
+                                                    {{-- Giả sử bạn đã load relationship review --}}
+                                                    <button class="btn btn-sm btn-outline-secondary mt-2" disabled>
+                                                        <i class="bi bi-check-all"></i> Đã đánh giá
+                                                    </button>
+                                                @else
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-warning text-white btn-review mt-2"
+                                                        data-bs-toggle="modal" data-bs-target="#reviewModal"
+                                                        data-trip-id="{{ $booking->trip_id }}"
+                                                        data-route-id="{{ $booking->trip->route_id }}"
+                                                        data-booking-id="{{ $booking->id }}">
+                                                        <i class="bi bi-star-fill"></i> Đánh giá
+                                                    </button>
+                                                @endif
                                             @endif
                                         </td>
                                     </tr>
@@ -479,6 +487,7 @@
                     <div class="modal-body">
                         <input type="hidden" name="trip_id" id="review_trip_id">
                         <input type="hidden" name="route_id" id="review_route_id">
+                        <input type="hidden" name="booking_id" id="review_booking_id">
 
                         <div class="mb-3">
                             <label class="form-label">Số sao (1-5)</label>
@@ -502,6 +511,19 @@
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1060">
+        <div id="reviewToast" class="toast align-items-center text-white bg-success border-0" role="alert"
+            aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <span id="toast-message">Cảm ơn bạn đã đánh giá chuyến đi!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
+            </div>
         </div>
     </div>
     <script>
@@ -591,11 +613,34 @@
                     // Lấy ID từ data-attributes
                     const tripId = button.getAttribute('data-trip-id');
                     const routeId = button.getAttribute('data-route-id');
+                    const bookingId = button.getAttribute('data-booking-id');
 
                     // Gán giá trị vào input ẩn trong modal
                     document.getElementById('review_trip_id').value = tripId;
                     document.getElementById('review_route_id').value = routeId;
+                    document.getElementById('review_booking_id').value = bookingId;
                 });
+            }
+        });
+        //đánh giá thành công
+        document.addEventListener('DOMContentLoaded', function() {
+            // Kiểm tra thông báo từ Laravel Session
+            const successMessage = "{{ session('success') }}";
+
+            if (successMessage) {
+                const toastElement = document.getElementById('reviewToast');
+                const toastMessage = document.getElementById('toast-message');
+
+                if (toastElement) {
+                    // Cập nhật nội dung thông báo từ session (nếu có)
+                    toastMessage.textContent = successMessage;
+
+                    // Khởi tạo và hiển thị Toast bằng Bootstrap
+                    const toast = new bootstrap.Toast(toastElement, {
+                        delay: 5000 // Tự động ẩn sau 5 giây
+                    });
+                    toast.show();
+                }
             }
         });
     </script>

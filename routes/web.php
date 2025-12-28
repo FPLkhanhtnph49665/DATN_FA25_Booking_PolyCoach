@@ -90,6 +90,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', AdminMiddleware::cla
     Route::resource('reviews', ReviewController::class);
     Route::resource('contacts', ContactController::class);
     Route::delete('bus-images/{id}', [BusController::class, 'destroyImage'])->name('bus-images.destroy');
+    // Duyệt đánh giá
+    Route::patch('reviews/{id}/status', [ReviewController::class, 'updateStatus'])->name('reviews.updateStatus');
 
 });
 Route::prefix('checker')->name('checker.')

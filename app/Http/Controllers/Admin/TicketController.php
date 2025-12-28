@@ -17,7 +17,9 @@ class TicketController extends Controller
      */
     public function index()
     {
-        $tickets = Ticket::with(['trip.route.fromCity', 'trip.route.toCity', 'user'])->paginate(25);
+        $tickets = Ticket::with(['trip.route.fromCity', 'trip.route.toCity', 'user'])
+        ->latest()
+        ->paginate(25);
         return view('admin.tickets.index', compact('tickets'));
     }
 
