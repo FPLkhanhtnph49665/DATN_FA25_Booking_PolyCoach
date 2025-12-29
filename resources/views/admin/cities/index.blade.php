@@ -13,7 +13,7 @@
                 <i class="bi bi-geo-alt-fill"></i>
                 Danh sách thành phố
             </h2>
-            <p class="text-muted small mb-0">
+            <p class="text-white small mb-0">
                 Quản lý danh sách thành phố phục vụ cấu hình tuyến xe và điểm đón/trả.
             </p>
         </div>

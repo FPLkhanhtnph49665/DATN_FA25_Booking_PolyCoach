@@ -48,8 +48,10 @@
                         <label for="status" class="form-label text-white small mb-1">Trạng thái</label>
                         <select name="status" id="status" class="form-select">
                             <option value="">-- Tất cả --</option>
-                            <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Hoạt động</option>
-                            <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Khóa</option>
+                            <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>chưa xuất phát</option>
+                            <option value="2" {{ request('status') === '2' ? 'selected' : '' }}>đã tạm hoãn</option>
+                            <option value="3" {{ request('status') === '3' ? 'selected' : '' }}>đã xuất phát</option>
+                            <option value="4" {{ request('status') === '4' ? 'selected' : '' }}>đã hoàn thành</option>
                         </select>
                     </div>
 
@@ -176,7 +178,20 @@
                                     </td>
                                     {{-- kiểm bởi --}}
                                     <td>
-                                        {{ $trip->checker?->full_name ?? '-' }}
+                                        @if ($trip->checked_by)
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-semibold">
+                                                    {{ $trip->checker->full_name ?? ($trip->checker->name ?? 'N/A') }}
+                                                </span>
+                                                @if ($trip->checked_at)
+                                                    <span class="text-muted small">
+                                                        {{ \Carbon\Carbon::parse($trip->checked_at)->format('d/m/Y H:i') }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="text-muted small">Chưa kiểm</span>
+                                        @endif
                                     </td>
 
                                     {{-- Hành động --}}

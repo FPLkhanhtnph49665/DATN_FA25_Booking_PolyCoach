@@ -14,6 +14,7 @@ class Review extends Model
         'user_id',
         'trip_id',
         'route_id',
+        'booking_id',
         'rating',    // rating score (1-5)
         'content',   // review content
         'status',    // pending | approved | rejected
@@ -50,6 +51,10 @@ class Review extends Model
     public function route()
     {
         return $this->belongsTo(Route::class, 'route_id');
+    }
+    public function booking()
+    {
+        return $this->belongsTo(Booking::class, 'booking_id');
     }
 
     // -------------------------------

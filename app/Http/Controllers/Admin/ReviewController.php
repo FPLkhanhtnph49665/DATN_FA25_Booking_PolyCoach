@@ -23,6 +23,20 @@ class ReviewController extends Controller
         return view('admin.reviews.index', compact('reviews'));
     }
 
+    // cập nhật trạng thái
+    public function updateStatus(Request $request, $id): RedirectResponse
+    {
+        $request->validate([
+            'status' => 'required|in:pending,approved,rejected',
+        ]);
+
+        $review = Review::findOrFail($id);
+        $review->status = $request->status;
+        $review->save();
+
+        return back()->with('success', 'Cập nhật trạng thái đánh giá thành công!');
+    }
+
     /**
      * Show the form for creating a new review.
      */

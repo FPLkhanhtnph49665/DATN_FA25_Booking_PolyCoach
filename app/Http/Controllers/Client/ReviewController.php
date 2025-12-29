@@ -25,11 +25,12 @@ class ReviewController extends Controller
             'user_id' => auth()->id(), // Lấy ID người dùng hiện tại
             'trip_id' => $request->trip_id,
             'route_id' => $request->route_id,
+            'booking_id' => $request->booking_id,
             'rating' => $request->rating,
             'content' => $request->content,
             'status' => 'pending', // Mặc định chờ duyệt như trong schema của bạn
         ]);
 
-        return back()->with('success', 'Cảm ơn bạn đã đánh giá chuyến đi!');
+        return back()->with('success', 'Cảm ơn bạn đã đánh giá chuyến đi');
     }
 }

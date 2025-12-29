@@ -16,33 +16,40 @@ class TripController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Trip::with(['route', 'bus'])
-        ->withCount('tickets')
-        ->orderByDesc('departure_date');
+        $query = Trip::with(['route.fromCity', 'route.toCity', 'bus', 'checker'])
+            ->withCount('tickets')
+            ->orderByDesc('departure_date')
+            ->orderByDesc('departure_time');
 
-        // Filter by route
-        if ($request->filled('route_id')) {
-            $query->where('route_id', $request->route_id);
+        // 1. Lọc theo "Tìm kiếm" (Tên tuyến hoặc Thành phố đi/đến)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('route', function ($q) use ($search) {
+                $q->whereHas('fromCity', function ($city) use ($search) {
+                    $city->where('name', 'like', "%{$search}%");
+                })->orWhereHas('toCity', function ($city) use ($search) {
+                    $city->where('name', 'like', "%{$search}%");
+                });
+            });
         }
 
-        // Filter by bus
-        if ($request->filled('bus_id')) {
-            $query->where('bus_id', $request->bus_id);
+        // 2. Lọc theo "Xe" (Biển số xe) - Nếu bạn muốn gộp chung vào ô search
+        // Hoặc thêm một input riêng nếu cần. Ở đây mình cho tìm biển số xe trong ô search luôn
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->orWhereHas('bus', function ($q) use ($search) {
+                $q->where('plate_number', 'like', "%{$search}%");
+            });
         }
 
-        // Filter by departure date
-        if ($request->filled('departure_date')) {
-            $query->whereDate('departure_date', $request->departure_date);
-        }
-
-        // Filter by status
+        // 3. Lọc theo "Trạng thái" (trip_status)
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->where('trip_status', $request->status);
         }
 
-        $trips  = $query->paginate(10);
+        $trips = $query->paginate(10)->withQueryString(); // Giữ lại các tham số lọc khi chuyển trang
         $routes = Route::orderBy('id')->get();
-        $buses  = Bus::orderBy('plate_number')->get();
+        $buses = Bus::orderBy('plate_number')->get();
 
         return view('admin.trips.index', compact('trips', 'routes', 'buses'));
     }
@@ -57,7 +64,7 @@ class TripController extends Controller
             ->orderBy('id') // hoặc cột khác có thật trong routes
             ->get();
 
-        $buses  = Bus::where('status', 1)
+        $buses = Bus::where('status', 1)
             ->orderBy('plate_number')
             ->get();
 
@@ -72,13 +79,13 @@ class TripController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'route_id'       => 'required|exists:routes,id',
-            'bus_id'         => 'required|exists:buses,id',
+            'route_id' => 'required|exists:routes,id',
+            'bus_id' => 'required|exists:buses,id',
             'departure_date' => 'required|date',
             'departure_time' => 'required|date_format:H:i',
-            'arrival_time'   => 'required|date_format:H:i',
-            'ticket_price'   => 'required|integer|min:0',
-            'status'         => 'nullable|in:0,1',
+            'arrival_time' => 'required|date_format:H:i',
+            'ticket_price' => 'required|integer|min:0',
+            'status' => 'nullable|in:0,1',
         ]);
 
         // Nếu status không gửi, mặc định là 1
@@ -128,13 +135,13 @@ class TripController extends Controller
     public function update(Request $request, Trip $trip)
     {
         $validated = $request->validate([
-            'route_id'       => 'required|exists:routes,id',
-            'bus_id'         => 'required|exists:buses,id',
+            'route_id' => 'required|exists:routes,id',
+            'bus_id' => 'required|exists:buses,id',
             'departure_date' => 'required|date',
             'departure_time' => 'required',
-            'ticket_price'   => 'required|numeric|min:0',
-            'status'         => 'required|in:0,1',
-            'arrival_time'   => 'nullable',
+            'ticket_price' => 'required|numeric|min:0',
+            'status' => 'required|in:0,1',
+            'arrival_time' => 'nullable',
         ]);
 
         $trip->update($validated);
@@ -180,7 +187,7 @@ class TripController extends Controller
             ->withQueryString();
 
         $routes = Route::orderBy('departure_date')->get();
-        $buses  = Bus::orderBy('license_plate')->get();
+        $buses = Bus::orderBy('license_plate')->get();
 
         return view('admin.trips.index', compact('trips', 'routes', 'buses'));
     }
