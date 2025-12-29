@@ -16,14 +16,6 @@
                     Quản lý vé theo chuyến, khách hàng, số ghế, trạng thái và phương thức thanh toán.
                 </p>
             </div>
-
-            {{-- <div class="d-flex gap-2">
-            <a href="{{ route('admin.tickets.create') }}"
-               class="btn btn-primary d-flex align-items-center gap-1">
-                <i class="bi bi-plus-circle"></i>
-                <span>Thêm vé mới</span>
-            </a>
-        </div> --}}
         </div>
 
         {{-- Thông báo lỗi nhanh (nếu có) --}}
@@ -40,7 +32,8 @@
                     <div class="col-md-5">
                         <label for="search" class="form-label text-white small mb-1">Tìm kiếm</label>
                         <input type="text" name="search" id="search" class="form-control"
-                            placeholder="Tìm theo tên khách, email hoặc mã chuyến..." value="{{ request('search') }}">
+                            placeholder="Tìm theo tên khách, email, số điện thoại hoặc tên thành phố..."
+                            value="{{ request('search') }}">
                     </div>
 
                     <div class="col-md-3">
@@ -82,8 +75,10 @@
                                 <th class="text-muted small">Chuyến</th>
                                 <th class="text-muted small">Người dùng</th>
                                 <th class="text-muted small">Số ghế</th>
+                                <th class="text-muted small">giá vé</th>
                                 <th class="text-muted small">Trạng thái</th>
-                                <th class="text-muted small">Phương thức thanh toán</th>
+                                <th class="text-muted small">thanh toán</th>
+                                <th class="text-muted small">kiểm bởi</th>
                                 <th class="text-muted small text-center">Hành động</th>
                             </tr>
                         </thead>
@@ -167,6 +162,16 @@
                                         @endif
                                     </td>
 
+                                    {{-- Giá vé --}}
+
+                                    <td>
+                                        @if ($ticket->price !== null)
+                                            {{ number_format($ticket->price, 0, ',', '.') }} VND
+                                        @else
+                                            <span class="text-muted small">-</span>
+                                        @endif
+                                    </td>
+
                                     {{-- Trạng thái --}}
                                     <td>
                                         @if ($ticket->status === 'pending')
@@ -203,26 +208,29 @@
                                         @endif
                                     </td>
 
+                                    {{-- Kiểm bởi --}}
+                                    <td>
+                                        @if ($ticket->checked_by)
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-semibold">
+                                                    {{ $ticket->checker->full_name ?? ($ticket->checker->name ?? 'N/A') }}
+                                                </span>
+                                                @if ($ticket->checked_at)
+                                                    <span class="text-muted small">
+                                                        {{ \Carbon\Carbon::parse($ticket->checked_at)->format('d/m/Y H:i') }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="text-muted small">Chưa kiểm</span>
+                                        @endif
+                                    </td>
                                     {{-- Hành động --}}
                                     <td class="text-center">
-                                        <a href="{{ route('admin.tickets.show', $ticket->id) }}"
-                                            class="btn btn-sm btn-outline-info me-1">
+                                        <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal"
+                                            data-bs-target="#modalTicket{{ $ticket->id }}">
                                             <i class="bi bi-eye"></i>
-                                        </a>
-
-                                        <a href="{{ route('admin.tickets.edit', $ticket->id) }}"
-                                            class="btn btn-sm btn-outline-warning me-1">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </a>
-
-                                        <form action="{{ route('admin.tickets.destroy', $ticket->id) }}" method="POST"
-                                            class="d-inline-block delete-ticket-form">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                <i class="bi bi-trash3"></i>
-                                            </button>
-                                        </form>
+                                        </button>
                                     </td>
                                 </tr>
                             @empty
@@ -243,6 +251,96 @@
             </div>
         </div>
     </div>
+    {{-- model chi tiết vé --}}
+    @forelse($tickets as $ticket)
+        <tr>
+        </tr>
+
+        <div class="modal fade" id="modalTicket{{ $ticket->id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold">Chi tiết vé #{{ $ticket->id }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <h6 class="text-primary fw-bold mb-3">Thông tin người đặt</h6>
+                        <div class="ps-2">
+                            <p class="mb-2"><span class="text-white-50">Họ tên:</span> {{ $ticket->user->full_name ?? 'Khách lẻ' }}</p>
+                            <p class="mb-2"><span class="text-white-50">Email:</span> {{ $ticket->user->email ?? '-' }}</p>
+                            <p class="mb-2"><span class="text-white-50">Điện thoại:</span> {{ $ticket->user->phone ?? '-' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h6 class="text-primary fw-bold mb-3">Thông tin xe</h6>
+                        <div class="ps-2">
+                            @if($ticket->trip && $ticket->trip->bus)
+                                <p class="mb-2"><span class="text-white-50">số ghế:</span> <span class="text-info">{{ $ticket->trip->bus->seat_count }}</span></p>
+                                <p class="mb-2"><span class="text-white-50">Biển số:</span> <span class="badge bg-light text-dark">{{ $ticket->trip->bus->plate_number }}</span></p>
+                                <p class="mb-2"><span class="text-white-50">Loại xe:</span> {{ $ticket->trip->bus->type ?? 'Ghế ngồi/Giường nằm' }}</p>
+                            @else
+                                <p class="text-white-50">Chưa cập nhật thông tin xe</p>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <h6 class="text-primary fw-bold mb-3">Thông tin hành trình</h6>
+                        
+                        <div class="bg-secondary bg-opacity-10 p-4 rounded border border-secondary border-opacity-50 shadow-sm">
+                            <div class="row align-items-center">
+                                <div class="col-md-7">
+                                    @if($ticket->pointFare)
+                                        <p class="mb-1 text-info fw-semibold">Hành trình theo chặng:</p>
+                                        <div class="d-flex align-items-center gap-2 mb-2 fs-5 fw-bold">
+                                            <span>{{ $ticket->pointFare->pickupPoint->name }}</span>
+                                            <i class="bi bi-arrow-right text-white-50"></i>
+                                            <span>{{ $ticket->pointFare->dropoffPoint->name }}</span>
+                                        </div>
+                                        <small class="text-white-50 fw-light italic">
+                                            (Tuyến chính: {{ $ticket->trip->route->fromCity->name }} → {{ $ticket->trip->route->toCity->name }})
+                                        </small>
+                                    @else
+                                        <p class="mb-1 text-info fw-semibold">Hành trình chính:</p>
+                                        <div class="fs-5 fw-bold">
+                                            {{ $ticket->trip->route->fromCity->name }} 
+                                            <i class="bi bi-arrow-right mx-2 text-white-50"></i> 
+                                            {{ $ticket->trip->route->toCity->name }}
+                                        </div>
+                                    @endif
+                                    
+                                    <div class="mt-3 small d-flex gap-3">
+                                        <span><i class="bi bi-calendar3 text-white-50 me-1"></i> {{ $ticket->trip->departure_date->format('d/m/Y') }}</span>
+                                        <span><i class="bi bi-clock text-white-50 me-1"></i> {{ $ticket->trip->departure_time }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-5 text-md-end border-start border-secondary border-opacity-50">
+                                    <div class="mb-2">
+                                        <span class="text-white-50">Mã ghế:</span> 
+                                        <span class="text-white fw-bold fs-4 ms-1">{{ $ticket->seat_code }}</span>
+                                    </div>
+                                    <div>
+                                        <p class="mb-0 text-white-50 small">Giá vé niêm yết:</p>
+                                        <h3 class="text-warning fw-bold mb-0">{{ number_format($ticket->price, 0, ',', '.') }} <small class="fs-6">VND</small></h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-light px-4" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+    @empty
+    @endforelse
 @endsection
 
 @push('scripts')

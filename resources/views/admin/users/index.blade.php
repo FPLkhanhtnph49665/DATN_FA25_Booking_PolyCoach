@@ -11,7 +11,7 @@
                 <i class="bi bi-people-fill"></i>
                 Danh sách người dùng
             </h2>
-            <p class="text-muted small mb-0">
+            <p class="text-white small mb-0">
                 Quản lý tài khoản người dùng hệ thống PolyCoach: tìm kiếm, lọc, cập nhật trạng thái & phân quyền.
             </p>
         </div>
@@ -64,7 +64,7 @@
                     </button>
                     <a href="{{ route('admin.users.index') }}" class="btn btn-outline-light flex-grow-1 d-flex align-items-center justify-content-center gap-1">
                         <i class="bi bi-arrow-repeat"></i>
-                        <span>Reset</span>
+                        <span>đặt lại</span>
                     </a>
                 </div>
             </form>

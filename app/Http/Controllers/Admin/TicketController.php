@@ -15,11 +15,46 @@ class TicketController extends Controller
     /**
      * Display a listing of tickets.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $tickets = Ticket::with(['trip.route.fromCity', 'trip.route.toCity', 'user'])
-        ->latest()
-        ->paginate(25);
+        // Eager loading các quan hệ cần thiết
+        $query = Ticket::with([
+            'trip.route.fromCity',
+            'trip.route.toCity',
+            'trip.bus',
+            'user',
+            'checker',
+            'pointFare.pickupPoint',
+            'pointFare.dropoffPoint'
+        ]);
+
+        // 1. Tìm kiếm theo Tên khách, Email, SĐT hoặc Tên thành phố
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('user', function ($userQ) use ($search) {
+                    $userQ->where('full_name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
+                })
+                    ->orWhereHas('trip.route', function ($routeQ) use ($search) {
+                        $routeQ->whereHas('fromCity', function ($cityQ) use ($search) {
+                            $cityQ->where('name', 'like', "%{$search}%");
+                        })
+                            ->orWhereHas('toCity', function ($cityQ) use ($search) {
+                                $cityQ->where('name', 'like', "%{$search}%");
+                            });
+                    });
+            });
+        }
+
+        // 2. Lọc theo trạng thái vé
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $tickets = $query->latest()->paginate(25);
+
         return view('admin.tickets.index', compact('tickets'));
     }
 
@@ -89,8 +124,8 @@ class TicketController extends Controller
     public function update(Request $request, Ticket $ticket): RedirectResponse
     {
         $validated = $request->validate([
-            'seat_code'    => 'required|string|max:10',
-            'price'          => 'required|numeric|min:0',
+            'seat_code' => 'required|string|max:10',
+            'price' => 'required|numeric|min:0',
             'payment_method' => 'required|string|max:50',
         ]);
 

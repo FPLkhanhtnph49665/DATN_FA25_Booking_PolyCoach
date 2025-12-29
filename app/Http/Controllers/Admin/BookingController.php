@@ -15,20 +15,34 @@ class BookingController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Booking::with(['user', 'trip']);
+        $query = Booking::with(['user', 'trip.route.fromCity', 'trip.route.toCity', 'tickets'])
+            ->withCount('tickets');
 
-        // SEARCH theo tên khách hoặc mã chuyến
         if ($request->filled('search')) {
             $search = trim($request->search);
 
             $query->where(function ($q) use ($search) {
+                // Tìm theo tên, email, sđt khách hàng
                 $q->whereHas('user', function ($userQ) use ($search) {
-                    $userQ->where('full_name', 'like', "%{$search}%");
+                    $userQ->where('full_name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
                 })
-                ->orWhereHas('trip', function ($tripQ) use ($search) {
-                    $tripQ->where('id', $search);
-                });
+                    // TÌM KIẾM THEO TÊN CHUYẾN (Điểm đi hoặc Điểm đến)
+                    ->orWhereHas('trip.route', function ($routeQ) use ($search) {
+                        $routeQ->whereHas('fromCity', function ($cityQ) use ($search) {
+                            $cityQ->where('name', 'like', "%{$search}%");
+                        })
+                            ->orWhereHas('toCity', function ($cityQ) use ($search) {
+                                $cityQ->where('name', 'like', "%{$search}%");
+                            });
+                    });
             });
+        }
+
+        // Bộ lọc trạng thái
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
 
         $bookings = $query->orderBy('created_at', 'desc')->paginate(10);
@@ -66,18 +80,18 @@ class BookingController extends Controller
     public function update(Request $request, Booking $booking)
     {
         $request->validate([
-            'status'          => 'required|in:pending,confirmed,paid,cancelled',
-            'payment_method'  => 'nullable|string|max:50',
-            'total_amount'    => 'required|numeric|min:0',
+            'status' => 'required|in:pending,confirmed,paid,cancelled',
+            'payment_method' => 'nullable|string|max:50',
+            'total_amount' => 'required|numeric|min:0',
         ], [
             'status.required' => 'Trạng thái không được để trống',
             'total_amount.numeric' => 'Tổng tiền phải là số',
         ]);
 
         $booking->update([
-            'status'         => $request->status,
+            'status' => $request->status,
             'payment_method' => $request->payment_method,
-            'total_amount'   => $request->total_amount,
+            'total_amount' => $request->total_amount,
         ]);
 
         return redirect()

@@ -14,7 +14,7 @@
                 <i class="bi bi-currency-dollar"></i>
                 Giá vé chặng
             </h2>
-            <p class="text-muted small mb-0">
+            <p class="text-white small mb-0">
                 Quản lý hệ thống giá vé giữa các điểm đón và điểm trả trên các tuyến xe.
             </p>
         </div>
@@ -35,7 +35,7 @@
 
                 {{-- Tuyến xe --}}
                 <div class="col-md-3">
-                    <label for="route_id" class="form-label text-muted small mb-1">Tuyến xe</label>
+                    <label for="route_id" class="form-label text-white small mb-1">Tuyến xe</label>
                     <select name="route_id" id="route_id" class="form-select">
                         <option value="">-- Tất cả --</option>
                         @foreach ($routes as $route)
@@ -48,7 +48,7 @@
 
                 {{-- Điểm đón --}}
                 <div class="col-md-3">
-                    <label for="pickup_point_id" class="form-label text-muted small mb-1">Điểm đón</label>
+                    <label for="pickup_point_id" class="form-label text-white small mb-1">Điểm đón</label>
                     <select name="pickup_point_id" id="pickup_point_id" class="form-select">
                         <option value="">-- Tất cả --</option>
                         @foreach ($pickupPoints as $point)
@@ -61,7 +61,7 @@
 
                 {{-- Điểm trả --}}
                 <div class="col-md-3">
-                    <label for="dropoff_point_id" class="form-label text-muted small mb-1">Điểm trả</label>
+                    <label for="dropoff_point_id" class="form-label text-white small mb-1">Điểm trả</label>
                     <select name="dropoff_point_id" id="dropoff_point_id" class="form-select">
                         <option value="">-- Tất cả --</option>
                         @foreach ($dropoffPoints as $point)
