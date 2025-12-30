@@ -12,10 +12,28 @@ class BusController extends Controller
     /**
      * Display a listing of buses.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Lấy xe kèm theo ảnh luôn để tránh chạy nhiều lệnh SQL lẻ tẻ
-        $buses = Bus::with('images')->latest()->paginate(25);
+        // 1. Khởi tạo query kèm theo quan hệ 'images'
+        $query = Bus::with('images');
+
+        // 2. Lọc theo từ khóa tìm kiếm (Biển số hoặc Loại xe)
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('plate_number', 'LIKE', "%{$search}%")
+                    ->orWhere('type', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // 3. Lọc theo trạng thái
+        // Lưu ý: Trong Blade bạn dùng status 1 (hoạt động) và 0 (bảo dưỡng)
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        // 4. Thực hiện phân trang và giữ lại các tham số lọc trên URL (appends)
+        $buses = $query->latest()->paginate(25)->withQueryString();
 
         return view('admin.buses.index', compact('buses'));
     }

@@ -14,11 +14,50 @@ class ReviewController extends Controller
     /**
      * Display a listing of reviews.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $reviews = Review::with(['trip', 'user'])
-            ->latest()
-            ->paginate(25);
+        // 1. Eager Loading để tránh N+1 và tối ưu hiệu năng
+        $query = Review::with(['user', 'trip.route.fromCity', 'trip.route.toCity']);
+
+        // 2. Xử lý bộ lọc tìm kiếm
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+
+            $query->where(function ($q) use ($search) {
+                // Tìm trong nội dung đánh giá
+                $q->where('content', 'LIKE', "%{$search}%")
+
+                    // Tìm theo tên khách hàng
+                    ->orWhereHas('user', function ($u) use ($search) {
+                        $u->where('full_name', 'LIKE', "%{$search}%")
+                            ->orWhere('phone', 'LIKE', "%{$search}%")
+                            ->orWhere('email', 'LIKE', "%{$search}%");
+                    })
+
+                    // Tìm theo tên thành phố (Điểm đi hoặc Điểm đến)
+                    ->orWhereHas('trip.route', function ($r) use ($search) {
+                        $r->whereHas('fromCity', function ($c) use ($search) {
+                            $c->where('name', 'LIKE', "%{$search}%");
+                        })
+                            ->orWhereHas('toCity', function ($c) use ($search) {
+                                $c->where('name', 'LIKE', "%{$search}%");
+                            });
+                    });
+            });
+        }
+
+        // 3. Lọc theo số sao
+        if ($request->filled('stars')) {
+            $query->where('rating', $request->input('stars'));
+        }
+
+        // 4. Lọc theo trạng thái
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        // 5. Phân trang và giữ tham số lọc
+        $reviews = $query->latest()->paginate(25)->withQueryString();
 
         return view('admin.reviews.index', compact('reviews'));
     }
@@ -54,14 +93,14 @@ class ReviewController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'user_id'       => 'required|exists:users,id',
-            'trip_id'       => 'required|exists:trips,id',
-            'content'       => 'required|string|max:1000',
-            'rating'        => 'required|integer|min:1|max:5',
-            'status'        => 'required|in:pending,approved,rejected',
+            'user_id' => 'required|exists:users,id',
+            'trip_id' => 'required|exists:trips,id',
+            'content' => 'required|string|max:1000',
+            'rating' => 'required|integer|min:1|max:5',
+            'status' => 'required|in:pending,approved,rejected',
         ], [
             'content.required' => 'Please enter review content.',
-            'rating.required'  => 'Please select a rating.',
+            'rating.required' => 'Please select a rating.',
         ]);
 
         Review::create($data);
@@ -94,11 +133,11 @@ class ReviewController extends Controller
     public function update(Request $request, Review $review): RedirectResponse
     {
         $data = $request->validate([
-            'user_id'       => 'required|exists:users,id',
-            'trip_id'       => 'required|exists:trips,id',
-            'content'       => 'required|string|max:1000',
-            'rating'        => 'required|integer|min:1|max:5',
-            'status'        => 'required|in:pending,approved,rejected',
+            'user_id' => 'required|exists:users,id',
+            'trip_id' => 'required|exists:trips,id',
+            'content' => 'required|string|max:1000',
+            'rating' => 'required|integer|min:1|max:5',
+            'status' => 'required|in:pending,approved,rejected',
         ]);
 
         $review->update($data);

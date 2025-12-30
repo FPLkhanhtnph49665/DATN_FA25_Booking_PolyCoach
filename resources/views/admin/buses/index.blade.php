@@ -32,6 +32,44 @@
             </div>
         @endif
 
+        {{-- Bộ lọc / tìm kiếm --}}
+        <div class="card border-0 mb-4">
+            <div class="card-body">
+                <form method="GET" action="{{ route('admin.buses.index') }}" class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label for="search" class="form-label text-white small mb-1">Tìm kiếm</label>
+                        <input type="text" name="search" id="search" class="form-control"
+                            placeholder="Tìm theo biển số, kiểu xe..." value="{{ request('search') }}">
+                    </div>
+
+                    {{-- Nếu controller chưa filter theo status / payment_method thì sau này ông có thể bổ sung --}}
+                    <div class="col-md-3">
+                        <label for="status" class="form-label text-white small mb-1">Trạng thái xe</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="">-- Tất cả --</option>
+                            <option value="1" {{ request('status') === 1 ? 'selected' : '' }}>hoạt động
+                            </option>
+                            <option value="0" {{ request('status') === 0 ? 'selected' : '' }}>bảo dưỡng
+                            </option>
+
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 d-flex gap-2">
+                        <button class="btn btn-primary flex-grow-1 d-flex align-items-center justify-content-center gap-1">
+                            <i class="bi bi-search"></i>
+                            <span>Tìm kiếm</span>
+                        </button>
+                        <a href="{{ route('admin.buses.index') }}"
+                            class="btn btn-outline-light flex-grow-1 d-flex align-items-center justify-content-center gap-1">
+                            <i class="bi bi-arrow-repeat"></i>
+                            <span>Đặt lại</span>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         {{-- Bảng danh sách xe --}}
         <div class="card border-0">
             <div class="card-body p-0">
