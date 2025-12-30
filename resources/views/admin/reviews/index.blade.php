@@ -16,21 +16,6 @@
                     Theo dõi đánh giá của khách hàng cho từng chuyến xe: số sao, nội dung và trạng thái duyệt.
                 </p>
             </div>
-
-            <div class="d-flex gap-2">
-                {{-- Nếu có màn tạo review tay thì bật route ra --}}
-                {{-- <a href="#"
-               class="btn btn-primary d-flex align-items-center gap-1">
-                <i class="bi bi-plus-circle"></i>
-                <span>Thêm đánh giá mới</span>
-            </a> --}}
-
-                {{-- <a href="#"
-               class="btn btn-outline-light d-flex align-items-center gap-1">
-                <i class="bi bi-trash3"></i>
-                <span>Thùng rác</span>
-            </a> --}}
-            </div>
         </div>
 
         {{-- Thông báo lỗi nhanh --}}
@@ -54,11 +39,24 @@
                     <div class="col-md-5">
                         <label for="search" class="form-label text-white small mb-1">Tìm kiếm</label>
                         <input type="text" name="search" id="search" class="form-control"
-                            placeholder="Tìm theo tên khách, nội dung đánh giá, mã chuyến..."
+                            placeholder="Tìm theo tên khách, nội dung đánh giá, tên thành phố..."
                             value="{{ request('search') }}">
                     </div>
 
-                    <div class="col-md-3">
+                    {{-- số sao --}}
+                    <div class="col-md-2">
+                        <label for="stars" class="form-label text-white small mb-1">Số sao</label>
+                        <select name="stars" id="stars" class="form-select">
+                            <option value="">-- Tất cả --</option>
+                            @for ($i = 1; $i <= 5; $i++)
+                                <option value="{{ $i }}" {{ request('stars') == $i ? 'selected' : '' }}>
+                                    {{ $i }} sao
+                                </option>
+                            @endfor
+                        </select>
+                    </div>
+                    {{-- trạng thái --}}
+                    <div class="col-md-2">
                         <label for="status" class="form-label text-white small mb-1">Trạng thái</label>
                         <select name="status" id="status" class="form-select">
                             <option value="">-- Tất cả --</option>
@@ -71,7 +69,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-4 d-flex gap-2">
+                    <div class="col-md-3 d-flex gap-2">
                         <button class="btn btn-primary flex-grow-1 d-flex align-items-center justify-content-center gap-1">
                             <i class="bi bi-search"></i>
                             <span>Lọc</span>

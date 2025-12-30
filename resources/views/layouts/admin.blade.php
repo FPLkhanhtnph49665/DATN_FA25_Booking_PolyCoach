@@ -117,12 +117,12 @@
                         </a>
                     </li>
 
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a href="{{ route('admin.passengers.index') }}"
                            class="nav-link admin-nav-link {{ request()->routeIs('admin.passengers.*') ? 'active' : '' }}">
                             <i class="bi bi-person-walking me-2"></i> Quản lý Hành khách
                         </a>
-                    </li>
+                    </li> --}}
 
                     <li class="nav-item">
                         <a href="{{ route('admin.reviews.index') }}"
