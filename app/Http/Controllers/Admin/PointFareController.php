@@ -98,8 +98,7 @@ class PointFareController extends Controller
             'status.boolean' => 'Trạng thái không hợp lệ.', // Nên thêm
         ]);
 
-        // Thêm kiểm tra trùng lặp (Tùy chọn nhưng RẤT NÊN làm)
-        // Ví dụ: Kiểm tra xem cặp Tuyến - Đón - Trả này đã tồn tại chưa
+        // kiểm tra trùng lặp
         $existingFare = PointFare::where('route_id', $data['route_id'])
             ->where('pickup_point_id', $data['pickup_point_id'])
             ->where('dropoff_point_id', $data['dropoff_point_id'])
@@ -122,12 +121,14 @@ class PointFareController extends Controller
      */
     public function edit(PointFare $pointFare)
     {
-        $routes = Route::where('status', 1)->orderBy('id')->get();
-        $points = PickupDropoffPoint::where('active', 1)
-            ->orderBy('name')
-            ->get();
+        // Nạp sẵn thông tin route và các điểm đón/trả thuộc route đó để tối ưu hóa truy vấn
+        $pointFare->load(['route.pickupPoints', 'route.dropoffPoints']);
 
-        return view('admin.point_fares.edit', compact('pointFare', 'routes', 'points'));
+        // Lấy danh sách tất cả các tuyến để hiển thị ở dropdown Tuyến xe
+        $routes = Route::where('status', 1)->orderBy('id')->get();
+
+        // Truyền $pointFare sang view (biến này đã có sẵn các điểm thông qua quan hệ route)
+        return view('admin.point_fares.edit', compact('pointFare', 'routes'));
     }
 
     /**
@@ -178,6 +179,20 @@ class PointFareController extends Controller
 
         return redirect()->route('admin.point_fares.index')
             ->with('success', 'Cập nhật giá vé thành công!');
+    }
+    // Lấy điểm đón và điểm trả theo tuyến
+    public function getPointsByRoute($id)
+    {
+        $route = Route::find($id);
+
+        if (!$route) {
+            return response()->json(['pickup' => [], 'dropoff' => []]);
+        }
+
+        return response()->json([
+            'pickup' => $route->pickupPoints, // Dùng quan hệ bạn đã định nghĩa
+            'dropoff' => $route->dropoffPoints
+        ]);
     }
 
     /**

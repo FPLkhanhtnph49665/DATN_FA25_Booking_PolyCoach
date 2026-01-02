@@ -42,33 +42,57 @@ class RouteController extends Controller
      * Show the form for creating a new route.
      */
     public function create()
-{
-    $cities = City::orderBy('name')->get();
+    {
+        $cities = City::orderBy('name')->get();
 
-    return view('admin.routes.create', compact('cities'));
-}
+        return view('admin.routes.create', compact('cities'));
+    }
 
     /**
      * Store a newly created route in storage.
      */
     public function store(Request $request)
-{
-    $data = $request->validate([
-        'from_city_id'    => ['required', 'exists:cities,id', 'different:to_city_id'],
-        'to_city_id'      => ['required', 'exists:cities,id'],
-        'distance'        => ['required', 'numeric', 'min:1'],
-        'estimated_time'  => ['nullable', 'string', 'max:50'],
-        'status'          => ['nullable', 'boolean'],
-    ]);
+    {
+        $data = $request->validate(
+            [
+                'from_city_id' => ['required', 'exists:cities,id', 'different:to_city_id'],
+                'to_city_id' => ['required', 'exists:cities,id'],
+                'distance' => ['required', 'numeric', 'min:1'],
+                'estimated_time' => ['required', 'string', 'max:50'],
+                'status' => ['nullable', 'boolean'],
+            ],
+            [
+                'from_city_id.required' => 'Vui lòng chọn thành phố đi.',
+                'from_city_id.exists' => 'Thành phố đi không tồn tại.',
+                'to_city_id.required' => 'Vui lòng chọn thành phố đến.',
+                'to_city_id.exists' => 'Thành phố đến không tồn tại.',
+                'distance.required' => 'Vui lòng nhập khoảng cách.',
+                'distance.numeric' => 'Khoảng cách phải là một số.',
+                'distance.min' => 'Khoảng cách phải lớn hơn 0.',
+                'estimated_time.required' => 'Vui lòng nhập thời gian ước tính.',
+                'from_city_id.different' => 'Thành phố đi và thành phố đến phải khác nhau.',
 
-    $data['status'] = $request->boolean('status');
+            ]
+        );
 
-    Route::create($data);
+        $data['status'] = $request->boolean('status');
 
-    return redirect()
-        ->route('admin.routes.index')
-        ->with('success', 'Thêm tuyến đường thành công');
-}
+        //kiểm tra trùng lặp
+        $existingRoute = Route::where('from_city_id', $data['from_city_id'])
+            ->where('to_city_id', $data['to_city_id'])
+            ->first();
+        if ($existingRoute) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors(['route_exists' => 'Tuyến đường này đã tồn tại.']);
+        }
+        Route::create($data);
+
+        return redirect()
+            ->route('admin.routes.index')
+            ->with('success', 'Thêm tuyến đường thành công');
+    }
 
 
     /**
@@ -85,12 +109,31 @@ class RouteController extends Controller
     public function update(Request $request, Route $route): RedirectResponse
     {
         $data = $request->validate([
-            'from_city_id'       => 'required|integer|exists:cities,id',
-            'to_city_id'         => 'required|integer|exists:cities,id',
-            'distance'           => 'required|integer|min:1',
-            'estimated_time'     => 'required|string|max:50',
-            'status'             => 'required|in:0,1',
+            'from_city_id' => 'required|integer|exists:cities,id|different:to_city_id',
+            'to_city_id' => 'required|integer|exists:cities,id',
+            'distance' => 'required|integer|min:1',
+            'estimated_time' => 'required|string|max:50',
+            'status' => 'required|in:0,1',
+        ], [
+            'from_city_id.required' => 'Vui lòng chọn thành phố đi.',
+            'from_city_id.exists' => 'Thành phố đi không tồn tại.',
+            'to_city_id.required' => 'Vui lòng chọn thành phố đến.',
+            'to_city_id.exists' => 'Thành phố đến không tồn tại.',
+            'distance.required' => 'Vui lòng nhập khoảng cách.',
+            'distance.numeric' => 'Khoảng cách phải là một số.',
+            'distance.min' => 'Khoảng cách phải lớn hơn 0.',
+            'estimated_time.required' => 'Vui lòng nhập thời gian ước tính.',
+            'from_city_id.different' => 'Thành phố đi và thành phố đến phải khác nhau.',
         ]);
+        // kiểm tra trùng lặp
+        $existingRoute = Route::where('from_city_id', $data['from_city_id'])
+            ->where('to_city_id', $data['to_city_id'])
+            ->where('id', '!=', $route->id)
+            ->first();
+        if ($existingRoute) {
+            return redirect()->back()->withInput()
+                ->withErrors(['route_exists' => 'Tuyến đường này đã tồn tại.']);
+        }
 
         $route->update($data);
 

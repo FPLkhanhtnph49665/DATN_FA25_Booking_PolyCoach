@@ -146,11 +146,6 @@
                                 </td>
 
                                 <td class="text-center">
-                                    <a href="{{ route('admin.routes.show', $route->id) }}"
-                                       class="btn btn-sm btn-outline-info me-1">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-
                                     <a href="{{ route('admin.routes.edit', $route->id) }}"
                                        class="btn btn-sm btn-outline-warning me-1">
                                         <i class="bi bi-pencil-square"></i>

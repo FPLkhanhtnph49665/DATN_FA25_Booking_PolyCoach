@@ -39,7 +39,7 @@
                                name="first_name"
                                class="form-control @error('first_name') is-invalid @enderror"
                                value="{{ old('first_name', $user->first_name) }}"
-                               required>
+                               >
                         @error('first_name')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -51,7 +51,7 @@
                                name="last_name"
                                class="form-control @error('last_name') is-invalid @enderror"
                                value="{{ old('last_name', $user->last_name) }}"
-                               required>
+                               >
                         @error('last_name')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -66,7 +66,7 @@
                                name="email"
                                class="form-control @error('email') is-invalid @enderror"
                                value="{{ old('email', $user->email) }}"
-                               required>
+                               >
                         @error('email')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -177,12 +177,12 @@
                     <div class="col-md-6">
                         <label class="form-label mt-2 d-block">Ảnh hiện tại</label>
                         @if($user->image)
-                            <img src="{{ asset('storage/' . $user->image) }}"
+                            <img src="{{ asset($user->image) }}"
                                  alt="Avatar"
                                  class="img-thumbnail rounded-circle"
                                  width="80">
                         @else
-                            <span class="text-muted small">Chưa có ảnh đại diện</span>
+                            <span class="text-white small">Chưa có ảnh đại diện</span>
                         @endif
                     </div>
                 </div>

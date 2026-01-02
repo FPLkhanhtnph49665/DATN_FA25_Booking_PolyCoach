@@ -11,11 +11,12 @@ class PointFare extends Model
         'pickup_point_id',
         'dropoff_point_id',
         'price',
+        'active',
     ];
 
     public function route()
     {
-        return $this->belongsTo(Route::class);
+        return $this->belongsTo(Route::class, 'route_id');
     }
     public function pickupPoint()
     {

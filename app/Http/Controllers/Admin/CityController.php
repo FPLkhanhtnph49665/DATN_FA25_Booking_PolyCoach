@@ -82,6 +82,10 @@ class CityController extends Controller
                 Rule::unique('cities', 'code'),
             ],
             'status' => ['nullable', 'boolean'],
+        ], [
+            'name.required' => 'Tên thành phố là bắt buộc.',
+            'name.unique' => 'Tên thành phố đã tồn tại.',
+            'code.unique' => 'Mã thành phố đã tồn tại.',
         ]);
 
         // checkbox: nếu không tick thì không gửi, dùng boolean() cho chắc
@@ -104,14 +108,14 @@ class CityController extends Controller
     /**
      * Xem chi tiết 1 thành phố (ít dùng, tuỳ ông)
      */
-    public function show(City $city, Request $request)
-    {
-        if ($request->wantsJson()) {
-            return response()->json(['data' => $city]);
-        }
+    // public function show(City $city, Request $request)
+    // {
+    //     if ($request->wantsJson()) {
+    //         return response()->json(['data' => $city]);
+    //     }
 
-        return view('admin.cities.show', compact('city'));
-    }
+    //     return view('admin.cities.show', compact('city'));
+    // }
 
     /**
      * Form chỉnh sửa thành phố
@@ -140,6 +144,10 @@ class CityController extends Controller
                 Rule::unique('cities', 'code')->ignore($city->id),
             ],
             'status' => ['nullable', 'boolean'],
+        ], [
+            'name.required' => 'Tên thành phố là bắt buộc.',
+            'name.unique' => 'Tên thành phố đã tồn tại.',
+            'code.unique' => 'Mã thành phố đã tồn tại.',
         ]);
 
         $data['status'] = $request->boolean('status');
