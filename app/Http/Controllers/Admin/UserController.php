@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
@@ -56,21 +57,40 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'first_name' => 'required|string|max:255',
-            'last_name'  => 'required|string|max:255',
-            'email'      => 'required|email|unique:users,email,phone',
-            'phone'      => 'nullable|string|max:20',
-            'password'   => 'required|string|confirmed|min:6',
-            'role'       => 'required|in:admin,user,staff,checker',
-            'status'     => 'required|in:0,1',
-            'image'      => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'last_name' => 'required|string|max:255',
+            // Email phải là duy nhất trong bảng users
+            'email' => 'required|email|unique:users,email',
+            // Phone phải duy nhất, đúng 10 số (size:10)
+            'phone' => 'required|string|size:10|unique:users,phone|regex:/^[0-9]+$/',
+            'password' => 'required|string|confirmed|min:6',
+            'role' => 'required|in:admin,user,staff,checker',
+            'status' => 'required|in:0,1',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            // Bạn có thể thêm message tiếng Việt tại đây nếu muốn
+            'first_name.required' => 'Họ là bắt buộc.',
+            'last_name.required' => 'Tên là bắt buộc.',
+            'email.required' => 'Địa chỉ email là bắt buộc.',
+            'email.email' => 'Địa chỉ email không hợp lệ.',
+            'phone.required' => 'Số điện thoại là bắt buộc.',
+            'phone.size' => 'Số điện thoại phải chính xác 10 ký tự.',
+            'phone.unique' => 'Số điện thoại này đã tồn tại.',
+            'email.unique' => 'Địa chỉ email này đã tồn tại.',
+            'phone.regex' => 'Số điện thoại chỉ được chứa các chữ số.',
+            'password.confirmed' => 'Mật khẩu xác nhận không khớp.',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
         ]);
 
-        // Upload avatar nếu có
+        // Xử lý Upload ảnh vào public/uploads/user_images
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('avatars', $filename, 'public');
-            $data['image'] = $path;
+
+            // Di chuyển file trực tiếp vào thư mục public
+            $file->move(public_path('uploads/user_images'), $filename);
+
+            // Lưu đường dẫn vào database để hiển thị
+            $data['image'] = 'uploads/user_images/' . $filename;
         }
 
         // Mã hóa mật khẩu
@@ -78,16 +98,17 @@ class UserController extends Controller
 
         User::create($data);
 
-        return redirect()->route('admin.users.index')->with('success', 'User đã được tạo thành công!');
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Người dùng đã được tạo thành công!');
     }
 
     /**
      * Hiển thị chi tiết user.
      */
-    public function show(User $user)
-    {
-        return view('admin.users.show', compact('user'));
-    }
+    // public function show(User $user)
+    // {
+    //     return view('admin.users.show', compact('user'));
+    // }
 
     /**
      * Hiển thị form sửa user.
@@ -104,17 +125,33 @@ class UserController extends Controller
     {
         $request->validate([
             'first_name' => 'required|string|max:100',
-            'last_name'  => 'required|string|max:100',
-            'email'      => 'required|email|unique:users,email,' . $user->id,
-            'phone'      => 'nullable|string|max:20',
-            'role'       => 'required|in:admin,user,staff,checker',
-            'status'     => 'required|in:0,1',
-            'image'      => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'last_name' => 'required|string|max:100',
+            // Email duy nhất, ngoại trừ bản ghi hiện tại
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            // Phone: đúng 10 số, duy nhất (trừ bản thân), chỉ chứa số
+            'phone' => 'required|string|size:10|regex:/^[0-9]+$/|unique:users,phone,' . $user->id,
+            'role' => 'required|in:admin,user,staff,checker',
+            'status' => 'required|in:0,1',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'password' => 'nullable|string|min:6|confirmed',
+        ], [
+            'first_name.required' => 'Họ là bắt buộc.',
+            'last_name.required' => 'Tên là bắt buộc.',
+            'email.required' => 'Địa chỉ email là bắt buộc.',
+            'email.email' => 'Địa chỉ email không hợp lệ.',
+            'email.unique' => 'Địa chỉ email này đã được sử dụng.',
+            'phone.required' => 'Số điện thoại là bắt buộc.',
+            'phone.size' => 'Số điện thoại phải chính xác 10 ký tự.',
+            'phone.unique' => 'Số điện thoại này đã được sử dụng.',
+            'phone.regex' => 'Số điện thoại chỉ được chứa các chữ số.',
+            'password.confirmed' => 'Mật khẩu xác nhận không khớp.',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
+
         ]);
 
         $data = $request->only(['first_name', 'last_name', 'email', 'phone', 'role', 'status']);
 
-        // 👉 Cập nhật full name
+        // Cập nhật full name
         $data['full_name'] = $request->first_name . ' ' . $request->last_name;
 
         // Nếu có nhập mật khẩu mới
@@ -122,19 +159,24 @@ class UserController extends Controller
             $data['password'] = Hash::make($request->password);
         }
 
-        // Nếu có upload ảnh mới
+        // Xử lý upload ảnh mới
         if ($request->hasFile('image')) {
 
-            // Xóa ảnh cũ nếu có
-            if ($user->image && Storage::disk('public')->exists($user->image)) {
-                Storage::disk('public')->delete($user->image);
+            // 1. Xóa ảnh cũ trong thư mục public nếu tồn tại
+            if ($user->image) {
+                $oldImagePath = public_path($user->image); // Lấy đường dẫn tuyệt đối
+                if (File::exists($oldImagePath)) {
+                    File::delete($oldImagePath); // Xóa file vật lý
+                }
             }
 
+            // 2. Lưu ảnh mới vào public/uploads/user_images
             $file = $request->file('image');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('avatars', $filename, 'public');
+            $file->move(public_path('uploads/user_images'), $filename);
 
-            $data['image'] = $path;
+            // 3. Cập nhật đường dẫn mới vào mảng dữ liệu
+            $data['image'] = 'uploads/user_images/' . $filename;
         }
 
         $user->update($data);

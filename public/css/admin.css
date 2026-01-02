@@ -15,6 +15,11 @@ a {
     text-decoration: none;
 }
 
+/* CSS chung cho tất cả input */
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important; /* Màu trắng với độ trong suốt 70% */
+    opacity: 1; /* Cần thiết cho Firefox để không bị mờ đi */
+}
 /* =============== SIDEBAR =============== */
 
 .admin-sidebar {

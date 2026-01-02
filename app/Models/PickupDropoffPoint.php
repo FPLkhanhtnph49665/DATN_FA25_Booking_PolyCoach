@@ -29,7 +29,7 @@ class PickupDropoffPoint extends Model
     // Quan hệ với Route
     public function route()
     {
-        return $this->belongsTo(Route::class);
+        return $this->belongsTo(Route::class, 'route_id');
     }
     // Quan hệ với PointFare
     public function pickupFares()

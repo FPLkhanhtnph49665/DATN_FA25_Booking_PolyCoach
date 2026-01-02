@@ -92,6 +92,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', AdminMiddleware::cla
     Route::delete('bus-images/{id}', [BusController::class, 'destroyImage'])->name('bus-images.destroy');
     // Duyệt đánh giá
     Route::patch('reviews/{id}/status', [ReviewController::class, 'updateStatus'])->name('reviews.updateStatus');
+    //lấy giá vé theo tuyến, điểm đón, điểm trả
+    Route::get('routes/{id}/points', [PointFareController::class, 'getPointsByRoute'])->name('routes.getPoints');
 
 });
 Route::prefix('checker')->name('checker.')

@@ -38,7 +38,7 @@ class PickupDropoffPointController extends Controller
         }
 
         $points = $query
-            ->orderBy('name')
+            ->orderBy('id', 'desc')
             ->paginate(15)
             ->withQueryString();
 
@@ -60,13 +60,22 @@ class PickupDropoffPointController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'city_id' => 'nullable|exists:cities,id',
+            'city_id' => 'required|exists:cities,id',
             'route_id' => 'required|exists:routes,id',
             'name' => 'required|string|max:255',
             'address' => 'nullable|string|max:255',
-            'time' => 'nullable|date_format:H:i',
+            'time' => 'nullable|date_format:H:i:s',
             'type' => 'required|in:pickup,dropoff',
             'active' => 'boolean',
+        ], 
+        [
+            'city_id.required' => 'Vui lòng chọn thành phố.',
+            'city_id.exists' => 'Thành phố không hợp lệ.',
+            'route_id.required' => 'Vui lòng chọn tuyến đường.',
+            'route_id.exists' => 'Tuyến đường không hợp lệ.',
+            'type.required' => 'Vui lòng chọn loại điểm.',
+            'type.in' => 'Loại điểm không hợp lệ.',
+            'name.required' => 'Vui lòng nhập tên điểm đón/trả.',
         ]);
 
         PickupDropoffPoint::create($data);
@@ -95,13 +104,22 @@ class PickupDropoffPointController extends Controller
     public function update(Request $request, PickupDropoffPoint $pickupDropoffPoint)
     {
         $data = $request->validate([
-            'city_id' => 'nullable|exists:cities,id',
+            'city_id' => 'required|exists:cities,id',
             'route_id' => 'required|exists:routes,id',
             'name' => 'required|string|max:255',
             'address' => 'nullable|string|max:255',
-            'time' => 'nullable|date_format:H:i',
+            'time' => 'nullable|date_format:H:i:s',
             'type' => 'required|in:pickup,dropoff',
             'active' => 'boolean',
+        ], 
+        [
+            'city_id.required' => 'Vui lòng chọn thành phố.',
+            'city_id.exists' => 'Thành phố không hợp lệ.',
+            'route_id.required' => 'Vui lòng chọn tuyến đường.',
+            'route_id.exists' => 'Tuyến đường không hợp lệ.',
+            'type.required' => 'Vui lòng chọn loại điểm.',
+            'type.in' => 'Loại điểm không hợp lệ.',
+            'name.required' => 'Vui lòng nhập tên điểm đón/trả.',
         ]);
 
         $pickupDropoffPoint->update($data);
