@@ -30,6 +30,13 @@ class AuthenticatedSessionController extends Controller
         // Xác thực thông tin đăng nhập
         $request->authenticate();
 
+        // $request->validate([
+        //     'email' => 'required|string',
+        //     'password' => 'required|string',
+        // ], [
+        //     'email.required' => 'Vui lòng nhập email hoặc số điện thoại.',
+        //     'password.required' => 'Vui lòng nhập mật khẩu.',
+        // ]);
         // Bảo vệ session
         $request->session()->regenerate();
 
@@ -47,6 +54,9 @@ class AuthenticatedSessionController extends Controller
         // Phân quyền admin
         if ($user->role === 'admin' || ($user->is_admin ?? false)) {
             return redirect()->route('admin.dashboard');
+        } elseif ($user->role === 'checker') {
+            // Phân quyền nhân viên
+            return redirect()->route('checker.dashboard');
         }
 
         // User bình thường → giữ URL trước khi login nếu có
