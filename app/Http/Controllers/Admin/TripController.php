@@ -86,6 +86,14 @@ class TripController extends Controller
             'arrival_time' => 'required|date_format:H:i',
             'ticket_price' => 'required|integer|min:0',
             'status' => 'nullable|in:0,1',
+        ],
+        [
+            'route_id.required' => 'Vui lòng chọn tuyến đường.',
+            'bus_id.required' => 'Vui lòng chọn xe.',
+            'departure_date.required' => 'Vui lòng nhập ngày khởi hành.',
+            'departure_time.required' => 'Vui lòng nhập giờ khởi hành.',
+            'arrival_time.required' => 'Vui lòng nhập giờ đến nơi.',
+            'ticket_price.required' => 'Vui lòng nhập giá vé.',
         ]);
 
         // Nếu status không gửi, mặc định là 1

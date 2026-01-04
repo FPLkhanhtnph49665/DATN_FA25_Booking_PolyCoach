@@ -89,7 +89,7 @@
                                 <th class="text-muted small">Vai trò</th>
                                 <th class="text-muted small">Trạng thái</th>
                                 <th class="text-muted small">Ngày tạo</th>
-                                <th class="text-muted small text-end">Hành động</th>
+                                <th class="text-muted small text-end"></th>
                             </tr>
                         </thead>
                         <tbody>

@@ -79,7 +79,7 @@
                                 <th class="text-muted small">Trạng thái</th>
                                 <th class="text-muted small">thanh toán</th>
                                 <th class="text-muted small">kiểm bởi</th>
-                                <th class="text-muted small text-center">Hành động</th>
+                                <th class="text-muted small text-center"></th>
                             </tr>
                         </thead>
                         <tbody>

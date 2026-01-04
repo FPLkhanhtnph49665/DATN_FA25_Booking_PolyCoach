@@ -79,7 +79,7 @@
                             <th class="small">Mã</th>
                             <th class="small">Trạng thái</th>
                             <th class="small">Ngày tạo</th>
-                            <th class="small text-end">Hành động</th>
+                            <th class="small text-end"></th>
                         </tr>
                     </thead>
 

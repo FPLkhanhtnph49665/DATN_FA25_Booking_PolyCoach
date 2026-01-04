@@ -98,7 +98,7 @@
                                 <th class="text-muted small">Nội dung</th>
                                 <th class="text-muted small">Trạng thái</th>
                                 <th class="text-muted small">Ngày đánh giá</th>
-                                <th class="text-muted small text-center">Hành động</th>
+                                <th class="text-muted small text-center"></th>
                             </tr>
                         </thead>
                         <tbody>

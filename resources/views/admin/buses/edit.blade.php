@@ -19,7 +19,7 @@
         </div>
 
         {{-- Hiển thị lỗi validate chung --}}
-        @if ($errors->any())
+        {{-- @if ($errors->any())
             <div class="alert alert-danger">
                 <div class="fw-semibold mb-1">Đã có lỗi xảy ra:</div>
                 <ul class="mb-0 small">
@@ -28,7 +28,7 @@
                     @endforeach
                 </ul>
             </div>
-        @endif
+        @endif --}}
 
         {{-- Form chỉnh sửa xe --}}
         <div class="card border-0">
@@ -45,7 +45,7 @@
                         </label>
                         <input type="text" name="plate_number" id="plate_number"
                             class="form-control @error('plate_number') is-invalid @enderror"
-                            value="{{ old('plate_number', $bus->plate_number) }}" placeholder="VD: 29B-123.45" required>
+                            value="{{ old('plate_number', $bus->plate_number) }}" placeholder="VD: 29B-123.45">
                         @error('plate_number')
                             <div class="invalid-feedback">
                                 {{ $message }}
@@ -58,10 +58,15 @@
                         <label for="seat_count" class="form-label small text-light mb-1">
                             Số ghế <span class="text-danger">*</span>
                         </label>
-                        <input type="number" name="seat_count" id="seat_count"
-                            class="form-control @error('seat_count') is-invalid @enderror"
-                            value="{{ old('seat_count', $bus->seat_count) }}" min="1" placeholder="VD: 16, 29, 45..."
-                            required>
+                        <select name="seat_count" id="seat_count"
+                            class="form-select @error('seat_count') is-invalid @enderror">
+                            @foreach ([4, 7, 16, 32] as $count)
+                                <option value="{{ $count }}"
+                                    {{ old('seat_count', $bus->seat_count) == $count ? 'selected' : '' }}>
+                                    {{ $count }} ghế
+                                </option>
+                            @endforeach
+                        </select>
                         @error('seat_count')
                             <div class="invalid-feedback">
                                 {{ $message }}
@@ -74,13 +79,12 @@
                         <label for="type" class="form-label small text-light mb-1">
                             Loại xe <span class="text-danger">*</span>
                         </label>
-                        <select name="type" id="type" class="form-select @error('type') is-invalid @enderror"
-                            required>
+                        <select name="type" id="type" class="form-select @error('type') is-invalid @enderror">
                             <option value="" disabled>-- Chọn loại xe --</option>
-                            <option value="Seat" {{ old('type', $bus->type) === 'Seat' ? 'selected' : '' }}>Seat</option>
-                            <option value="Sleeper" {{ old('type', $bus->type) === 'Sleeper' ? 'selected' : '' }}>Sleeper
+                            <option value="Seat" {{ old('type', $bus->type) == 'seat' ? 'selected' : '' }}>Seat</option>
+                            <option value="Sleeper" {{ old('type', $bus->type) == 'sleeper' ? 'selected' : '' }}>Sleeper
                             </option>
-                            <option value="Limousine" {{ old('type', $bus->type) === 'Limousine' ? 'selected' : '' }}>
+                            <option value="Limousine" {{ old('type', $bus->type) == 'limousine' ? 'selected' : '' }}>
                                 Limousine</option>
                         </select>
                         @error('type')
@@ -146,7 +150,7 @@
                                     <input type="file" name="images[]" id="images" class="d-none" accept="image/*"
                                         multiple onchange="previewMultipleFiles(this)">
                                 </div>
-                                <p class="text-muted small mt-2 mb-0">Bạn có thể chọn nhiều ảnh cùng lúc (JPG, PNG, WebP.
+                                <p class="text-white small mt-2 mb-0">Bạn có thể chọn nhiều ảnh cùng lúc (JPG, PNG, WebP.
                                     Tối đa 2MB/ảnh)</p>
                             </div>
 
@@ -172,79 +176,84 @@
     {{-- Script để xem trước ảnh ngay khi chọn file --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-    // Xem trước nhiều ảnh khi chọn
-    function previewMultipleFiles(input) {
-        var previewContainer = document.getElementById("new-images-preview");
-        previewContainer.innerHTML = ""; 
+        // Xem trước nhiều ảnh khi chọn
+        function previewMultipleFiles(input) {
+            var previewContainer = document.getElementById("new-images-preview");
+            previewContainer.innerHTML = "";
 
-        if (input.files) {
-            [...input.files].forEach(file => {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    var div = document.createElement("div");
-                    div.className = "col-4 col-md-2";
-                    div.innerHTML = `
+            if (input.files) {
+                [...input.files].forEach(file => {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        var div = document.createElement("div");
+                        div.className = "col-4 col-md-2";
+                        div.innerHTML = `
                         <div class="position-relative border border-info rounded overflow-hidden">
                             <img src="${e.target.result}" class="img-fluid" style="height: 80px; width: 100%; object-fit: cover;">
                             <span class="position-absolute bottom-0 start-0 w-100 bg-info text-dark text-center small" style="font-size: 10px;">MỚI</span>
                         </div>`;
-                    previewContainer.appendChild(div);
-                }
-                reader.readAsDataURL(file);
-            });
+                        previewContainer.appendChild(div);
+                    }
+                    reader.readAsDataURL(file);
+                });
+            }
         }
-    }
 
-    // Xác nhận xóa ảnh
-    function confirmDeleteImage(imageId) {
-        Swal.fire({
-            title: 'Xóa ảnh này?',
-            text: "Ảnh sẽ bị xóa vĩnh viễn khỏi hệ thống!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Xóa ngay',
-            cancelButtonText: 'Hủy'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                deleteImage(imageId);
-            }
-        })
-    }
-
-    // Gọi AJAX xóa ảnh
-    function deleteImage(imageId) {
-        // Sử dụng đường dẫn tuyệt đối
-        const url = `/admin/bus-images/${imageId}`;
-
-        fetch(url, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                const element = document.getElementById(`image-container-${imageId}`);
-                if (element) {
-                    element.style.transition = "all 0.3s ease";
-                    element.style.opacity = "0";
-                    setTimeout(() => element.remove(), 300);
+        // Xác nhận xóa ảnh
+        function confirmDeleteImage(imageId) {
+            Swal.fire({
+                title: 'Xóa ảnh này?',
+                text: "Ảnh sẽ bị xóa vĩnh viễn khỏi hệ thống!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Xóa ngay',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    deleteImage(imageId);
                 }
-                Swal.fire({ icon: 'success', title: 'Đã xóa!', timer: 1000, showConfirmButton: false });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire('Lỗi!', 'Không thể thực hiện yêu cầu.', 'error');
-        });
-    }
-</script>
+            })
+        }
+
+        // Gọi AJAX xóa ảnh
+        function deleteImage(imageId) {
+            // Sử dụng đường dẫn tuyệt đối
+            const url = `/admin/bus-images/${imageId}`;
+
+            fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        const element = document.getElementById(`image-container-${imageId}`);
+                        if (element) {
+                            element.style.transition = "all 0.3s ease";
+                            element.style.opacity = "0";
+                            setTimeout(() => element.remove(), 300);
+                        }
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Đã xóa!',
+                            timer: 1000,
+                            showConfirmButton: false
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire('Lỗi!', 'Không thể thực hiện yêu cầu.', 'error');
+                });
+        }
+    </script>
 @endsection

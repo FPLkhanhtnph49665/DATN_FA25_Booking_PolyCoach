@@ -88,7 +88,7 @@
                             <th class="text-muted small">Quãng đường (km)</th>
                             <th class="text-muted small">Thời gian dự kiến</th>
                             <th class="text-muted small">Trạng thái</th>
-                            <th class="text-muted small text-center">Hành động</th>
+                            <th class="text-muted small text-center"></th>
                         </tr>
                     </thead>
                     <tbody>

@@ -100,7 +100,9 @@ class RouteController extends Controller
      */
     public function edit(Route $route)
     {
-        return view('admin.routes.edit', compact('route'));
+        $cities = City::orderBy('name', 'asc')->get();
+        
+        return view('admin.routes.edit', compact('route', 'cities'));
     }
 
     /**

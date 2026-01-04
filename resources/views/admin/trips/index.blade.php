@@ -87,7 +87,7 @@
                                 <th class="text-muted small">Ghế còn trống</th>
                                 <th class="text-muted small">Trạng thái</th>
                                 <th class="text-muted small">Kiểm bởi</th>
-                                <th class="text-muted small text-center">Hành động</th>
+                                <th class="text-muted small text-center"></th>
                             </tr>
                         </thead>
                         <tbody>
