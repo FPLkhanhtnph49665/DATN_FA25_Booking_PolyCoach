@@ -53,10 +53,20 @@ class BusController extends Controller
         // 1. Cập nhật Validation: Thêm rule cho field 'image'
         $data = $request->validate([
             'plate_number' => 'required|string|max:20|unique:buses,plate_number',
-            'seat_count' => 'required|integer|min:16|max:50',
+            'seat_count'   => 'required|in:4,7,16,32', // Chỉ chấp nhận 4 giá trị này
             'type' => 'required|in:Seat,Sleeper,Limousine',
             'status' => 'nullable|in:0,1',
             'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048', // Bắt buộc up 1 ảnh, tối đa 2MB
+        ], [
+            'plate_number.required' => 'Vui lòng nhập biển số xe.',
+            'plate_number.unique' => 'Biển số xe đã tồn tại. Vui lòng sử dụng biển số khác.',
+            'seat_count.required' => 'Vui lòng nhập số lượng ghế.',
+            'seat_count.in'       => 'Số lượng ghế phải thuộc danh sách: 4, 7, 16, 32.',
+            'type.required' => 'Vui lòng chọn loại xe.',
+            'image.required' => 'Vui lòng tải lên hình ảnh xe.',
+            'image.image' => 'Tệp tải lên phải là hình ảnh hợp lệ.',
+            'image.mimes' => 'Định dạng hình ảnh không hợp lệ. Vui lòng sử dụng jpg, jpeg, png hoặc webp.',
+            'image.max' => 'Kích thước hình ảnh không được vượt quá 2MB.',
         ]);
 
         // Chuẩn hóa type về lowercase
@@ -65,6 +75,13 @@ class BusController extends Controller
         // Nếu không gửi status thì mặc định là active (1)
         $data['status'] = isset($data['status']) ? (int) $data['status'] : 1;
 
+        //kiểm tra trùng lặp
+        $existingBus = Bus::where('plate_number', $data['plate_number'])->first();
+        if ($existingBus) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['plate_number' => 'Biển số xe đã tồn tại. Vui lòng sử dụng biển số khác.']);
+        }
         // 2. Tạo xe
         $bus = Bus::create($data);
 
@@ -92,18 +109,6 @@ class BusController extends Controller
             ->with('success', 'Tạo xe, sơ đồ ghế và tải lên ảnh thành công!');
     }
 
-
-    /**
-     * Display the specified bus.
-     */
-    public function show(Bus $bus)
-    {
-        return view('admin.buses.show', compact('bus'));
-    }
-
-    /**
-     * Show the form for editing the specified bus.
-     */
     public function edit(Bus $bus)
     {
         return view('admin.buses.edit', compact('bus'));
@@ -116,10 +121,19 @@ class BusController extends Controller
     {
         $request->validate([
             'plate_number' => 'required|string|max:20|unique:buses,plate_number,' . $bus->id,
-            'seat_count' => 'required|integer|min:4|max:100',
+            'seat_count'   => 'required|in:4,7,16,32', // Chỉ chấp nhận 4 giá trị này
             'type' => 'required|in:Seat,Sleeper,Limousine',
             'status' => 'nullable|in:0,1',
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048',
+        ], [
+            'plate_number.required' => 'Vui lòng nhập biển số xe.',
+            'plate_number.unique' => 'Biển số xe đã tồn tại. Vui lòng sử dụng biển số khác.',
+            'seat_count.required' => 'Vui lòng nhập số lượng ghế.',
+            'seat_count.in'       => 'Số lượng ghế phải thuộc danh sách: 4, 7, 16, 32.',
+            'type.required' => 'Vui lòng chọn loại xe.',
+            'images.*.image' => 'Tệp tải lên phải là hình ảnh hợp lệ.',
+            'images.*.mimes' => 'Định dạng hình ảnh không hợp lệ. Vui lòng sử dụng jpg, jpeg, png hoặc webp.',
+            'images.*.max' => 'Kích thước hình ảnh không được vượt quá 2MB.',
         ]);
 
         // Lấy dữ liệu và chuẩn hóa type về chữ thường giống như hàm store

@@ -19,7 +19,7 @@
         </div>
 
         {{-- Hiển thị lỗi validate chung --}}
-        @if ($errors->any())
+        {{-- @if ($errors->any())
             <div class="alert alert-danger">
                 <div class="fw-semibold mb-1">Đã có lỗi xảy ra:</div>
                 <ul class="mb-0 small">
@@ -28,13 +28,12 @@
                     @endforeach
                 </ul>
             </div>
-        @endif
+        @endif --}}
 
         {{-- Form tạo mới xe --}}
         <div class="card border-0">
             <div class="card-body">
-                <form action="{{ route('admin.buses.store') }}" method="POST" enctype="multipart/form-data"
-                    class="row g-3">
+                <form action="{{ route('admin.buses.store') }}" method="POST" enctype="multipart/form-data" class="row g-3">
                     @csrf
 
                     {{-- Biển số --}}
@@ -44,7 +43,7 @@
                         </label>
                         <input type="text" name="plate_number" id="plate_number"
                             class="form-control @error('plate_number') is-invalid @enderror"
-                            value="{{ old('plate_number') }}" placeholder="VD: 29B-123.45" required>
+                            value="{{ old('plate_number') }}" placeholder="VD: 29B-123.45">
                         @error('plate_number')
                             <div class="invalid-feedback">
                                 {{ $message }}
@@ -57,9 +56,15 @@
                         <label for="seat_count" class="form-label small text-light mb-1">
                             Số ghế <span class="text-danger">*</span>
                         </label>
-                        <input type="number" name="seat_count" id="seat_count"
-                            class="form-control @error('seat_count') is-invalid @enderror" value="{{ old('seat_count') }}"
-                            min="1" placeholder="VD: 16, 29, 45..." required>
+                        <select name="seat_count" id="seat_count"
+                            class="form-select @error('seat_count') is-invalid @enderror">
+                            <option value="" disabled {{ old('seat_count') ? '' : 'selected' }}>-- Chọn --</option>
+                            @foreach ([4, 7, 16, 32] as $count)
+                                <option value="{{ $count }}" {{ old('seat_count') == $count ? 'selected' : '' }}>
+                                    {{ $count }} ghế
+                                </option>
+                            @endforeach
+                        </select>
                         @error('seat_count')
                             <div class="invalid-feedback">
                                 {{ $message }}
@@ -72,12 +77,12 @@
                         <label for="type" class="form-label small text-light mb-1">
                             Loại xe <span class="text-danger">*</span>
                         </label>
-                        <select name="type" id="type" class="form-select @error('type') is-invalid @enderror"
-                            required>
+                        <select name="type" id="type" class="form-select @error('type') is-invalid @enderror">
                             <option value="" disabled {{ old('type') ? '' : 'selected' }}>-- Chọn loại xe --</option>
                             <option value="Seat" {{ old('type') === 'Seat' ? 'selected' : '' }}>Seat</option>
                             <option value="Sleeper" {{ old('type') === 'Sleeper' ? 'selected' : '' }}>Sleeper</option>
-                            <option value="Limousine" {{ old('type') === 'Limousine' ? 'selected' : '' }}>Limousine</option>
+                            <option value="Limousine" {{ old('type') === 'Limousine' ? 'selected' : '' }}>Limousine
+                            </option>
                         </select>
                         @error('type')
                             <div class="invalid-feedback">
@@ -108,8 +113,8 @@
                             Hình ảnh xe <span class="text-danger">*</span>
                         </label>
                         <input type="file" name="image" id="image"
-                            class="form-control @error('image') is-invalid @enderror" accept="image/*" required>
-                        <div class="form-text text-muted">Định dạng: jpg, jpeg, png. Tối đa 2MB.</div>
+                            class="form-control @error('image') is-invalid @enderror" accept="image/*">
+                        <div class="form-text text-white">Định dạng: jpg, jpeg, png. Tối đa 2MB.</div>
                         @error('image')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
