@@ -11,6 +11,9 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, SoftDeletes;
 
+    /**
+     * Các cột cho phép mass assignment
+     */
     protected $fillable = [
         'user_code',
         'first_name',
@@ -20,61 +23,96 @@ class User extends Authenticatable
         'email',
         'phone',
         'password',
-        'role',    // 'admin' | 'customer'
-        'status',  // 1: active, 0: blocked
+        'role',
+        'status',
     ];
 
+    /**
+     * Ẩn khi trả JSON
+     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    /**
+     * Cast kiểu dữ liệu
+     */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
 
+    /**
+     * Mask phone để hiển thị
+     */
     public function getMaskedPhoneAttribute()
     {
         if (!$this->phone) return '-';
+
         $length = strlen($this->phone);
-        return substr($this->phone, 0, 3) . str_repeat('*', max($length - 6, 0)) . substr($this->phone, -3);
+        return substr($this->phone, 0, 3)
+            . str_repeat('*', max($length - 6, 0))
+            . substr($this->phone, -3);
     }
 
+    /**
+     * BOOTED – sinh user_code & full_name
+     */
     protected static function booted()
     {
+        /**
+         * Khi tạo mới user
+         */
         static::creating(function ($user) {
-            // 1. Generate user_code nếu chưa có
+
+            // ====== SINH USER CODE (KHÔNG BAO GIỜ TRÙNG) ======
             if (empty($user->user_code)) {
-                $lastUser = static::latest('id')->first();
-                $number   = $lastUser ? $lastUser->id + 1 : 1;
-                $user->user_code = 'DATN-FA25-' . str_pad($number, 4, '0', STR_PAD_LEFT);
+
+                // LẤY USER_CODE LỚN NHẤT TỪNG TỒN TẠI (KỂ CẢ ĐÃ SOFT DELETE)
+                $lastUser = static::withTrashed()
+                    ->where('user_code', 'like', 'DATN-FA25-%')
+                    ->orderBy('user_code', 'desc')
+                    ->first();
+
+                $nextNumber = $lastUser
+                    ? (int) substr($lastUser->user_code, -4) + 1
+                    : 1;
+
+                $user->user_code = 'DATN-FA25-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
             }
 
-            // 2. Tự ghép full_name nếu chưa truyền từ form
+            // ====== FULL NAME ======
             if (empty($user->full_name)) {
-                $first = $user->first_name ?? '';
-                $last  = $user->last_name ?? '';
-                $user->full_name = trim($first . ' ' . $last);
+                $user->full_name = trim(
+                    ($user->first_name ?? '') . ' ' . ($user->last_name ?? '')
+                );
             }
         });
 
-        // (Tuỳ chọn) auto update full_name nếu sau này sửa first_name / last_name
+        /**
+         * Khi cập nhật user
+         */
         static::updating(function ($user) {
-            if ($user->isDirty(['first_name', 'last_name']) && empty($user->full_name)) {
-                $first = $user->first_name ?? '';
-                $last  = $user->last_name ?? '';
-                $user->full_name = trim($first . ' ' . $last);
+            if ($user->isDirty(['first_name', 'last_name'])) {
+                $user->full_name = trim(
+                    ($user->first_name ?? '') . ' ' . ($user->last_name ?? '')
+                );
             }
         });
     }
 
+    /**
+     * Helpers
+     */
     public function isRoleAdmin(): bool
     {
         return $this->role === 'admin';
     }
 
-    // Relationship
+    /**
+     * Relationships
+     */
     public function bookings()
     {
         return $this->hasMany(Booking::class, 'user_id');

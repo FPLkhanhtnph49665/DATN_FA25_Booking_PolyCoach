@@ -76,7 +76,7 @@
                             @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <small class="text-muted">
+                            <small class="text-white">
                                 Tối thiểu 8 ký tự, nên có chữ hoa, chữ thường, số và ký tự đặc biệt.
                             </small>
                         </div>
