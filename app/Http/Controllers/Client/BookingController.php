@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Models\Trip;
 use App\Models\Booking;
 use App\Models\Ticket;
@@ -62,7 +63,7 @@ class BookingController extends Controller
             ])->withInput();
         }
 
-        // 5. Lấy thông tin giá vé (Cập nhật ở đây)
+        // 5. Lấy thông tin giá vé
         $fareInfo = $this->calculateFareInfo($trip, $request->pickup_point_id, $request->dropoff_point_id);
         $totalAmount = $fareInfo->price * $seatCodes->count();
 
@@ -106,15 +107,226 @@ class BookingController extends Controller
             }
 
             DB::commit();
+            
+            // 9. Xử lý thanh toán nếu chọn VNPAY
+            if ($request->payment_method === 'vnpay') {
+                return redirect()->away($this->createVnpayUrl($booking));
+            }
+            
+            // Nếu là tiền mặt
             return redirect()->route('client.account.tickets')
                 ->with('success', 'Đặt vé thành công!');
 
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Booking Error: ' . $e->getMessage());
             return back()->withErrors(['error' => 'Lỗi đặt vé: ' . $e->getMessage()])->withInput();
         }
     }
 
+    /**
+     * Tạo URL thanh toán VNPAY
+     */
+    private function createVnpayUrl($booking)
+    {
+        $vnp_TmnCode = trim(env('VNP_TMN_CODE'));
+        $vnp_HashSecret = trim(env('VNP_HASH_SECRET'));
+        $vnp_Url = env('VNP_URL');
+        $vnp_Returnurl = env('VNP_RETURN_URL');
+        
+        // Debug log
+        Log::info('VNPAY Config Check', [
+            'tmn_code' => $vnp_TmnCode,
+            'secret_length' => strlen($vnp_HashSecret),
+            'secret_preview' => substr($vnp_HashSecret, 0, 10) . '...'
+        ]);
+
+        $vnp_TxnRef = $booking->id;
+        $vnp_OrderInfo = "Thanhtoandonhang" . $booking->id; // Bỏ dấu cách
+        $vnp_OrderType = 'billpayment';
+        $vnp_Amount = $booking->total_amount * 100;
+        $vnp_Locale = 'vn';
+        $vnp_IpAddr = request()->ip();
+
+        $inputData = array(
+            "vnp_Version" => "2.1.0",
+            "vnp_TmnCode" => $vnp_TmnCode,
+            "vnp_Amount" => $vnp_Amount,
+            "vnp_Command" => "pay",
+            "vnp_CreateDate" => date('YmdHis'),
+            "vnp_CurrCode" => "VND",
+            "vnp_IpAddr" => $vnp_IpAddr,
+            "vnp_Locale" => $vnp_Locale,
+            "vnp_OrderInfo" => $vnp_OrderInfo,
+            "vnp_OrderType" => $vnp_OrderType,
+            "vnp_ReturnUrl" => $vnp_Returnurl,
+            "vnp_TxnRef" => $vnp_TxnRef,
+        );
+
+        ksort($inputData);
+        
+        $query = "";
+        $i = 0;
+        $hashdata = "";
+        
+        foreach ($inputData as $key => $value) {
+            if ($i == 1) {
+                $hashdata .= '&' . urlencode($key) . "=" . $value;
+            } else {
+                $hashdata .= urlencode($key) . "=" . $value;
+                $i = 1;
+            }
+            $query .= urlencode($key) . "=" . urlencode($value) . '&';
+        }
+
+        $vnp_Url = $vnp_Url . "?" . $query;
+        
+        if (isset($vnp_HashSecret)) {
+            $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnp_HashSecret);
+            $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
+        }
+
+        // Log để debug
+        Log::info('VNPAY Request', [
+            'hashdata' => $hashdata,
+            'secure_hash' => $vnpSecureHash ?? 'N/A',
+            'url' => $vnp_Url
+        ]);
+
+        return $vnp_Url;
+    }
+
+    /**
+     * Xử lý callback từ VNPAY
+     */
+    public function vnpayReturn(Request $request)
+    {
+        $vnp_HashSecret = trim(env('VNP_HASH_SECRET'));
+        
+        // Debug log
+        Log::info('VNPAY Return Config Check', [
+            'secret_length' => strlen($vnp_HashSecret),
+            'secret_preview' => substr($vnp_HashSecret, 0, 10) . '...'
+        ]);
+        
+        // Lấy tất cả tham số từ URL (VNPAY gửi qua GET)
+        $inputData = [];
+        foreach ($_GET as $key => $value) {
+            if (substr($key, 0, 4) == "vnp_") {
+                // QUAN TRỌNG: Decode URL trước khi xử lý
+                $inputData[$key] = urldecode($value);
+            }
+        }
+
+        // Log raw data từ VNPAY
+        Log::info('VNPAY Return Raw', [
+            'get_params' => $_GET,
+            'input_data' => $inputData
+        ]);
+
+        if (!isset($inputData['vnp_SecureHash'])) {
+            Log::error('VNPAY: Missing vnp_SecureHash');
+            return redirect()->route('client.trips')->with('error', 'Thiếu chữ ký bảo mật.');
+        }
+
+        $vnp_SecureHash = $inputData['vnp_SecureHash'];
+        unset($inputData['vnp_SecureHash']);
+
+        // Sắp xếp theo key
+        ksort($inputData);
+        
+        // Tạo chuỗi hash GIỐNG HỆT lúc tạo request
+        $i = 0;
+        $hashdata = "";
+        foreach ($inputData as $key => $value) {
+            if ($i == 1) {
+                $hashdata .= '&' . urlencode($key) . "=" . $value;
+            } else {
+                $hashdata .= urlencode($key) . "=" . $value;
+                $i = 1;
+            }
+        }
+
+        $secureHash = hash_hmac('sha512', $hashdata, $vnp_HashSecret);
+
+        // Log để so sánh chi tiết
+        Log::info('VNPAY Hash Compare', [
+            'hashdata' => $hashdata,
+            'calculated_hash' => $secureHash,
+            'vnpay_hash' => $vnp_SecureHash,
+            'hash_secret_length' => strlen($vnp_HashSecret),
+            'match' => ($secureHash === $vnp_SecureHash)
+        ]);
+
+        // Lấy booking
+        $bookingId = $inputData['vnp_TxnRef'] ?? null;
+        
+        if (!$bookingId) {
+            Log::error('VNPAY: Missing vnp_TxnRef');
+            return redirect()->route('client.trips')->with('error', 'Không tìm thấy mã đơn hàng.');
+        }
+
+        $booking = Booking::find($bookingId);
+
+        if (!$booking) {
+            Log::error('VNPAY: Booking not found', ['booking_id' => $bookingId]);
+            return redirect()->route('client.trips')->with('error', 'Đơn hàng không tồn tại.');
+        }
+
+        // Kiểm tra chữ ký
+        if ($secureHash === $vnp_SecureHash) {
+            if ($inputData['vnp_ResponseCode'] == '00') {
+                // Thanh toán thành công
+                DB::beginTransaction();
+                try {
+                    $booking->update([
+                        'status' => 'confirmed',
+                        'payment_status' => 'paid'
+                    ]);
+
+                    Ticket::where('booking_id', $booking->id)->update([
+                        'status' => 'sold'
+                    ]);
+
+                    DB::commit();
+                    
+                    Log::info('VNPAY Payment Success', ['booking_id' => $bookingId]);
+                    
+                    return redirect()->route('client.account.tickets')
+                        ->with('success', 'Thanh toán VNPAY thành công! Vé của bạn đã được xác nhận.');
+
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    Log::error('Update Booking Error: ' . $e->getMessage());
+                    
+                    return redirect()->route('client.account.tickets')
+                        ->with('error', 'Lỗi cập nhật trạng thái đơn hàng.');
+                }
+            } else {
+                // Thanh toán thất bại
+                Log::warning('VNPAY Payment Failed', [
+                    'booking_id' => $bookingId,
+                    'response_code' => $inputData['vnp_ResponseCode']
+                ]);
+                
+                $booking->update(['status' => 'cancelled']);
+                Ticket::where('booking_id', $booking->id)->update(['status' => 'cancelled']);
+
+                return redirect()->route('client.account.tickets')
+                    ->with('error', 'Giao dịch thanh toán thất bại hoặc bị hủy bỏ. Mã lỗi: ' . $inputData['vnp_ResponseCode']);
+            }
+        } else {
+            Log::error('VNPAY Signature Mismatch', [
+                'booking_id' => $bookingId,
+                'calculated' => $secureHash,
+                'received' => $vnp_SecureHash,
+                'hashdata' => $hashdata
+            ]);
+            
+            return redirect()->route('client.trips')
+                ->with('error', 'Chữ ký bảo mật không hợp lệ! Vui lòng liên hệ hỗ trợ.');
+        }
+    }
 
     /**
      * API lấy giá vé
@@ -123,7 +335,6 @@ class BookingController extends Controller
     {
         $trip = Trip::find($request->trip_id);
 
-        // Gọi hàm mới
         $fareInfo = $this->calculateFareInfo($trip, $request->pickup_id, $request->dropoff_id);
 
         return response()->json([
@@ -133,13 +344,11 @@ class BookingController extends Controller
         ]);
     }
 
-
     /**
      * Hàm tính đơn giá
      */
     private function calculateFareInfo($trip, $pickupId, $dropoffId)
     {
-        // Mặc định
         $info = [
             'price' => (int) ($trip->ticket_price ?? $trip->price ?? 0),
             'point_fare_id' => null

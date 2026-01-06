@@ -80,7 +80,8 @@
                         </label>
                         <input type="date" name="departure_date" id="departure_date"
                             class="form-control @error('departure_date') is-invalid @enderror"
-                            value="{{ old('departure_date', \Carbon\Carbon::today()->format('Y-m-d')) }}" required>
+                            min="{{ \Carbon\Carbon::today()->format('Y-m-d') }}"
+                            value="{{ old('departure_date', \Carbon\Carbon::today()->format('Y-m-d')) }}">
                         @error('departure_date')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror

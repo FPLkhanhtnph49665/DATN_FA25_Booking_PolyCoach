@@ -71,6 +71,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('trips/{trip}/select-seat', [TripController::class, 'selectSeat'])
         ->name('client.trips.select-seat');
+
+    // VNpay return
+    Route::get('/booking/vnpay-return', [ClientBookingController::class, 'vnpayReturn'])
+    ->name('client.bookings.vnpay_return');
 });
 
 

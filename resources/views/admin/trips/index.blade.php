@@ -262,7 +262,8 @@
                                     <th>Họ và tên</th>
                                     <th>Số điện thoại</th>
                                     <th>Điểm đón</th>
-                                    <th>Trạng thái thanh toán</th>
+                                    <th>Giá</th>
+                                    <th>Trạng thái</th>
                                 </tr>
                             </thead>
                             <tbody id="passengerTableBody">
@@ -362,6 +363,10 @@
                         let passengerPhone = ticket.user.phone || '-';
                         let seatNumber = ticket.seat_code || '-';
                         let pickupPoint = ticket.point_fare?.pickup_point?.name || 'bến xe chính';
+                        let price = ticket.point_fare?.price ? new Intl.NumberFormat('vi-VN', {
+                            style: 'currency',
+                            currency: 'VND'
+                        }).format(ticket.price) : 'giá gốc';
 
                         const row = `
                         <tr>
@@ -369,6 +374,7 @@
                             <td>${passengerName}</td>
                             <td><a href="tel:${passengerPhone}" class="text-decoration-none text-dark">${passengerPhone}</a></td>
                             <td class="small text-muted">${pickupPoint}</td>
+                            <td>${price}</td>
                             <td>${statusBadge}</td>
                         </tr>
                     `;
