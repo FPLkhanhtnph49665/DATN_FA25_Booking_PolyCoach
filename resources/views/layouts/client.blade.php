@@ -532,21 +532,9 @@
                         </a>
                     </li>
                     <li>
-                        <a class="main-nav-link" href="#">
-                            Tra cứu vé
-                        </a>
-                    </li>
-                    <li>
                         <a class="main-nav-link {{ request()->is('tin-tuc*') ? 'active' : '' }}"
                             href="{{ url('/tin-tuc') }}">
                             Tin tức
-                        </a>
-                    </li>
-
-
-                    <li>
-                        <a class="main-nav-link" href="#">
-                            Hóa đơn
                         </a>
                     </li>
                     <li>
@@ -716,7 +704,7 @@
                         !href.startsWith('javascript') &&
                         this.target !== '_blank' &&
                         !this.classList.contains(
-                        'btn-booking-action') // Bỏ qua nếu là nút đặt vé có delay riêng
+                            'btn-booking-action') // Bỏ qua nếu là nút đặt vé có delay riêng
                     ) {
                         e.preventDefault(); // Chặn chuyển trang ngay
                         activateLoader(); // Hiện loader và blur
@@ -789,5 +777,4 @@
         });
     </script>
 </body>
-
 </html>

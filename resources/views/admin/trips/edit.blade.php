@@ -16,14 +16,6 @@
                 Cập nhật thông tin chuyến xe: tuyến, xe, ngày giờ khởi hành, giờ đến và giá vé.
             </p>
         </div>
-
-        <div class="d-flex gap-2">
-            <a href="{{ route('admin.trips.index') }}"
-               class="btn btn-outline-light d-flex align-items-center gap-1">
-                <i class="bi bi-arrow-left"></i>
-                <span>Quay lại danh sách</span>
-            </a>
-        </div>
     </div>
 
     {{-- Thông báo lỗi --}}

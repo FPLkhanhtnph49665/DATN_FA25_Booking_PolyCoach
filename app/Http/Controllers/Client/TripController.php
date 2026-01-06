@@ -37,8 +37,8 @@ class TripController extends Controller
         ->withCount('tickets')
         ->where('status', 1)
         ->orderBy('trip_status', 'asc')// Chuyến chưa khởi hành ưu tiên hiển thị trước
-        ->orderBy('departure_date', 'asc')
-        ->orderBy('departure_time', 'asc');
+        ->orderBy('departure_date', 'desc')
+        ->orderBy('departure_time', 'desc');
         
 
         // 3. Áp dụng các bộ lọc tại tầng Database

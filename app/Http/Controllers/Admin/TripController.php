@@ -16,7 +16,7 @@ class TripController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Trip::with(['route.fromCity', 'route.toCity', 'bus', 'checker'])
+        $query = Trip::with(['route.fromCity', 'route.toCity', 'bus', 'checker', 'tickets.user', 'tickets.pointFare.pickupPoint', 'tickets.pointFare.dropoffPoint'])
             ->withCount('tickets')
             ->orderByDesc('departure_date')
             ->orderByDesc('departure_time');
@@ -81,7 +81,7 @@ class TripController extends Controller
         $data = $request->validate([
             'route_id' => 'required|exists:routes,id',
             'bus_id' => 'required|exists:buses,id',
-            'departure_date' => 'required|date',
+            'departure_date' => 'required|date|after_or_equal:today',
             'departure_time' => 'required|date_format:H:i',
             'arrival_time' => 'required|date_format:H:i',
             'ticket_price' => 'required|integer|min:0',
@@ -91,6 +91,7 @@ class TripController extends Controller
             'route_id.required' => 'Vui lòng chọn tuyến đường.',
             'bus_id.required' => 'Vui lòng chọn xe.',
             'departure_date.required' => 'Vui lòng nhập ngày khởi hành.',
+            'departure_date.after_or_equal' => 'Ngày khởi hành phải là ngày hôm nay hoặc sau đó.',
             'departure_time.required' => 'Vui lòng nhập giờ khởi hành.',
             'arrival_time.required' => 'Vui lòng nhập giờ đến nơi.',
             'ticket_price.required' => 'Vui lòng nhập giá vé.',
