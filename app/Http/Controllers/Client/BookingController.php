@@ -180,73 +180,93 @@ class BookingController extends Controller
      * Xử lý callback từ VNPAY
      */
     public function vnpayReturn(Request $request)
-    {
-        $vnp_HashSecret = "CU8UV3X75ESW6JTTQYWELYQMOZ17HKCG"; // Secret Key mới của bạn
-        $vnp_SecureHash = $request->vnp_SecureHash;
-        $inputData = [];
+{
+    $vnp_HashSecret = "CU8UV3X75ESW6JTTQYWELYQMOZ17HKCG";
+    $vnp_SecureHash = $request->vnp_SecureHash;
+    $inputData = [];
 
-        foreach ($request->all() as $key => $value) {
-            if (substr($key, 0, 4) == "vnp_") {
-                $inputData[$key] = $value;
-            }
-        }
-
-        unset($inputData['vnp_SecureHash']);
-        ksort($inputData);
-        $i = 0;
-        $hashData = "";
-        foreach ($inputData as $key => $value) {
-            if ($i == 1) {
-                $hashData .= '&' . urlencode($key) . "=" . urlencode($value);
-            } else {
-                $hashData .= urlencode($key) . "=" . urlencode($value);
-                $i = 1;
-            }
-        }
-
-        $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
-
-        if ($secureHash === $vnp_SecureHash) {
-            // Lấy Booking ID từ chuỗi "ID_Timestamp"
-            $bookingId = explode('_', $request->vnp_TxnRef)[0];
-            $booking = Booking::with('tickets')->find($bookingId);
-
-            if ($request->vnp_ResponseCode == '00') {
-                DB::beginTransaction();
-                try {
-                    // 1. Cập nhật bảng Bookings: status = 'paid'
-                    $booking->update(['status' => 'paid']);
-
-                    // 2. Cập nhật bảng Tickets: status = 'paid'
-                    $ticketIds = $booking->tickets->pluck('id');
-                    Ticket::whereIn('id', $ticketIds)->update(['status' => 'paid']);
-
-                    // 3. Lưu thông tin vào bảng Payments: status = 'success'
-                    // Vì bảng payments của bạn có ticket_id, ta tạo bản ghi cho từng vé (hoặc theo logic của bạn)
-                    foreach ($booking->tickets as $ticket) {
-                        Payment::create([
-                            'ticket_id' => $ticket->id,
-                            'user_id' => $booking->user_id,
-                            'amount' => $ticket->price, // Hoặc tổng số tiền tùy logic
-                            'payment_method' => 'vnpay',
-                            'status' => 'success',
-                            'transaction_code' => $request->vnp_TransactionNo, // Mã giao dịch từ VNPAY
-                        ]);
-                    }
-
-                    DB::commit();
-                    return redirect()->route('client.account.tickets')->with('success', 'Thanh toán thành công!');
-                } catch (\Exception $e) {
-                    DB::rollBack();
-                    return redirect()->route('client.account.tickets')->with('error', 'Lỗi lưu dữ liệu: ' . $e->getMessage());
-                }
-            } else {
-                return redirect()->route('client.account.tickets')->with('error', 'Giao dịch không thành công. Mã lỗi: ' . $request->vnp_ResponseCode);
-            }
-        } else {
-            return redirect()->route('client.account.tickets')->with('error', 'Chữ ký không hợp lệ!');
+    foreach ($request->all() as $key => $value) {
+        if (substr($key, 0, 4) == "vnp_") {
+            $inputData[$key] = $value;
         }
     }
+
+    unset($inputData['vnp_SecureHash']);
+    ksort($inputData);
+    $i = 0;
+    $hashData = "";
+    foreach ($inputData as $key => $value) {
+        if ($i == 1) {
+            $hashData .= '&' . urlencode($key) . "=" . urlencode($value);
+        } else {
+            $hashData .= urlencode($key) . "=" . urlencode($value);
+            $i = 1;
+        }
+    }
+
+    $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
+
+    // 1. Kiểm tra chữ ký
+    if ($secureHash !== $vnp_SecureHash) {
+        Log::error("VNPAY Error: Sai chữ ký xác thực.");
+        return redirect()->route('client.account.tickets')->with('error', 'Sai chữ ký xác thực từ VNPAY.');
+    }
+
+    // 2. Lấy và kiểm tra tồn tại của Booking
+    $txnRefParts = explode('_', $request->vnp_TxnRef);
+    $bookingId = $txnRefParts[0];
+    $booking = Booking::with('tickets')->find($bookingId);
+
+    if (!$booking) {
+        Log::error("VNPAY Error: Không tìm thấy Booking ID: " . $bookingId);
+        return redirect()->route('client.account.tickets')->with('error', 'Đơn hàng không tồn tại trên hệ thống.');
+    }
+
+    // 3. Kiểm tra trạng thái thanh toán từ VNPAY
+    if ($request->vnp_ResponseCode !== '00') {
+        Log::warning("VNPAY Warning: Giao dịch thất bại. Mã lỗi: " . $request->vnp_ResponseCode);
+        return redirect()->route('client.account.tickets')->with('error', 'Thanh toán thất bại hoặc đã bị hủy.');
+    }
+
+    // 4. Xử lý lưu database trong Transaction
+    DB::beginTransaction();
+    try {
+        // Cập nhật Bookings
+        $booking->status = 'paid';
+        $booking->save();
+
+        // Kiểm tra nếu booking không có vé
+        if ($booking->tickets->isEmpty()) {
+            throw new \Exception("Booking #{$bookingId} không có vé liên quan.");
+        }
+
+        foreach ($booking->tickets as $ticket) {
+            // Cập nhật Tickets
+            $ticket->status = 'paid';
+            $ticket->save();
+
+            // Lưu thông tin vào bảng Payments
+            // Đảm bảo Model Payment đã khai báo fillable cho các trường này
+            Payment::create([
+                'ticket_id'        => $ticket->id,
+                'user_id'          => $booking->user_id,
+                'amount'           => $ticket->price,
+                'payment_method'   => 'vnpay',
+                'status'           => 'success',
+                'transaction_code' => $request->vnp_TransactionNo,
+            ]);
+        }
+
+        DB::commit();
+        Log::info("VNPAY Success: Booking #{$bookingId} đã thanh toán thành công.");
+        return redirect()->route('client.account.tickets')->with('success', 'Thanh toán thành công!');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error("Database Error tại vnpayReturn: " . $e->getMessage());
+        return redirect()->route('client.account.tickets')->with('error', 'Lỗi hệ thống khi cập nhật đơn hàng: ' . $e->getMessage());
+    }
+}
     /**
      * API lấy giá vé
      */
