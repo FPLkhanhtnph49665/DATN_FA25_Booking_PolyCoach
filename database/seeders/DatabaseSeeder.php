@@ -2,28 +2,31 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use App\Models\City;
-use App\Models\Route;
+use Carbon\Carbon;
 use App\Models\Bus;
-use App\Models\Trip;
+use App\Models\City;
 
-use App\Models\PickupDropoffPoint;
 use App\Models\News;
-
-use App\Models\PickupPoint;
-use App\Models\DropoffPoint;
+use App\Models\Trip;
+use App\Models\User;
+use App\Models\Route;
 use App\Models\PointFare;
+use App\Models\PickupPoint;
+use Illuminate\Support\Str;
+use App\Models\DropoffPoint;
+use Illuminate\Database\Seeder;
+use App\Models\PickupDropoffPoint;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // =========================
-        // 0. Seed Cities
-        // =========================
+        /**
+         * ======================================================
+         * 1. CITIES – Thành phố
+         * ======================================================
+         */
         $cityData = [
             ['name' => 'Hà Nội', 'code' => 'HN'],
             ['name' => 'TP. Hồ Chí Minh', 'code' => 'HCM'],
@@ -33,218 +36,239 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Nha Trang', 'code' => 'NT'],
             ['name' => 'Huế', 'code' => 'HUE'],
             ['name' => 'Vinh', 'code' => 'VINH'],
-            ['name' => 'Buôn Ma Thuột', 'code' => 'BMT'],
             ['name' => 'Đà Lạt', 'code' => 'DL'],
         ];
 
         $cities = collect();
-        foreach ($cityData as $data) {
-            $cities[$data['code']] = City::updateOrCreate(
-                ['code' => $data['code']],
-                ['name' => $data['name'], 'status' => 1]
+        foreach ($cityData as $item) {
+            $cities[$item['code']] = City::updateOrCreate(
+                ['code' => $item['code']],
+                ['name' => $item['name'], 'status' => 1]
             );
         }
 
-        // =========================
-        // 1. Seed Users
-        // =========================
-        $users = [
-            ['email' => 'admin@polycoach.test',   'role' => 'admin',   'first_name' => 'Super', 'last_name' => 'Admin'],
-            ['email' => 'staff@polycoach.test',   'role' => 'staff',   'first_name' => 'Test',  'last_name' => 'Staff'],
-            ['email' => 'checker@polycoach.test', 'role' => 'checker', 'first_name' => 'Test',  'last_name' => 'Checker'],
-            ['email' => 'user@polycoach.test',    'role' => 'user',    'first_name' => 'Test',  'last_name' => 'User'],
+        /**
+         * ======================================================
+         * 2. USERS – Tài khoản hệ thống (CỐ ĐỊNH)
+         * ======================================================
+         */
+        $systemUsers = [
+            ['email' => 'admin@polycoach.test',   'role' => 'admin',   'name' => 'Super Admin'],
+            ['email' => 'staff@polycoach.test',   'role' => 'staff',   'name' => 'Staff User'],
+            ['email' => 'checker@polycoach.test', 'role' => 'checker', 'name' => 'Checker User'],
         ];
 
-        foreach ($users as $u) {
+        foreach ($systemUsers as $u) {
             User::updateOrCreate(
                 ['email' => $u['email']],
                 [
-                    'user_code' => 'DATN_FA25_PoLyCoach_' . ucfirst($u['role']) . '_4953',
-                    'first_name' => $u['first_name'],
-                    'last_name' => $u['last_name'],
-                    'full_name' => $u['first_name'] . ' ' . $u['last_name'],
-                    'password'  => Hash::make('1'),
-                    'role'      => $u['role'],
-                    'status'    => 1,
+                    'user_code' => 'PC-' . strtoupper($u['role']) . '-' . now()->format('Ymd') . '-' . rand(1000, 9999),
+                    'first_name' => explode(' ', $u['name'])[0],
+                    'last_name'  => explode(' ', $u['name'])[1] ?? '',
+                    'full_name'  => $u['name'],
+                    'password'   => Hash::make('Poly@123'),
+                    'role'       => $u['role'],
+                    'status'     => 1,
                 ]
             );
         }
 
-        User::factory()->count(2)->create(); // thêm vài user random
-        // Admin cố định
-        User::updateOrCreate(
-            ['email' => 'admin@polycoach.test'],
-            [
-                'user_code'  => 'DATN_FA25_PoLyCoach_Admin_4953',
-                'first_name' => 'Super',
-                'last_name'  => 'Admin',
-                'full_name'  => 'Super Admin',
-                'password'   => Hash::make('1'), // 🔐
-                'role'       => 'admin',
-                'status'     => 1,
-            ]
-        );
+        // User khách hàng (random)
+        User::factory()->count(10)->state(['role' => 'user'])->create();
 
-        // User cố định
-        User::updateOrCreate(
-            ['email' => 'user@polycoach.test'],
-            [
-                'user_code'  => 'DATN_FA25_PoLyCoach_User_4953',
-                'first_name' => 'Test',
-                'last_name'  => 'User',
-                'full_name'  => 'Test User',
-                'password'   => Hash::make('1'),
-                'role'       => 'user',
-                'status'     => 1,
-            ]
-        );
-        User::updateOrCreate(
-            ['email' => 'staff@polycoach.test'],
-            [
-                'user_code'  => 'DATN_FA25_PoLyCoach_Staff_4953',
-                'first_name' => 'Test',
-                'last_name'  => 'Staff',
-                'full_name'  => 'Test Staff',
-                'password'   => Hash::make('1'),
-                'role'       => 'staff',
-                'status'     => 1,
-            ]
-        );
-        User::updateOrCreate(
-            ['email' => 'checker@polycoach.test'],
-            [
-                'user_code'  => 'DATN_FA25_PoLyCoach_Checker_4953',
-                'first_name' => 'Test',
-                'last_name'  => 'Checker',
-                'full_name'  => 'Test Checker',
-                'password'   => Hash::make('1'),
-                'role'       => 'checker',
-                'status'     => 1,
-            ]
-        );
-
-        // Thêm 3 admin random (factory của ông đang dùng field gì thì giữ nguyên)
-        User::factory()
-            ->count(1)
-            ->state(['role' => 'admin'])
-            ->create();
-
-        // Thêm 5 user random
-        User::factory()
-            ->count(1)
-            ->state(['role' => 'user'])
-            ->create();
-        // =====================================
-        // 2. Seed Routes (from_city_id / to_city_id)
-        // =====================================
-        // =========================
-        // 2. Seed Routes
-        // =========================
+        /**
+         * ======================================================
+         * 3. ROUTES – Tuyến đường
+         * ======================================================
+         */
         $routeData = [
-            ['from' => 'HN', 'to' => 'HCM', 'distance' => 1700, 'estimated_time' => '22:00:00'],
-            ['from' => 'HCM', 'to' => 'HN', 'distance' => 1700, 'estimated_time' => '23:00:00'],
-            ['from' => 'HN', 'to' => 'DN', 'distance' => 800,  'estimated_time' => '15:00:00'],
-            ['from' => 'DN', 'to' => 'HCM', 'distance' => 960,  'estimated_time' => '18:00:00'],
-            ['from' => 'HCM', 'to' => 'CT', 'distance' => 170,  'estimated_time' => '04:00:00'],
-            ['from' => 'HCM', 'to' => 'NT', 'distance' => 430,  'estimated_time' => '09:00:00'],
-            ['from' => 'HCM', 'to' => 'DL', 'distance' => 300,  'estimated_time' => '08:00:00'],
-            ['from' => 'HN', 'to' => 'HP', 'distance' => 120,  'estimated_time' => '03:00:00'],
-            ['from' => 'HN', 'to' => 'VINH', 'distance' => 300,  'estimated_time' => '06:00:00'],
-            ['from' => 'HUE', 'to' => 'DN', 'distance' => 100,  'estimated_time' => '02:30:00'],
+            ['from' => 'HN', 'to' => 'HCM', 'distance' => 1700, 'time' => '22:00:00'],
+            ['from' => 'HCM', 'to' => 'HN', 'distance' => 1700, 'time' => '23:00:00'],
+            ['from' => 'HN', 'to' => 'DN',  'distance' => 800,  'time' => '15:00:00'],
+            ['from' => 'DN', 'to' => 'HCM', 'distance' => 960,  'time' => '18:00:00'],
+            ['from' => 'HCM', 'to' => 'CT', 'distance' => 170,  'time' => '04:00:00'],
         ];
 
         $routes = collect();
-        foreach ($routeData as $data) {
-            $fromCity = $cities[$data['from']] ?? null;
-            $toCity   = $cities[$data['to']] ?? null;
-            if (!$fromCity || !$toCity) continue;
-
+        foreach ($routeData as $r) {
             $route = Route::updateOrCreate(
-                ['from_city_id' => $fromCity->id, 'to_city_id' => $toCity->id],
-                ['distance' => $data['distance'], 'estimated_time' => $data['estimated_time'], 'status' => 1]
+                [
+                    'from_city_id' => $cities[$r['from']]->id,
+                    'to_city_id'   => $cities[$r['to']]->id,
+                ],
+                [
+                    'distance'       => $r['distance'],
+                    'estimated_time' => $r['time'],
+                    'status'         => 1,
+                ]
             );
-
             $routes->push($route);
         }
 
-        // =========================
-        // 3. Seed Buses
-        // =========================
+        /**
+         * ======================================================
+         * 4. BUSES – Xe
+         * ======================================================
+         */
         $busData = [
-            ['plate_number' => '29B-88888', 'seat_count' => 32, 'type' => 'sleeper', 'status' => 1],
-            ['plate_number' => '51B-12345', 'seat_count' => 32, 'type' => 'sleeper', 'status' => 1],
-            ['plate_number' => '43B-54953', 'seat_count' => 32, 'type' => 'limousine', 'status' => 1],
-            ['plate_number' => '29A-34953', 'seat_count' => 32, 'type' => 'seat', 'status' => 1],
-            ['plate_number' => '29A-44953', 'seat_count' => 32, 'type' => 'seat', 'status' => 0],
+            ['plate' => '29B-88888', 'type' => 'sleeper',    'seats' => 32],
+            ['plate' => '51B-12345', 'type' => 'sleeper',    'seats' => 32],
+            ['plate' => '43B-45678', 'type' => 'limousine', 'seats' => 32],
+            ['plate' => '29A-34567', 'type' => 'seat',      'seats' => 32],
         ];
 
         $buses = collect();
-        foreach ($busData as $data) {
+        foreach ($busData as $b) {
             $buses->push(
                 Bus::updateOrCreate(
-                    ['plate_number' => $data['plate_number']],
-                    ['seat_count' => $data['seat_count'], 'type' => $data['type'], 'status' => $data['status']]
+                    ['plate_number' => $b['plate']],
+                    ['type' => $b['type'], 'seat_count' => $b['seats'], 'status' => 1]
                 )
             );
         }
 
-        // =========================
-        // 4. Seed Trips
-        // =========================
-        if ($routes->isNotEmpty() && $buses->isNotEmpty()) {
-            Trip::factory()->count(20)->state(function () use ($routes, $buses) {
-                return [
-                    'route_id' => $routes->random()->id,
-                    'bus_id'   => $buses->random()->id,
-                ];
-            })->create();
+        /**
+         * ======================================================
+         * 5. TRIPS – Chuyến xe (CÓ LOGIC THỜI GIAN)
+         * ======================================================
+         */
+        foreach (range(1, 20) as $i) {
+            $route = $routes->random();
+            $bus   = $buses->random();
+
+            // DateTime xuất bến
+            $departureDateTime = Carbon::now()
+                ->addDays(rand(1, 20))
+                ->setTime(rand(5, 22), 0);
+
+            // DateTime đến (sau 4–24h)
+            $arrivalDateTime = (clone $departureDateTime)
+                ->addHours(rand(4, 24));
+
+            // Cao điểm Tết
+            $isTet = $departureDateTime->between(
+                Carbon::create($departureDateTime->year, 1, 25),
+                Carbon::create($departureDateTime->year, 2, 15)
+            );
+
+            Trip::create([
+                'route_id'        => $route->id,
+                'bus_id'          => $bus->id,
+
+                // Thời gian xuất bến
+                'departure_date'  => $departureDateTime->toDateString(),
+                'departure_time'  => $departureDateTime->format('H:i:s'),
+
+                // Thời gian đến
+                'arrival_date'    => $arrivalDateTime->toDateString(),
+                'arrival_time'    => $arrivalDateTime->format('H:i:s'),
+
+                // Giá vé
+                'ticket_price'    => $isTet
+                    ? rand(450000, 700000)
+                    : rand(200000, 450000),
+
+                // Trạng thái
+                'status'          => 1, // hiển thị
+                'trip_status'     => 1, // đã duyệt
+
+                // Mã chuyến
+                'trip_code'       => 'TRIP-' . strtoupper(Str::random(8)),
+
+                // Duyệt chuyến
+                'checked_at'      => now(),
+                'checked_by'      => 1, // admin
+            ]);
         }
 
-        // =========================
-        // 5. Seed Pickup / Dropoff Points
-        // =========================
+        /**
+         * ======================================================
+         * 6. PICKUP / DROPOFF POINTS
+         * ======================================================
+         */
         foreach ($routes as $route) {
             $fromCity = $route->fromCity;
             $toCity   = $route->toCity;
 
-            // Pickup Points
-            PickupPoint::updateOrCreate(
-                ['route_id' => $route->id, 'name' => 'Bến xe ' . $fromCity->name],
-                ['address' => 'Bến xe trung tâm ' . $fromCity->name, 'order' => 1]
-            );
-            PickupPoint::updateOrCreate(
-                ['route_id' => $route->id, 'name' => 'Văn phòng ' . $fromCity->name],
-                ['address' => 'Văn phòng PoLyCoach tại ' . $fromCity->name, 'order' => 2]
-            );
+            $points = [
+                // Pickup
+                [
+                    'route_id' => $route->id,
+                    'type'     => 'pickup',
+                    'name'     => 'Bến xe trung tâm ' . $fromCity->name,
+                    'address'  => 'Bến xe trung tâm ' . $fromCity->name,
+                    // 'order'    => 1,
+                    'active'   => 1,
+                ],
+                [
+                    'route_id' => $route->id,
+                    'type'     => 'pickup',
+                    'name'     => 'Văn phòng chính ' . $fromCity->name,
+                    'address'  => 'Văn phòng PoLyCoach tại ' . $fromCity->name,
+                    // 'order'    => 2,
+                    'active'   => 1,
+                ],
 
-            // Dropoff Points
-            DropoffPoint::updateOrCreate(
-                ['route_id' => $route->id, 'name' => 'Bến xe ' . $toCity->name],
-                ['address' => 'Bến xe trung tâm ' . $toCity->name, 'order' => 1]
-            );
-            DropoffPoint::updateOrCreate(
-                ['route_id' => $route->id, 'name' => 'Văn phòng ' . $toCity->name],
-                ['address' => 'Văn phòng PoLyCoach tại ' . $toCity->name, 'order' => 2]
-            );
+                // Dropoff
+                [
+                    'route_id' => $route->id,
+                    'type'     => 'dropoff',
+                    'name'     => 'Bến xe trung tâm ' . $toCity->name,
+                    'address'  => 'Bến xe trung tâm ' . $toCity->name,
+                    // 'order'    => 1,
+                    'active'   => 1,
+                ],
+                [
+                    'route_id' => $route->id,
+                    'type'     => 'dropoff',
+                    'name'     => 'Văn phòng chính ' . $toCity->name,
+                    'address'  => 'Văn phòng PoLyCoach tại ' . $toCity->name,
+                    // 'order'    => 2,
+                    'active'   => 1,
+                ],
+            ];
+
+            PickupDropoffPoint::insert($points);
         }
 
-        // =========================
-        // 6. Seed Point Fares (giá vé giữa các điểm)
-        // =========================
-        $points = PickupDropoffPoint::all();
+        /**
+         * ======================================================
+         * 7. POINT FARES – Giá vé giữa các điểm
+         * ======================================================
+         */
+        foreach ($routes as $route) {
 
-        foreach ($points as $pickup) {
-            foreach ($points->where('route_id', $pickup->route_id) as $dropoff) {
-                PointFare::updateOrCreate(
-                    [
-                        'route_id' => $pickup->route_id,
-                        'pickup_point_id' => $pickup->id,
-                        'dropoff_point_id' => $dropoff->id,
-                    ],
-                    ['price' => rand(100000, 500000)]
-                );
+            $pickups = PickupDropoffPoint::where('route_id', $route->id)
+                ->where('type', 'pickup')
+                ->get();
+
+            $dropoffs = PickupDropoffPoint::where('route_id', $route->id)
+                ->where('type', 'dropoff')
+                ->get();
+
+            foreach ($pickups as $pickup) {
+                foreach ($dropoffs as $dropoff) {
+
+                    PointFare::updateOrCreate(
+                        [
+                            'route_id'         => $route->id,
+                            'pickup_point_id'  => $pickup->id,
+                            'dropoff_point_id' => $dropoff->id,
+                        ],
+                        [
+                            'price'  => rand(200000, 600000),
+                            'active' => 1,
+                        ]
+                    );
+                }
             }
         }
+        /**
+         * ======================================================
+         * 8. NEWS – Tin tức
+         * ======================================================
+         */
+        $adminId = User::where('role', 'admin')->first()->id;
 
         News::create([
             'title' => 'Vé xe đón Tết sum vầy – Hành trình trở về nhà trọn vẹn',
@@ -267,8 +291,10 @@ class DatabaseSeeder extends Seeder
     ',
             'category' => 'Nổi bật',
             'is_featured' => true,
+            'status' => 'published',
             'published_at' => now(),
         ]);
+
         News::create([
             'title' => 'Kinh nghiệm đặt vé xe dịp Tết tránh hết vé, tránh cò',
             'slug' => 'kinh-nghiem-dat-ve-xe-dip-tet',
@@ -288,8 +314,10 @@ class DatabaseSeeder extends Seeder
     ',
             'category' => 'Kinh nghiệm',
             'is_featured' => false,
+            'status' => 'published',
             'published_at' => now(),
         ]);
+
         News::create([
             'title' => 'Những tuyến xe đông khách nhất dịp Tết Nguyên Đán',
             'slug' => 'nhung-tuyen-xe-dong-khach-dip-tet',
@@ -309,8 +337,10 @@ class DatabaseSeeder extends Seeder
     ',
             'category' => 'Tuyến xe',
             'is_featured' => false,
+            'status' => 'published',
             'published_at' => now(),
         ]);
+
         News::create([
             'title' => 'Những lưu ý quan trọng khi đi xe đường dài ngày Tết',
             'slug' => 'luu-y-khi-di-xe-duong-dai-ngay-tet',
@@ -330,8 +360,10 @@ class DatabaseSeeder extends Seeder
     ',
             'category' => 'Lưu ý',
             'is_featured' => false,
+            'status' => 'published',
             'published_at' => now(),
         ]);
+
         News::create([
             'title' => 'Vì sao nên đặt vé xe sớm trước Tết Nguyên Đán',
             'slug' => 'vi-sao-nen-dat-ve-xe-som-truoc-tet',
@@ -351,6 +383,7 @@ class DatabaseSeeder extends Seeder
     ',
             'category' => 'Mẹo hay',
             'is_featured' => false,
+            'status' => 'published',
             'published_at' => now(),
         ]);
     }
