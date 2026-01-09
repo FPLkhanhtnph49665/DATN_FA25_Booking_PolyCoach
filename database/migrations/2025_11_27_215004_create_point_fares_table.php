@@ -14,6 +14,7 @@ return new class extends Migration
             $table->foreignId('pickup_point_id')->constrained('pickup_dropoff_points')->onDelete('cascade');
             $table->foreignId('dropoff_point_id')->constrained('pickup_dropoff_points')->onDelete('cascade');
             $table->decimal('price', 10, 2);
+             $table->boolean('active')->default(1);
             $table->timestamps();
 
             $table->unique(['route_id', 'pickup_point_id', 'dropoff_point_id'], 'unique_route_point_fare');

@@ -19,9 +19,12 @@ return new class extends Migration
     $table->text('excerpt')->nullable();
     $table->longText('content');
     $table->string('category')->default('Tin tức');
+    $table->string('status', 20)->default('draft');
     $table->boolean('is_featured')->default(false);
     $table->date('published_at')->nullable();
     $table->timestamps();
+    $table->softDeletes();
+
 });
 
     }
