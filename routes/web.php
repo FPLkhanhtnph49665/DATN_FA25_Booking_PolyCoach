@@ -63,7 +63,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/dat-ve', [ClientBookingController::class, 'store'])
         ->name('client.bookings.store');
 
-    Route::get('/da-dat-ve/{booking}', [ClientBookingController::class, 'show'])
+    Route::get('/bookings/{id}/vnpay-return', [ClientBookingController::class, 'vnpayReturn'])
         ->name('client.bookings.show');
 
     Route::get('/api/get-fare', [ClientBookingController::class, 'getFare'])
@@ -73,8 +73,8 @@ Route::middleware('auth')->group(function () {
         ->name('client.trips.select-seat');
 
     // VNpay return
-    Route::get('/booking/vnpay-return', [ClientBookingController::class, 'vnpayReturn'])
-    ->name('client.bookings.vnpay_return');
+    Route::get('/vnpay-return', [ClientBookingController::class, 'vnpayReturn'])
+        ->name('vnpay.return');
 });
 
 
