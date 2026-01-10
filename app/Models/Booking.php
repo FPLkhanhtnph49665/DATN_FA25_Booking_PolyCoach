@@ -51,7 +51,10 @@ class Booking extends Model
     {
         return $this->hasMany(Review::class, 'booking_id');
     }
-
+    public function payment()
+    {
+        return $this->hasOne(Payment::class);
+    }
     // Lấy toàn bộ hành khách của booking thông qua tickets (ĐÚNG CHUẨN)
     public function passengers()
     {

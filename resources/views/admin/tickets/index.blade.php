@@ -164,7 +164,7 @@
 
                                     {{-- Giá vé --}}
 
-                                    <td>
+                                    <td class="fw-semibold text-success">
                                         @if ($ticket->price !== null)
                                             {{ number_format($ticket->price, 0, ',', '.') }} VND
                                         @else
@@ -200,7 +200,7 @@
 
                                         @if ($method !== '-')
                                             <span
-                                                class="badge bg-secondary-subtle text-light border border-secondary-subtle">
+                                                class="badge bg-info-subtle text-info border border-info-subtle">
                                                 {{ ucfirst($method) }}
                                             </span>
                                         @else

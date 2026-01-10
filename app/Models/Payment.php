@@ -11,7 +11,7 @@ class Payment extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'ticket_id',       // FK to tickets
+        'booking_id',      // FK to bookings
         'user_id',         // FK to users
         'amount',          // payment amount
         'payment_method',          // payment method: cash / momo / bank / etc.
@@ -26,10 +26,13 @@ class Payment extends Model
     // -------------------------------
     // 🔗 RELATIONSHIPS
     // -------------------------------
-
-    public function ticket()
+    public function tickets()
     {
-        return $this->belongsTo(Ticket::class);
+        return $this->hasMany(Ticket::class);
+    }
+    public function booking()
+    {
+        return $this->belongsTo(Booking::class);
     }
 
     public function user()

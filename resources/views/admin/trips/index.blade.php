@@ -82,7 +82,7 @@
                                 <th class="text-muted small">Tuyến</th>
                                 <th class="text-muted small">Xe</th>
                                 <th class="text-muted small">khởi hành</th>
-                                <th class="text-muted small">Giờ đến dự kiến</th>
+                                <th class="text-muted small">Giờ đến</th>
                                 <th class="text-muted small">Giá vé</th>
                                 <th class="text-muted small">Ghế còn trống</th>
                                 <th class="text-muted small">Trạng thái</th>
@@ -128,8 +128,8 @@
 
                                     {{-- Giá vé --}}
                                     <td>
-                                        <span class="badge bg-secondary-subtle text-dark border border-primary-subtle">
-                                            {{ number_format($trip->ticket_price ?? 0, 0, ',', '.') }}₫
+                                        <span class="fw-semibold text-success">
+                                            {{ number_format($trip->ticket_price ?? 0, 0, ',', '.') }} VND
                                         </span>
                                     </td>
 
@@ -207,7 +207,7 @@
                                     {{-- Hành động --}}
                                     <td class="text-center">
                                         <a href="{{ route('admin.trips.edit', $trip->id) }}"
-                                            class="btn btn-sm btn-outline-warning me-1">
+                                            class="btn btn-sm btn-outline-info me-1">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
 

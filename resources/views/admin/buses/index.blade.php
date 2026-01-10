@@ -147,7 +147,7 @@
                                     </td>
                                     <td class="text-end">
                                         <a href="{{ route('admin.buses.edit', $bus->id) }}"
-                                            class="btn btn-sm btn-outline-warning me-1">
+                                            class="btn btn-sm btn-outline-info me-1">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
 

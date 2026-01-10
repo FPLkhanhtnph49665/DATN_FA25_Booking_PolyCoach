@@ -320,15 +320,39 @@
 
                                         {{-- TRẠNG THÁI (Lấy từ Booking) --}}
                                         <td class="text-center">
-                                            @if ($booking->status == 'pending')
-                                                <span class="badge bg-warning text-dark">Chờ xử lý</span>
-                                            @elseif($booking->status == 'paid')
-                                                <span class="badge bg-success">Đã hoàn thành</span>
-                                            @elseif($booking->status == 'cancelled')
-                                                <span class="badge bg-danger">Đã hủy</span>
-                                            @else
-                                                <span class="badge bg-secondary">Không xác định</span>
-                                            @endif
+                                            @switch($trip->trip_status)
+                                                @case(1)
+                                                    <span class="badge bg-info-subtle text-info border border-info-subtle">
+                                                        <i class="bi bi-clock-history me-1"></i> Chưa xuất phát
+                                                    </span>
+                                                @break
+
+                                                @case(2)
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                                        <i class="bi bi-pause-circle me-1"></i> Đã tạm hoãn
+                                                    </span>
+                                                @break
+
+                                                @case(3)
+                                                    <span
+                                                        class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                                                        <i class="bi bi-bus-front me-1"></i> Đã xuất phát
+                                                    </span>
+                                                @break
+
+                                                @case(4)
+                                                    <span
+                                                        class="badge bg-success-subtle text-success border border-success-subtle">
+                                                        <i class="bi bi-check-circle-fill me-1"></i> Đã hoàn thành
+                                                    </span>
+                                                @break
+
+                                                @default
+                                                    <span
+                                                        class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                                                        - Không xác định -
+                                                    </span>
+                                            @endswitch
                                         </td>
 
                                         {{-- CỘT HÀNH ĐỘNG MỚI --}}
@@ -352,14 +376,14 @@
                                                         ],
                                                     ),
                                                 ) }}">
-                                                <i class="bi bi-eye"></i> Chi tiết
+                                                <i class="bi bi-eye"></i>
                                             </button>
                                             {{-- Thay thế đoạn code nút Đánh giá cũ --}}
-                                            @if ($booking->status == 'paid')
+                                            @if ($booking->trip->trip_status == '4')
                                                 @if ($booking->reviews->isNotEmpty())
                                                     {{-- Giả sử bạn đã load relationship review --}}
                                                     <button class="btn btn-sm btn-outline-secondary mt-2" disabled>
-                                                        <i class="bi bi-check-all"></i> Đã đánh giá
+                                                        <i class="bi bi-check-all"></i>
                                                     </button>
                                                 @else
                                                     <button type="button"
@@ -368,280 +392,285 @@
                                                         data-trip-id="{{ $booking->trip_id }}"
                                                         data-route-id="{{ $booking->trip->route_id }}"
                                                         data-booking-id="{{ $booking->id }}">
-                                                        <i class="bi bi-star-fill"></i> Đánh giá
+                                                        <i class="bi bi-star-fill"></i>
                                                     </button>
                                                 @endif
                                             @endif
                                         </td>
                                     </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="7">
-                                            <div class="no-data">
-                                                <div class="mb-2">🪑</div>
-                                                <div>Hiện chưa có lịch sử mua vé.</div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                                    @empty
+                                        <tr>
+                                            <td colspan="7">
+                                                <div class="no-data">
+                                                    <div class="mb-2">🪑</div>
+                                                    <div>Hiện chưa có lịch sử mua vé.</div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
 
-                    <div class="mt-3">
-                        {{ $bookings->links() }}
+                        <div class="mt-3">
+                            {{ $bookings->links() }}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    {{-- MODAL CHI TIẾT VÉ --}}
-    <div class="modal fade" id="bookingDetailModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-light">
-                    <h5 class="modal-title">Chi tiết đặt chỗ <span id="modal-booking-id"
-                            class="text-primary fw-bold"></span></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="text-center mb-4">
-                        <h5 class="fw-bold mb-1" id="modal-route"></h5>
-                        <div class="text-muted small" id="modal-time"></div>
-                    </div>
-
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <small class="text-muted">Biển số xe</small>
-                            <div class="fw-semibold" id="modal-bus"></div>
-                        </div>
-                        <div class="col-6">
-                            <small class="text-muted">Số ghế / Mã ghế</small>
-                            <div class="fw-semibold text-success" id="modal-seats"></div>
-                        </div>
-
-                        <div class="col-12 border-top pt-2"></div>
-
-                        <div class="col-12">
-                            <div class="d-flex align-items-start">
-                                <div class="me-2 text-success"><i class="bi bi-geo-alt-fill"></i></div>
-                                <div>
-                                    <small class="text-muted">Điểm đón cụ thể</small>
-                                    <div class="fw-semibold" id="modal-pickup"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="d-flex align-items-start">
-                                <div class="me-2 text-danger"><i class="bi bi-geo-alt-fill"></i></div>
-                                <div>
-                                    <small class="text-muted">Điểm trả cụ thể</small>
-                                    <div class="fw-semibold" id="modal-dropoff"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-12 border-top pt-2"></div>
-
-                        <div class="col-6">
-                            <small class="text-muted">Thanh toán</small>
-                            <div id="modal-payment"></div>
-                        </div>
-                        <div class="col-6 text-end">
-                            <small class="text-muted">Tổng tiền</small>
-                            <div class="fw-bold text-danger fs-5" id="modal-total"></div>
-                        </div>
-                    </div>
-                    <h6 class="fw-bold mt-4 mb-2">Danh sách vé đã đặt</h6>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered">
-                            <thead>
-                                <tr class="text-center">
-                                    <th style="width: 50px;">ID Vé</th>
-                                    <th style="width: 100px;">Mã ghế</th>
-                                    <th style="width: 100px;">Giá/Vé</th>
-                                </tr>
-                            </thead>
-                            <tbody id="modal-tickets-list">
-                                {{-- Nội dung sẽ được nạp bằng JavaScript --}}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    {{-- MODAL ĐÁNH GIÁ --}}
-    <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <form action="{{ route('client.reviews.store') }}" method="POST">
-                @csrf
+        {{-- MODAL CHI TIẾT VÉ --}}
+        <div class="modal fade" id="bookingDetailModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Gửi đánh giá chuyến đi</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="modal-header bg-light">
+                        <h5 class="modal-title">Chi tiết đặt chỗ <span id="modal-booking-id"
+                                class="text-primary fw-bold"></span></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <input type="hidden" name="trip_id" id="review_trip_id">
-                        <input type="hidden" name="route_id" id="review_route_id">
-                        <input type="hidden" name="booking_id" id="review_booking_id">
-
-                        <div class="mb-3">
-                            <label class="form-label">Số sao (1-5)</label>
-                            <select name="rating" class="form-select" required>
-                                <option value="5">5 sao - Rất tốt</option>
-                                <option value="4">4 sao - Tốt</option>
-                                <option value="3">3 sao - Bình thường</option>
-                                <option value="2">2 sao - Tệ</option>
-                                <option value="1">1 sao - Rất tệ</option>
-                            </select>
+                        <div class="text-center mb-4">
+                            <h5 class="fw-bold mb-1" id="modal-route"></h5>
+                            <div class="text-muted small" id="modal-time"></div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Nội dung đánh giá</label>
-                            <textarea name="content" class="form-control" rows="3" placeholder="Chia sẻ cảm nhận của bạn..."></textarea>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <small class="text-muted">Biển số xe</small>
+                                <div class="fw-semibold" id="modal-bus"></div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Số ghế / Mã ghế</small>
+                                <div class="fw-semibold text-success" id="modal-seats"></div>
+                            </div>
+
+                            <div class="col-12 border-top pt-2"></div>
+
+                            <div class="col-12">
+                                <div class="d-flex align-items-start">
+                                    <div class="me-2 text-success"><i class="bi bi-geo-alt-fill"></i></div>
+                                    <div>
+                                        <small class="text-muted">Điểm đón cụ thể</small>
+                                        <div class="fw-semibold" id="modal-pickup"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-flex align-items-start">
+                                    <div class="me-2 text-danger"><i class="bi bi-geo-alt-fill"></i></div>
+                                    <div>
+                                        <small class="text-muted">Điểm trả cụ thể</small>
+                                        <div class="fw-semibold" id="modal-dropoff"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 border-top pt-2"></div>
+
+                            <div class="col-4">
+                                <small class="text-muted">Thanh toán</small>
+                                <div id="modal-payment"></div>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Trạng thái thanh toán</small>
+                                <div id="modal-payment-status"></div>
+                            </div>
+                            <div class="col-4 text-end">
+                                <small class="text-muted">Tổng tiền</small>
+                                <div class="fw-bold text-danger fs-5" id="modal-total"></div>
+                            </div>
+                        </div>
+                        <h6 class="fw-bold mt-4 mb-2">Danh sách vé đã đặt</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th style="width: 50px;">ID Vé</th>
+                                        <th style="width: 100px;">Mã ghế</th>
+                                        <th style="width: 100px;">Giá/Vé</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modal-tickets-list">
+                                    {{-- Nội dung sẽ được nạp bằng JavaScript --}}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-warning text-white">Gửi đánh giá</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                     </div>
                 </div>
-            </form>
-        </div>
-    </div>
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1060">
-        <div id="reviewToast" class="toast align-items-center text-white bg-success border-0" role="alert"
-            aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="bi bi-check-circle-fill me-2"></i>
-                    <span id="toast-message">Cảm ơn bạn đã đánh giá chuyến đi!</span>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-                    aria-label="Close"></button>
             </div>
         </div>
-    </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // ... (logic success modal - giữ nguyên) ...
+        {{-- MODAL ĐÁNH GIÁ --}}
+        <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <form action="{{ route('client.reviews.store') }}" method="POST">
+                    @csrf
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Gửi đánh giá chuyến đi</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="trip_id" id="review_trip_id">
+                            <input type="hidden" name="route_id" id="review_route_id">
+                            <input type="hidden" name="booking_id" id="review_booking_id">
 
-            var bookingModal = document.getElementById('bookingDetailModal'); // Đã đổi ID
-            bookingModal.addEventListener('show.bs.modal', function(event) {
-                var button = event.relatedTarget;
-                var seats = button.getAttribute('data-seats');
+                            <div class="mb-3">
+                                <label class="form-label">Số sao (1-5)</label>
+                                <select name="rating" class="form-select" required>
+                                    <option value="5">5 sao - Rất tốt</option>
+                                    <option value="4">4 sao - Tốt</option>
+                                    <option value="3">3 sao - Bình thường</option>
+                                    <option value="2">2 sao - Tệ</option>
+                                    <option value="1">1 sao - Rất tệ</option>
+                                </select>
+                            </div>
 
-                // Lấy dữ liệu chung
-                var id = button.getAttribute('data-id');
-                var route = button.getAttribute('data-route');
-                var time = button.getAttribute('data-time');
-                var bus = button.getAttribute('data-bus');
-                var pickup = button.getAttribute('data-pickup');
-                var dropoff = button.getAttribute('data-dropoff');
-                var total = button.getAttribute('data-total');
-                var payment = button.getAttribute('data-payment');
+                            <div class="mb-3">
+                                <label class="form-label">Nội dung đánh giá</label>
+                                <textarea name="content" class="form-control" rows="3" placeholder="Chia sẻ cảm nhận của bạn..."></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-warning text-white">Gửi đánh giá</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1060">
+            <div id="reviewToast" class="toast align-items-center text-white bg-success border-0" role="alert"
+                aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <span id="toast-message">Cảm ơn bạn đã đánh giá chuyến đi!</span>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // ... (logic success modal - giữ nguyên) ...
 
-                // Lấy danh sách tickets (JSON string)
-                var ticketsJson = button.getAttribute('data-tickets');
-                var tickets = ticketsJson ? JSON.parse(ticketsJson) : [];
+                var bookingModal = document.getElementById('bookingDetailModal'); // Đã đổi ID
+                bookingModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    var seats = button.getAttribute('data-seats');
 
-                // Nạp dữ liệu chung vào Modal
-                document.getElementById('modal-booking-id').textContent = id; // Đã đổi ID
-                document.getElementById('modal-route').textContent = route;
-                document.getElementById('modal-time').textContent = time;
-                document.getElementById('modal-bus').textContent = bus;
-                document.getElementById('modal-pickup').textContent = pickup;
-                document.getElementById('modal-dropoff').textContent = dropoff;
-                document.getElementById('modal-total').textContent = total;
-                document.getElementById('modal-payment').textContent = payment;
-                document.getElementById('modal-seats').textContent = seats;
+                    // Lấy dữ liệu chung
+                    var id = button.getAttribute('data-id');
+                    var route = button.getAttribute('data-route');
+                    var time = button.getAttribute('data-time');
+                    var bus = button.getAttribute('data-bus');
+                    var pickup = button.getAttribute('data-pickup');
+                    var dropoff = button.getAttribute('data-dropoff');
+                    var total = button.getAttribute('data-total');
+                    var payment = button.getAttribute('data-payment');
 
-                // Nạp danh sách vé con
-                const ticketsListBody = document.getElementById('modal-tickets-list');
-                ticketsListBody.innerHTML = ''; // Xóa nội dung cũ
+                    // Lấy danh sách tickets (JSON string)
+                    var ticketsJson = button.getAttribute('data-tickets');
+                    var tickets = ticketsJson ? JSON.parse(ticketsJson) : [];
 
-                if (tickets.length > 0) {
-                    tickets.forEach(ticket => {
+                    // Nạp dữ liệu chung vào Modal
+                    document.getElementById('modal-booking-id').textContent = id; // Đã đổi ID
+                    document.getElementById('modal-route').textContent = route;
+                    document.getElementById('modal-time').textContent = time;
+                    document.getElementById('modal-bus').textContent = bus;
+                    document.getElementById('modal-pickup').textContent = pickup;
+                    document.getElementById('modal-dropoff').textContent = dropoff;
+                    document.getElementById('modal-total').textContent = total;
+                    document.getElementById('modal-payment').textContent = payment;
+                    document.getElementById('modal-payment-status').textContent = button.getAttribute('data-status');
+                    document.getElementById('modal-seats').textContent = seats;
+
+                    // Nạp danh sách vé con
+                    const ticketsListBody = document.getElementById('modal-tickets-list');
+                    ticketsListBody.innerHTML = ''; // Xóa nội dung cũ
+
+                    if (tickets.length > 0) {
+                        tickets.forEach(ticket => {
+                            const row = ticketsListBody.insertRow();
+                            row.className = 'text-center';
+                            row.insertCell().textContent = `#${ticket.id}`;
+                            row.insertCell().textContent = ticket.seat_code;
+                            row.insertCell().textContent = ticket.price;
+                        });
+                    } else {
                         const row = ticketsListBody.insertRow();
-                        row.className = 'text-center';
-                        row.insertCell().textContent = `#${ticket.id}`;
-                        row.insertCell().textContent = ticket.seat_code;
-                        row.insertCell().textContent = ticket.price;
-                    });
-                } else {
-                    const row = ticketsListBody.insertRow();
-                    const cell = row.insertCell();
-                    cell.colSpan = 3;
-                    cell.textContent = 'Không tìm thấy thông tin vé chi tiết.';
-                    cell.className = 'text-center text-muted';
+                        const cell = row.insertCell();
+                        cell.colSpan = 3;
+                        cell.textContent = 'Không tìm thấy thông tin vé chi tiết.';
+                        cell.className = 'text-center text-muted';
+                    }
+                });
+
+
+                // =======================================================
+                // PHẦN SỬA LỖI HIỂN THỊ MODAL THÔNG BÁO THÀNH CÔNG
+                // =======================================================
+
+                // 1. Lấy giá trị session, bọc trong '|| false' để tránh lỗi cú pháp JS khi session rỗng
+                const successMessage = "{{ session('success') }}" || false;
+
+                if (successMessage && successMessage.trim() === 'Đặt vé thành công!') {
+                    const successModalElement = document.getElementById('successModal');
+
+                    // 2. Kiểm tra xem Bootstrap đã được tải chưa và element có tồn tại không
+                    if (typeof bootstrap !== 'undefined' && successModalElement) {
+                        // Khởi tạo và hiển thị Modal
+                        const successModal = new bootstrap.Modal(successModalElement);
+                        successModal.show();
+                    } else {
+                        // Fallback nếu Bootstrap không hoạt động (chỉ để debug)
+                        console.error('Bootstrap Modal object not found or successModal element missing.');
+                        // alert(successMessage); // Có thể dùng alert tạm thời để kiểm tra session
+                    }
                 }
             });
+            document.addEventListener('DOMContentLoaded', function() {
+                const reviewModal = document.getElementById('reviewModal');
+                if (reviewModal) {
+                    reviewModal.addEventListener('show.bs.modal', function(event) {
+                        const button = event.relatedTarget; // Nút vừa được nhấn
 
+                        // Lấy ID từ data-attributes
+                        const tripId = button.getAttribute('data-trip-id');
+                        const routeId = button.getAttribute('data-route-id');
+                        const bookingId = button.getAttribute('data-booking-id');
 
-            // =======================================================
-            // PHẦN SỬA LỖI HIỂN THỊ MODAL THÔNG BÁO THÀNH CÔNG
-            // =======================================================
-
-            // 1. Lấy giá trị session, bọc trong '|| false' để tránh lỗi cú pháp JS khi session rỗng
-            const successMessage = "{{ session('success') }}" || false;
-
-            if (successMessage && successMessage.trim() === 'Đặt vé thành công!') {
-                const successModalElement = document.getElementById('successModal');
-
-                // 2. Kiểm tra xem Bootstrap đã được tải chưa và element có tồn tại không
-                if (typeof bootstrap !== 'undefined' && successModalElement) {
-                    // Khởi tạo và hiển thị Modal
-                    const successModal = new bootstrap.Modal(successModalElement);
-                    successModal.show();
-                } else {
-                    // Fallback nếu Bootstrap không hoạt động (chỉ để debug)
-                    console.error('Bootstrap Modal object not found or successModal element missing.');
-                    // alert(successMessage); // Có thể dùng alert tạm thời để kiểm tra session
-                }
-            }
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-            const reviewModal = document.getElementById('reviewModal');
-            if (reviewModal) {
-                reviewModal.addEventListener('show.bs.modal', function(event) {
-                    const button = event.relatedTarget; // Nút vừa được nhấn
-
-                    // Lấy ID từ data-attributes
-                    const tripId = button.getAttribute('data-trip-id');
-                    const routeId = button.getAttribute('data-route-id');
-                    const bookingId = button.getAttribute('data-booking-id');
-
-                    // Gán giá trị vào input ẩn trong modal
-                    document.getElementById('review_trip_id').value = tripId;
-                    document.getElementById('review_route_id').value = routeId;
-                    document.getElementById('review_booking_id').value = bookingId;
-                });
-            }
-        });
-        //đánh giá thành công
-        document.addEventListener('DOMContentLoaded', function() {
-            // Kiểm tra thông báo từ Laravel Session
-            const successMessage = "{{ session('success') }}";
-
-            if (successMessage) {
-                const toastElement = document.getElementById('reviewToast');
-                const toastMessage = document.getElementById('toast-message');
-
-                if (toastElement) {
-                    // Cập nhật nội dung thông báo từ session (nếu có)
-                    toastMessage.textContent = successMessage;
-
-                    // Khởi tạo và hiển thị Toast bằng Bootstrap
-                    const toast = new bootstrap.Toast(toastElement, {
-                        delay: 5000 // Tự động ẩn sau 5 giây
+                        // Gán giá trị vào input ẩn trong modal
+                        document.getElementById('review_trip_id').value = tripId;
+                        document.getElementById('review_route_id').value = routeId;
+                        document.getElementById('review_booking_id').value = bookingId;
                     });
-                    toast.show();
                 }
-            }
-        });
-    </script>
-@endsection
+            });
+            //đánh giá thành công
+            document.addEventListener('DOMContentLoaded', function() {
+                // Kiểm tra thông báo từ Laravel Session
+                const successMessage = "{{ session('success') }}";
+
+                if (successMessage) {
+                    const toastElement = document.getElementById('reviewToast');
+                    const toastMessage = document.getElementById('toast-message');
+
+                    if (toastElement) {
+                        // Cập nhật nội dung thông báo từ session (nếu có)
+                        toastMessage.textContent = successMessage;
+
+                        // Khởi tạo và hiển thị Toast bằng Bootstrap
+                        const toast = new bootstrap.Toast(toastElement, {
+                            delay: 5000 // Tự động ẩn sau 5 giây
+                        });
+                        toast.show();
+                    }
+                }
+            });
+        </script>
+    @endsection
