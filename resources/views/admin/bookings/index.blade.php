@@ -139,11 +139,26 @@
 
                                     {{-- Trạng thái (status_label accessor đã trả về HTML) --}}
                                     <td>
-                                        {!! $booking->status_label !!}
+                                        @if ($booking->status === 'pending')
+                                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                                                <i class="bi bi-hourglass-split me-1"></i>
+                                                Chờ thanh toán
+                                            </span>
+                                        @elseif($booking->status === 'paid')
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                                <i class="bi bi-check-circle me-1"></i>
+                                                Đã thanh toán
+                                            </span>
+                                        @else
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                                <i class="bi bi-x-circle me-1"></i>
+                                                Hủy
+                                            </span>
+                                        @endif
                                     </td>
 
                                     {{-- Tổng tiền --}}
-                                    <td class="fw-semibold">
+                                    <td class="fw-semibold text-success">
                                         {{ number_format($booking->total_amount, 0, ',', '.') }} VND
                                     </td>
                                     {{-- Phương thức thanh toán --}}
@@ -154,8 +169,7 @@
                                         @endphp
 
                                         @if ($method !== '-')
-                                            <span
-                                                class="badge bg-secondary-subtle text-light border border-secondary-subtle">
+                                            <span class="badge bg-info-subtle text-info border border-info-subtle">
                                                 {{ $methodLabel }}
                                             </span>
                                         @else

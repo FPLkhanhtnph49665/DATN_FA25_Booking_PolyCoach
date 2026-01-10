@@ -47,6 +47,14 @@ class Ticket extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function booking()
+    {
+        return $this->belongsTo(Booking::class);
+    }
+    public function payment()
+    {
+        return $this->belongsTo(Payment::class);
+    }
     // Người kiểm vé
     public function checker()
     {
