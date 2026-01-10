@@ -66,7 +66,7 @@ class DatabaseSeeder extends Seeder
                     'first_name' => explode(' ', $u['name'])[0],
                     'last_name'  => explode(' ', $u['name'])[1] ?? '',
                     'full_name'  => $u['name'],
-                    'password'   => Hash::make('Poly@123'),
+                    'password'   => Hash::make('1'),
                     'role'       => $u['role'],
                     'status'     => 1,
                 ]
@@ -186,83 +186,198 @@ class DatabaseSeeder extends Seeder
          * 6. PICKUP / DROPOFF POINTS
          * ======================================================
          */
-        foreach ($routes as $route) {
-            $fromCity = $route->fromCity;
-            $toCity   = $route->toCity;
 
-            $points = [
-                // Pickup
-                [
-                    'route_id' => $route->id,
-                    'type'     => 'pickup',
-                    'name'     => 'Bến xe trung tâm ' . $fromCity->name,
-                    'address'  => 'Bến xe trung tâm ' . $fromCity->name,
-                    // 'order'    => 1,
-                    'active'   => 1,
-                ],
-                [
-                    'route_id' => $route->id,
-                    'type'     => 'pickup',
-                    'name'     => 'Văn phòng chính ' . $fromCity->name,
-                    'address'  => 'Văn phòng PoLyCoach tại ' . $fromCity->name,
-                    // 'order'    => 2,
-                    'active'   => 1,
-                ],
+        //  foreach ($routes as $route) {
+        //     $fromCity = $route->fromCity;
+        //     $toCity   = $route->toCity;
 
-                // Dropoff
-                [
-                    'route_id' => $route->id,
-                    'type'     => 'dropoff',
-                    'name'     => 'Bến xe trung tâm ' . $toCity->name,
-                    'address'  => 'Bến xe trung tâm ' . $toCity->name,
-                    // 'order'    => 1,
-                    'active'   => 1,
-                ],
-                [
-                    'route_id' => $route->id,
-                    'type'     => 'dropoff',
-                    'name'     => 'Văn phòng chính ' . $toCity->name,
-                    'address'  => 'Văn phòng PoLyCoach tại ' . $toCity->name,
-                    // 'order'    => 2,
-                    'active'   => 1,
-                ],
-            ];
+        //     $points = [
+        //         // Pickup
+        //         [
+        //             'route_id' => $route->id,
+        //             'type'     => 'pickup',
+        //             'name'     => 'Bến xe trung tâm ' . $fromCity->name,
+        //             'address'  => 'Bến xe trung tâm ' . $fromCity->name,
+        //             // 'order'    => 1,
+        //             'active'   => 1,
+        //         ],
+        //         [
+        //             'route_id' => $route->id,
+        //             'type'     => 'pickup',
+        //             'name'     => 'Văn phòng chính ' . $fromCity->name,
+        //             'address'  => 'Văn phòng PoLyCoach tại ' . $fromCity->name,
+        //             // 'order'    => 2,
+        //             'active'   => 1,
+        //         ],
 
-            PickupDropoffPoint::insert($points);
-        }
+        //         // Dropoff
+        //         [
+        //             'route_id' => $route->id,
+        //             'type'     => 'dropoff',
+        //             'name'     => 'Bến xe trung tâm ' . $toCity->name,
+        //             'address'  => 'Bến xe trung tâm ' . $toCity->name,
+        //             // 'order'    => 1,
+        //             'active'   => 1,
+        //         ],
+        //         [
+        //             'route_id' => $route->id,
+        //             'type'     => 'dropoff',
+        //             'name'     => 'Văn phòng chính ' . $toCity->name,
+        //             'address'  => 'Văn phòng PoLyCoach tại ' . $toCity->name,
+        //             // 'order'    => 2,
+        //             'active'   => 1,
+        //         ],
+        //     ];
 
-        /**
-         * ======================================================
-         * 7. POINT FARES – Giá vé giữa các điểm
-         * ======================================================
-         */
-        foreach ($routes as $route) {
+        //     PickupDropoffPoint::insert($points);
+        // }
+        // $cityPoints = [
+        //     'HN' => [
+        //         'Bến xe Mỹ Đình',
+        //         'Bến xe Giáp Bát',
+        //         'Bến xe Gia Lâm',
+        //         'Văn phòng PoLyCoach Cầu Giấy',
+        //         'Ngã tư Sở',
+        //     ],
+        //     'HCM' => [
+        //         'Bến xe Miền Đông',
+        //         'Bến xe Miền Tây',
+        //         'Bến xe An Sương',
+        //         'Văn phòng PoLyCoach Quận 1',
+        //         'Ngã tư Hàng Xanh',
+        //     ],
+        //     'DN' => [
+        //         'Bến xe Trung tâm Đà Nẵng',
+        //         'Bến xe phía Nam Đà Nẵng',
+        //         'Văn phòng PoLyCoach Hải Châu',
+        //         'Cầu Rồng',
+        //         'Ngã tư Ngô Quyền – Ngũ Hành Sơn',
+        //     ],
+        //     'HP' => [
+        //         'Bến xe Niệm Nghĩa',
+        //         'Bến xe Lạc Long',
+        //         'Bến xe Thượng Lý',
+        //         'Văn phòng PoLyCoach Lê Chân',
+        //         'Ngã tư Quán Toan',
+        //     ],
+        //     'CT' => [
+        //         'Bến xe Trung tâm Cần Thơ',
+        //         'Bến xe Ô Môn',
+        //         'Văn phòng PoLyCoach Ninh Kiều',
+        //         'Ngã tư Trần Hưng Đạo – 30/4',
+        //         'Siêu thị Big C Cần Thơ',
+        //     ],
+        //     'NT' => [
+        //         'Bến xe phía Nam Nha Trang',
+        //         'Bến xe phía Bắc Nha Trang',
+        //         'Văn phòng PoLyCoach Trần Phú',
+        //         'Ngã tư Mả Vòng',
+        //         'Coopmart Nha Trang',
+        //     ],
+        //     'HUE' => [
+        //         'Bến xe phía Bắc Huế',
+        //         'Bến xe phía Nam Huế',
+        //         'Văn phòng PoLyCoach Trần Hưng Đạo',
+        //         'Ngã tư An Cựu',
+        //         'Ga Huế',
+        //     ],
+        //     'VINH' => [
+        //         'Bến xe Vinh',
+        //         'Bến xe Bắc Vinh',
+        //         'Văn phòng PoLyCoach Lê Lợi',
+        //         'Ngã tư Quán Bàu',
+        //         'Ga Vinh',
+        //     ],
+        //     'DL' => [
+        //         'Bến xe Liên tỉnh Đà Lạt',
+        //         'Bến xe Đức Trọng',
+        //         'Văn phòng PoLyCoach trung tâm Đà Lạt',
+        //         'Chợ Đà Lạt',
+        //         'Ngã ba Prenn',
+        //     ],
+        // ];
 
-            $pickups = PickupDropoffPoint::where('route_id', $route->id)
-                ->where('type', 'pickup')
-                ->get();
+        // // Lấy tất cả các route
+        // $routes = Route::with(['fromCity', 'toCity'])->get();
 
-            $dropoffs = PickupDropoffPoint::where('route_id', $route->id)
-                ->where('type', 'dropoff')
-                ->get();
+        // foreach ($routes as $route) {
 
-            foreach ($pickups as $pickup) {
-                foreach ($dropoffs as $dropoff) {
+        //     // 1. Chuẩn hoá giờ chạy
+        //     $departureTime = $route->departure_time ?? '08:00';
+        //     $duration      = $route->estimated_duration ?? 600; // phút
 
-                    PointFare::updateOrCreate(
-                        [
-                            'route_id'         => $route->id,
-                            'pickup_point_id'  => $pickup->id,
-                            'dropoff_point_id' => $dropoff->id,
-                        ],
-                        [
-                            'price'  => rand(200000, 600000),
-                            'active' => 1,
-                        ]
-                    );
-                }
-            }
-        }
+        //     $departure = Carbon::createFromTimeString($departureTime);
+
+        //     $fromCityCode = $route->fromCity->code;
+        //     $toCityCode   = $route->toCity->code;
+
+        //     $pickupNames  = $cityPoints[$fromCityCode] ?? [];
+        //     $dropoffNames = $cityPoints[$toCityCode] ?? [];
+
+        //     // 2. Pickup points (trước giờ chạy)
+        //     foreach ($pickupNames as $i => $name) {
+        //         PickupDropoffPoint::create([
+        //             'city_id'  => $route->from_city_id,
+        //             'route_id' => $route->id,
+        //             'type'     => 'pickup',
+        //             'name'     => $name,
+        //             'address'  => $name,
+        //             'time'     => $departure
+        //                 ->copy()
+        //                 ->subMinutes(60 - ($i * 15))
+        //                 ->format('H:i'),
+        //             'active'   => 1,
+        //         ]);
+        //     }
+
+        //     // 3. Dropoff points (sau khi xe đến)
+        //     foreach ($dropoffNames as $i => $name) {
+        //         PickupDropoffPoint::create([
+        //             'city_id'  => $route->to_city_id,
+        //             'route_id' => $route->id,
+        //             'type'     => 'dropoff',
+        //             'name'     => $name,
+        //             'address'  => $name,
+        //             'time'     => $departure
+        //                 ->copy()
+        //                 ->addMinutes($duration + ($i * 10))
+        //                 ->format('H:i'),
+        //             'active'   => 1,
+        //         ]);
+        //     }
+        // }
+        // /**
+        //  * ======================================================
+        //  * 7. POINT FARES – Giá vé giữa các điểm
+        //  * ======================================================
+        //  */
+        // foreach ($routes as $route) {
+
+        //     $pickups = PickupDropoffPoint::where('route_id', $route->id)
+        //         ->where('type', 'pickup')
+        //         ->get();
+
+        //     $dropoffs = PickupDropoffPoint::where('route_id', $route->id)
+        //         ->where('type', 'dropoff')
+        //         ->get();
+
+        //     foreach ($pickups as $pickup) {
+        //         foreach ($dropoffs as $dropoff) {
+
+        //             PointFare::updateOrCreate(
+        //                 [
+        //                     'route_id'         => $route->id,
+        //                     'pickup_point_id'  => $pickup->id,
+        //                     'dropoff_point_id' => $dropoff->id,
+        //                 ],
+        //                 [
+        //                     'price'  => rand(200000, 600000),
+        //                     'active' => 1,
+        //                 ]
+        //             );
+        //         }
+        //     }
+        // }
         /**
          * ======================================================
          * 8. NEWS – Tin tức
@@ -387,4 +502,22 @@ class DatabaseSeeder extends Seeder
             'published_at' => now(),
         ]);
     }
+    // private function pickupTime($departureTime, $index)
+    // {
+    //     $departureTime = $departureTime ?? '08:00';
+
+    //     return Carbon::createFromTimeString($departureTime)
+    //         ->subMinutes(60 - ($index * 15))
+    //         ->format('H:i');
+    // }
+
+    // private function dropoffTime($departureTime, $duration, $index)
+    // {
+    //     $departureTime = $departureTime ?? '08:00';
+    //     $duration = $duration ?? 600; // 10 tiếng mặc định
+
+    //     return Carbon::createFromTimeString($departureTime)
+    //         ->addMinutes($duration + ($index * 10))
+    //         ->format('H:i');
+    // }
 }
