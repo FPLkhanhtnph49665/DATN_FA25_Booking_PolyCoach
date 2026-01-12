@@ -29,7 +29,7 @@
 
     <style>
         :root {
-            --primary: #E63946;
+            --primary: #ff595e;
             --primary-dark: #D00000;
             --secondary: #1D3557;
             --light: #F1FAEE;

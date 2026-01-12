@@ -23,7 +23,7 @@ a {
 }
 
 a:hover {
-    color: #ff2e34;
+    color: #ff595e;
 }
 
 /* ===== Header ===== */
@@ -118,7 +118,7 @@ a:hover {
 
 .btn-primary:hover,
 .btn-login:hover {
-    background: #ff2e34;
+    background: #ff595e;
     box-shadow: 0 5px 15px rgba(255, 89, 94, 0.3);
 }
 

@@ -27,7 +27,7 @@
 
         /* ===== HEADER CAM ===== */
         .booking-hero {
-            background: linear-gradient(135deg, #ff6a00 0%, #ff9933 50%, #ff6a00 100%);
+            background: linear-gradient(135deg, #ff595e 0%, #ff232a 50%, #ff595e 100%);
             color: #fff;
             padding: 24px 0 70px;
             margin-bottom: -40px;
@@ -260,38 +260,45 @@
         }
     </style>
     @php
-        $route = $trip->route;
-        $date = \Carbon\Carbon::parse($trip->departure_date);
-        $weekdayMap = [
-            1 => 'Thứ 2',
-            2 => 'Thứ 3',
-            3 => 'Thứ 4',
-            4 => 'Thứ 5',
-            5 => 'Thứ 6',
-            6 => 'Thứ 7',
-            0 => 'Chủ nhật',
-        ];
-        $weekday = $weekdayMap[$date->dayOfWeek] ?? '';
-    @endphp
-    {{-- HEADER CAM --}}
-    <div class="booking-hero">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="booking-hero-title">
-                        {{ $route->fromCity->name ?? '—' }} - {{ $route->toCity->name ?? '—' }}
-                    </div>
-                    <div class="booking-hero-sub">
-                        {{ $weekday }}, {{ $date->format('d/m') }}
-                    </div>
+    $route = $trip->route;
+    $date = \Carbon\Carbon::parse($trip->departure_date);
+    $weekdayMap = [
+        1 => 'Thứ 2',
+        2 => 'Thứ 3',
+        3 => 'Thứ 4',
+        4 => 'Thứ 5',
+        5 => 'Thứ 6',
+        6 => 'Thứ 7',
+        0 => 'Chủ nhật',
+    ];
+    $weekday = $weekdayMap[$date->dayOfWeek] ?? '';
+@endphp
+
+<div class="booking-hero">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+
+            {{-- BÊN TRÁI: QUAY LẠI --}}
+            <div class="small">
+                <a href="{{ route('client.trips') }}" class="text-white text-decoration-none">
+                    ← Quay lại
+                </a>
+            </div>
+
+            {{-- BÊN PHẢI: TUYẾN + NGÀY --}}
+            <div class="text-end">
+                <div class="booking-hero-title">
+                    {{ $route->fromCity->name ?? '—' }} - {{ $route->toCity->name ?? '—' }}
                 </div>
-                <div class="text-end small">
-                    <a href="{{ route('client.trips') }}" class="text-white text-decoration-none">
-                        ← Quay lại
-                    </a>
+                <div class="booking-hero-sub">
+                    {{ $weekday }}, {{ $date->format('d/m') }}
                 </div>
             </div>
+
         </div>
+    </div>
+</div>
+
     </div>
     <div class="container mb-5" style="margin-top: 50px;">
         <div class="row">
@@ -384,7 +391,7 @@
                                     <span>Đang chọn</span>
                                 </div>
                             </div>
-                        </div>  
+                        </div>
                         @php
                             $user = Auth::user();
                         @endphp
@@ -466,7 +473,7 @@
                             </div>
                             <div class="border-top pt-3 mb-4 mt-3">
                                 <div class="section-title">Phương thức thanh toán</div>
-                                <div class="row g-3">      
+                                <div class="row g-3">
                                     <div class="col-md-6">
                                         <label class="payment-option active" id="pay-online-label">
                                             <input class="form-check-input" type="radio" name="payment_method"
