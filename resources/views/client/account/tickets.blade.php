@@ -221,12 +221,14 @@
                             </div>
                             <div class="col-md-2">
                                 <select name="status" class="form-select">
-                                    <option value="">Trạng thái</option>
-                                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ thanh
-                                        toán</option>
-                                    <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Đã thanh
-                                        toán</option>
-                                    <option value="canceled" {{ request('status') == 'canceled' ? 'selected' : '' }}>Đã hủy
+                                    <option value="">trạng thái</option>
+                                    <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Chưa xuất phát
+                                    </option>
+                                    <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>Đã tạm hoãn
+                                    </option>
+                                    <option value="3" {{ request('status') == '3' ? 'selected' : '' }}>Đã xuất phát
+                                    </option>
+                                    <option value="4" {{ request('status') == '4' ? 'selected' : '' }}>Đã hoàn thành
                                     </option>
                                 </select>
                             </div>
@@ -586,7 +588,8 @@
                     document.getElementById('modal-dropoff').textContent = dropoff;
                     document.getElementById('modal-total').textContent = total;
                     document.getElementById('modal-payment').textContent = payment;
-                    document.getElementById('modal-payment-status').textContent = button.getAttribute('data-status');
+                    document.getElementById('modal-payment-status').textContent = button.getAttribute(
+                        'data-status');
                     document.getElementById('modal-seats').textContent = seats;
 
                     // Nạp danh sách vé con
