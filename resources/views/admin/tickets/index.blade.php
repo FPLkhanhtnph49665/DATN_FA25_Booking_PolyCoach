@@ -75,7 +75,7 @@
                                 <th class="text-muted small">Chuyến</th>
                                 <th class="text-muted small">Người dùng</th>
                                 <th class="text-muted small">Số ghế</th>
-                                <th class="text-muted small">giá vé</th>
+                                <th class="text-muted small">Giá vé</th>
                                 <th class="text-muted small">Trạng thái</th>
                                 <th class="text-muted small">thanh toán</th>
                                 <th class="text-muted small">kiểm bởi</th>
@@ -278,7 +278,7 @@
                         <h6 class="text-primary fw-bold mb-3">Thông tin xe</h6>
                         <div class="ps-2">
                             @if($ticket->trip && $ticket->trip->bus)
-                                <p class="mb-2"><span class="text-white-50">số ghế:</span> <span class="text-info">{{ $ticket->trip->bus->seat_count }}</span></p>
+                                <p class="mb-2"><span class="text-white-50">Số ghế:</span> <span class="text-info">{{ $ticket->trip->bus->seat_count }}</span></p>
                                 <p class="mb-2"><span class="text-white-50">Biển số:</span> <span class="badge bg-light text-dark">{{ $ticket->trip->bus->plate_number }}</span></p>
                                 <p class="mb-2"><span class="text-white-50">Loại xe:</span> {{ $ticket->trip->bus->type ?? 'Ghế ngồi/Giường nằm' }}</p>
                             @else
@@ -289,7 +289,7 @@
 
                     <div class="col-12">
                         <h6 class="text-primary fw-bold mb-3">Thông tin hành trình</h6>
-                        
+
                         <div class="bg-secondary bg-opacity-10 p-4 rounded border border-secondary border-opacity-50 shadow-sm">
                             <div class="row align-items-center">
                                 <div class="col-md-7">
@@ -306,12 +306,12 @@
                                     @else
                                         <p class="mb-1 text-info fw-semibold">Hành trình chính:</p>
                                         <div class="fs-5 fw-bold">
-                                            {{ $ticket->trip->route->fromCity->name }} 
-                                            <i class="bi bi-arrow-right mx-2 text-white-50"></i> 
+                                            {{ $ticket->trip->route->fromCity->name }}
+                                            <i class="bi bi-arrow-right mx-2 text-white-50"></i>
                                             {{ $ticket->trip->route->toCity->name }}
                                         </div>
                                     @endif
-                                    
+
                                     <div class="mt-3 small d-flex gap-3">
                                         <span><i class="bi bi-calendar3 text-white-50 me-1"></i> {{ $ticket->trip->departure_date->format('d/m/Y') }}</span>
                                         <span><i class="bi bi-clock text-white-50 me-1"></i> {{ $ticket->trip->departure_time }}</span>
@@ -320,7 +320,7 @@
 
                                 <div class="col-md-5 text-md-end border-start border-secondary border-opacity-50">
                                     <div class="mb-2">
-                                        <span class="text-white-50">Mã ghế:</span> 
+                                        <span class="text-white-50">Mã ghế:</span>
                                         <span class="text-white fw-bold fs-4 ms-1">{{ $ticket->seat_code }}</span>
                                     </div>
                                     <div>
