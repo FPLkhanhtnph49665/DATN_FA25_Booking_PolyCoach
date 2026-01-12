@@ -258,6 +258,15 @@
             object-fit: contain;
             margin-right: 12px;
         }
+
+        /* Tự động xuống hàng nếu quá nhiều cột hoặc điều chỉnh độ rộng */
+        .seat-floor-body {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            /* Căn giữa sơ đồ */
+            flex-wrap: wrap;
+        }
     </style>
     @php
     $route = $trip->route;
@@ -311,72 +320,118 @@
 
                     <div class="booking-main-card">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0">Chọn ghế</h5>
+                            <h5 class="mb-0">Chọn ghế (Xe {{ $trip->bus->seat_count }} chỗ)</h5>
                             <a href="javascript:void(0)" class="small text-primary">Thông tin xe</a>
                         </div>
                         <div class="seat-select-wrap mb-3">
-                            <div class="seat-floors">
-                                <div class="seat-floor">
-                                    <div class="seat-floor-title">Tầng dưới</div>
-                                    <div class="seat-floor-body">
-                                        @php
-                                            $bookedSeats = \App\Models\Ticket::where('trip_id', $trip->id)
-                                                ->where('status', '!=', 'cancelled')
-                                                ->pluck('seat_code')
-                                                ->toArray();
-                                            $floor1Columns = [
-                                                ['A01', 'A02', 'A03', 'A04'],
-                                                ['A05', 'A06', 'A07', 'A08'],
-                                                ['A09', 'A10', 'A11', 'A12'],
-                                                ['A13', 'A14', 'A15', 'A16'],
-                                            ];
-                                        @endphp
+                            @php
+                                $seatCount = $trip->bus->seat_count ?? 0;
+                                $bookedSeats = \App\Models\Ticket::where('trip_id', $trip->id)
+                                    ->where('status', '!=', 'cancelled')
+                                    ->pluck('seat_code')
+                                    ->toArray();
 
-                                        @foreach ($floor1Columns as $column)
-                                            <div class="seat-column">
-                                                @foreach ($column as $code)
-                                                    @php
-                                                        $isBooked = in_array($code, $bookedSeats);
-                                                    @endphp
-                                                    <div class="seat {{ $isBooked ? 'booked' : 'available' }}"
-                                                        data-code="{{ $code }}"
-                                                        data-booked="{{ $isBooked ? '1' : '0' }}">
-                                                        {{ $code }}
+                                // Hàm helper để render ghế để tránh lặp code
+                                function renderSeat($code, $bookedSeats)
+                                {
+                                    $isBooked = in_array($code, $bookedSeats);
+                                    $class = $isBooked ? 'booked' : 'available';
+                                    $bookedAttr = $isBooked ? '1' : '0';
+                                    return "<div class='seat $class' data-code='$code' data-booked='$bookedAttr'>$code</div>";
+                                }
+                            @endphp
+                            <div class="seat-floors w-100 justify-content-center">
+                                {{-- TRƯỜNG HỢP XE 32 CHỖ: CHIA 2 TẦNG --}}
+                                @if ($seatCount == 32)
+                                    @php
+                                        $floor1 = [
+                                            ['A01', 'A02', 'A03', 'A04'],
+                                            ['A05', 'A06', 'A07', 'A08'],
+                                            ['A09', 'A10', 'A11', 'A12'],
+                                            ['A13', 'A14', 'A15', 'A16'],
+                                        ];
+                                        $floor2 = [
+                                            ['B01', 'B02', 'B03', 'B04'],
+                                            ['B05', 'B06', 'B07', 'B08'],
+                                            ['B09', 'B10', 'B11', 'B12'],
+                                            ['B13', 'B14', 'B15', 'B16'],
+                                        ];
+                                    @endphp
+                                    <div class="seat-floors">
+                                        <div class="seat-floor">
+                                            <div class="seat-floor-title">Tầng dưới (A)</div>
+                                            <div class="seat-floor-body">
+                                                @foreach ($floor1 as $col)
+                                                    <div class="seat-column">
+                                                        @foreach ($col as $code)
+                                                            {!! renderSeat($code, $bookedSeats) !!}
+                                                        @endforeach
                                                     </div>
                                                 @endforeach
                                             </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                                <div class="seat-floor">
-                                    <div class="seat-floor-title">Tầng trên</div>
-                                    <div class="seat-floor-body">
-                                        @php
-                                            $floor2Columns = [
-                                                ['B01', 'B02', 'B03', 'B04'],
-                                                ['B05', 'B06', 'B07', 'B08'],
-                                                ['B09', 'B10', 'B11', 'B12'],
-                                                ['B13', 'B14', 'B15', 'B16'],
-                                            ];
-                                        @endphp
-
-                                        @foreach ($floor2Columns as $column)
-                                            <div class="seat-column">
-                                                @foreach ($column as $code)
-                                                    @php
-                                                        $isBooked = in_array($code, $bookedSeats);
-                                                    @endphp
-                                                    <div class="seat {{ $isBooked ? 'booked' : 'available' }}"
-                                                        data-code="{{ $code }}"
-                                                        data-booked="{{ $isBooked ? '1' : '0' }}">
-                                                        {{ $code }}
+                                        </div>
+                                        <div class="seat-floor">
+                                            <div class="seat-floor-title">Tầng trên (B)</div>
+                                            <div class="seat-floor-body">
+                                                @foreach ($floor2 as $col)
+                                                    <div class="seat-column">
+                                                        @foreach ($col as $code)
+                                                            {!! renderSeat($code, $bookedSeats) !!}
+                                                        @endforeach
                                                     </div>
                                                 @endforeach
                                             </div>
-                                        @endforeach
+                                        </div>
                                     </div>
-                                </div>
+
+                                    {{-- TRƯỜNG HỢP XE 7 CHỖ: CHỈ 2 CỘT --}}
+                                @elseif($seatCount == 7)
+                                    <div class="seat-floor">
+                                        <div class="seat-floor-title">Sơ đồ xe 7 chỗ</div>
+                                        <div class="seat-floor-body">
+                                            {{-- Cột 1: 4 ghế --}}
+                                            <div class="seat-column">
+                                                @foreach (['S01', 'S02', 'S03', 'S04'] as $code)
+                                                    {!! renderSeat($code, $bookedSeats) !!}
+                                                @endforeach
+                                            </div>
+                                            {{-- Cột 2: 3 ghế --}}
+                                            <div class="seat-column">
+                                                @foreach (['S05', 'S06', 'S07'] as $code)
+                                                    {!! renderSeat($code, $bookedSeats) !!}
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- CÁC TRƯỜNG HỢP KHÁC (16 CHỖ, 4 CHỖ...) --}}
+                                @else
+                                    <div class="seat-floor">
+                                        <div class="seat-floor-title">Sơ đồ xe {{ $seatCount }} chỗ</div>
+                                        <div class="seat-floor-body">
+                                            @php
+                                                $cols = $seatCount <= 4 ? 2 : 4;
+                                                $perCol = ceil($seatCount / $cols);
+                                            @endphp
+                                            @for ($c = 0; $c < $cols; $c++)
+                                                <div class="seat-column">
+                                                    @for ($r = 1; $r <= $perCol; $r++)
+                                                        @php
+                                                            $num = $c * $perCol + $r;
+                                                            $code = sprintf('S%02d', $num);
+                                                        @endphp
+                                                        @if ($num <= $seatCount)
+                                                            {!! renderSeat($code, $bookedSeats) !!}
+                                                        @endif
+                                                    @endfor
+                                                </div>
+                                            @endfor
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
+
+                            {{-- Chú thích --}}
                             <div class="seat-legend-right">
                                 <div class="seat-legend-item">
                                     <span class="seat-legend-box legend-booked"></span>
@@ -574,9 +629,11 @@
             const sidebarPricePerSeat = document.getElementById('sidebar-price-per-seat');
             const pickupSelect = document.getElementById('pickup-select');
             const dropoffSelect = document.getElementById('dropoff-select');
+
             function formatMoney(n) {
                 return Number(n).toLocaleString('vi-VN') + 'đ';
             }
+
             function updateSummary() {
                 const selected = Array.from(seatsEls)
                     .filter(el => el.classList.contains('selected'))
@@ -602,6 +659,7 @@
                     updateSummary();
                 });
             });
+
             function fetchFare() {
                 const pickupId = pickupSelect.value;
                 const dropoffId = dropoffSelect.value;
@@ -634,6 +692,7 @@
                         updateSummary();
                     });
             }
+
             function updatePriceUI() {
                 if (sidebarPricePerSeat) {
                     sidebarPricePerSeat.innerText = formatMoney(currentPrice);
@@ -651,6 +710,7 @@
             const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
             const payOnlineLabel = document.getElementById('pay-online-label');
             const payCashLabel = document.getElementById('pay-cash-label');
+
             function updatePaymentUI() {
                 if (payOnlineLabel) payOnlineLabel.classList.remove('active');
                 if (payCashLabel) payCashLabel.classList.remove('active');

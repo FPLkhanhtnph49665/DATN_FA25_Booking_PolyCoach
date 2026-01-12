@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\Ticket;
 use App\Models\User;
+use Illuminate\Support\Facades\File;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -29,14 +30,6 @@ class AuthenticatedSessionController extends Controller
     {
         // Xác thực thông tin đăng nhập
         $request->authenticate();
-
-        // $request->validate([
-        //     'email' => 'required|string',
-        //     'password' => 'required|string',
-        // ], [
-        //     'email.required' => 'Vui lòng nhập email hoặc số điện thoại.',
-        //     'password.required' => 'Vui lòng nhập mật khẩu.',
-        // ]);
         // Bảo vệ session
         $request->session()->regenerate();
 
@@ -75,25 +68,43 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
 
         $data = $request->validate([
-            'full_name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:1024', // 1MB
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            // Sửa lại: Thêm dấu phẩy trước $user->id và đưa regex vào đúng vị trí
+            'phone' => 'nullable|string|size:10|regex:/^[0-9]+$/|unique:users,phone,' . $user->id,
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
         ], [
-            'full_name.required' => 'Vui lòng nhập họ và tên.',
+            'first_name.required' => 'Vui lòng nhập tên.',
+            'last_name.required' => 'Vui lòng nhập họ.',
+            'phone.size' => 'Số điện thoại phải đúng 10 ký tự.',
+            'phone.unique' => 'Số điện thoại đã tồn tại.',
+            'phone.regex' => 'Số điện thoại chỉ được chứa các chữ số.',
+            'email.required' => 'Vui lòng nhập email.',
+            'email.unique' => 'Email đã tồn tại.',
             'image.image' => 'File tải lên phải là hình ảnh.',
             'image.mimes' => 'Chỉ chấp nhận JPEG, JPG, PNG.',
             'image.max' => 'Dung lượng ảnh tối đa 1MB.',
         ]);
 
-        // Xử lý upload avatar
         if ($request->hasFile('image')) {
-            // Xoá ảnh cũ nếu có
-            if ($user->image && Storage::disk('public')->exists($user->image)) {
-                Storage::disk('public')->delete($user->image);
+            // Xóa ảnh cũ
+            if ($user->image) {
+                $oldImagePath = public_path($user->image);
+                if (File::exists($oldImagePath)) {
+                    File::delete($oldImagePath);
+                }
             }
 
-            $path = $request->file('image')->store('avatars', 'public');
-            $data['image'] = $path;
+            // Lưu ảnh mới
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/user_images'), $filename);
+
+            $data['image'] = 'uploads/user_images/' . $filename;
+        } else {
+            // Nếu không upload ảnh mới, giữ nguyên ảnh cũ (tránh bị null khi update)
+            unset($data['image']);
         }
 
         $user->update($data);
@@ -154,9 +165,11 @@ class AuthenticatedSessionController extends Controller
             });
         }
 
-        // Lọc theo Trạng thái (Trạng thái của Booking)
+        // Lọc theo Trạng thái chuyến đi (Nằm ở bảng trips)
         if ($request->filled('status')) {
-            $query->where('status', $status);
+            $query->whereHas('trip', function ($q) use ($status) {
+                $q->where('trip_status', $status);
+            });
         }
 
         // 3. THỰC HIỆN PHÂN TRANG

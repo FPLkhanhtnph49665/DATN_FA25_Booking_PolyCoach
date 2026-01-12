@@ -492,11 +492,6 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="">
-                                            <i class="fas fa-key me-1"></i> Đặt lại mật khẩu
-                                        </a>
-                                    </li>
-                                    <li>
                                         <hr class="dropdown-divider">
                                     </li>
                                     <li>
