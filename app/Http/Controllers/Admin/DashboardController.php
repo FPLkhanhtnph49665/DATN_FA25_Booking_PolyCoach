@@ -41,8 +41,8 @@ class DashboardController extends Controller
         // Tính tổng tiền mặt (Cash), bao gồm cả đã xóa mềm
         $totalCash = Payment::withTrashed()->where('payment_method', 'cash')->sum('amount');
 
-        // Tính tổng tiền Momo, bao gồm cả đã xóa mềm
-        $totalMomo = Payment::withTrashed()->where('payment_method', 'momo')->sum('amount');
+        // Tính tổng tiền vnpay, bao gồm cả đã xóa mềm
+        $totalVnpay = Payment::withTrashed()->where('payment_method', 'vnpay')->sum('amount');
 
         // 📈 Payments by month/year
         // Thống kê thanh toán theo tháng/năm, bao gồm cả đã xóa mềm
@@ -50,7 +50,7 @@ class DashboardController extends Controller
             DB::raw('YEAR(created_at) as year'),
             DB::raw('MONTH(created_at) as month'),
             DB::raw("SUM(CASE WHEN payment_method = 'cash' THEN amount ELSE 0 END) as cash_total"),
-            DB::raw("SUM(CASE WHEN payment_method = 'momo' THEN amount ELSE 0 END) as momo_total")
+            DB::raw("SUM(CASE WHEN payment_method = 'vnpay' THEN amount ELSE 0 END) as vnpay_total")
         )
             ->groupBy('year', 'month')
             ->orderBy('year')
@@ -65,7 +65,7 @@ class DashboardController extends Controller
             'activeTrips',
             'totalPayments',
             'totalCash',
-            'totalMomo',
+            'totalVnpay',
             'paymentsByMonth'
         ));
     }
