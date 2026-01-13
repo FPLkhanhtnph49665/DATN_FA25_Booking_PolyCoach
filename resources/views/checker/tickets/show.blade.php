@@ -22,7 +22,7 @@
                     <td>{{ number_format($ticket->price ?? 0) }}đ</td>
                 </tr>
                 <tr>
-                    <th>thanh toán</th>
+                    <th>Thanh toán</th>
                     <td>{{ $ticket->payment_method }}</td>
                 </tr>
                 <tr>
@@ -34,7 +34,7 @@
                             </span>
                         @elseif($ticket->status === 'cancelled')
                             <span class="badge bg-danger">
-                                <i class="bi bi-x-circle"></i> khách Đã hủy chuyến
+                                <i class="bi bi-x-circle"></i> Khách đã hủy chuyến
                             </span>
                         @else
                             {{-- Mặc định là pending --}}
@@ -98,7 +98,7 @@
                         <td>{{ $ticket->user->email ?? '---' }}</td>
                     </tr>
                     <tr>
-                        
+
                     </tr>
                 </table>
             @else

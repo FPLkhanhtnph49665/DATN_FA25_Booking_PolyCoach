@@ -15,7 +15,7 @@ class PaymentController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Payment::with(['user', 'ticket']);
+        $query = Payment::with(['user', 'booking', 'booking.tickets']);
 
         // Search by transaction code or user
         if ($request->filled('keyword')) {

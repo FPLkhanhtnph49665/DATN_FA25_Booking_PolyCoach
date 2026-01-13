@@ -15,12 +15,6 @@
                 Cập nhật thông tin tài khoản: họ tên, liên hệ, vai trò và trạng thái.
             </p>
         </div>
-
-        <a href="{{ route('admin.users.index') }}"
-           class="btn btn-outline-light d-flex align-items-center gap-1">
-            <i class="bi bi-arrow-left"></i>
-            <span>Quay lại danh sách</span>
-        </a>
     </div>
 
     <div class="card border-0">
@@ -94,7 +88,7 @@
                         @error('password')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                        <small class="text-muted">
+                        <small class="text-white">
                             Nếu không nhập, mật khẩu hiện tại sẽ được giữ nguyên.
                         </small>
                     </div>

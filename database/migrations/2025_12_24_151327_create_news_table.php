@@ -23,7 +23,7 @@ return new class extends Migration
     $table->boolean('is_featured')->default(false);
     $table->date('published_at')->nullable();
     $table->timestamps();
-    $table->softDeletes();
+    // $table->softDeletes();
 
 });
 

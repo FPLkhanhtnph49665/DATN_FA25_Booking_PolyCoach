@@ -199,7 +199,7 @@
                                     <td class="text-center">
 
                                         {{-- Nút mở modal duyệt --}}
-                                        <button type="button" class="btn btn-sm btn-outline-warning me-1 edit-status-btn"
+                                        <button type="button" class="btn btn-sm btn-outline-info me-1 edit-status-btn"
                                             data-id="{{ $review->id }}" data-status="{{ $review->status }}"
                                             data-bs-toggle="modal" data-bs-target="#updateStatusModal">
                                             <i class="bi bi-pencil-square"></i>

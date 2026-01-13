@@ -63,6 +63,20 @@
                     </li>
 
                     <li class="nav-item">
+                        <a href="{{ route('admin.routes.index') }}"
+                            class="nav-link admin-nav-link {{ request()->routeIs('admin.routes.*') ? 'active' : '' }}">
+                            <i class="bi bi-signpost-split me-2"></i> Quản lý Tuyến
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="{{ route('admin.buses.index') }}"
+                            class="nav-link admin-nav-link {{ request()->routeIs('admin.buses.*') ? 'active' : '' }}">
+                            <i class="bi bi-truck-front me-2"></i> Quản lý Xe
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
                         <a href="{{ route('admin.pickup-dropoff-points.index') }}"
                             class="nav-link admin-nav-link {{ request()->routeIs('admin.pickup-dropoff-points.*') ? 'active' : '' }}">
                             <i class="bi bi-pin-map me-2"></i> Điểm đón/trả
@@ -73,20 +87,6 @@
                         <a href="{{ route('admin.point_fares.index') }}"
                             class="nav-link admin-nav-link {{ request()->routeIs('admin.point_fares.*') ? 'active' : '' }}">
                             <i class="bi bi-pin-map me-2"></i> Giá vé chặng
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a href="{{ route('admin.routes.index') }}"
-                            class="nav-link admin-nav-link {{ request()->routeIs('admin.routes.*') ? 'active' : '' }}">
-                            <i class="bi bi-signpost-split me-2"></i> Quản lý Tuyến
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a href="{{ route('admin.buses.index') }}"
-                            class="nav-link admin-nav-link {{ request()->routeIs('admin.buses.*') ? 'active' : '' }}">
-                            <i class="bi bi-truck-front me-2"></i> Quản lý Xe
                         </a>
                     </li>
 
@@ -121,7 +121,7 @@
                     <li class="nav-item">
                         <a href="{{ route('admin.news.index') }}"
                             class="nav-link admin-nav-link {{ request()->routeIs('admin.news.*') ? 'active' : '' }}">
-                             <i class="bi bi-newspaper me-2"></i>Quản lý Bài viết
+                            <i class="bi bi-newspaper me-2"></i>Quản lý Bài viết
                         </a>
                     </li>
 
