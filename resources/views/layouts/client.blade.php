@@ -485,12 +485,6 @@
                                             <i class="fas fa-clock-rotate-left me-1"></i> Lịch sử đặt vé
                                         </a>
                                     </li>
-
-                                    <li>
-                                        <a class="dropdown-item" href="">
-                                            <i class="fas fa-location-dot me-1"></i> Địa chỉ của bạn
-                                        </a>
-                                    </li>
                                     <li>
                                         <hr class="dropdown-divider">
                                     </li>

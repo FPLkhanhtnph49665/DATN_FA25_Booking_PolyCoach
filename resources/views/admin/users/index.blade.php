@@ -31,7 +31,7 @@
                     <div class="col-md-4">
                         <label class="form-label text-light small mb-1">Từ khóa</label>
                         <input type="text" name="keyword" value="{{ request('keyword') }}" class="form-control"
-                            placeholder="Tìm theo họ tên, email, mã user...">
+                            placeholder="Tìm theo họ tên, email, số điện thoại...">
                     </div>
 
                     <div class="col-md-2">
@@ -79,10 +79,8 @@
                         <thead>
                             <tr>
                                 <th class="text-muted small">#</th>
-                                {{-- <th class="text-muted small">Mã User</th> --}}
                                 <th class="text-muted small">Họ</th>
                                 <th class="text-muted small">Tên</th>
-                                {{-- <th class="text-muted small">Full Name</th> --}}
                                 <th class="text-muted small">Ảnh</th>
                                 <th class="text-muted small">Email</th>
                                 <th class="text-muted small">SĐT</th>
@@ -97,14 +95,9 @@
                                 <tr>
                                     <td class="text-muted small">
                                         {{ $loop->iteration + ($users->currentPage() - 1) * $users->perPage() }}</td>
-                                    {{-- <td>
-                                    <span class="badge bg-secondary-subtle text-dark border border-primary-subtle">
-                                        {{ $user->user_code }}
-                                    </span>
-                                </td> --}}
                                     <td>{{ $user->first_name }}</td>
                                     <td>{{ $user->last_name }}</td>
-                                    {{-- <td class="fw-semibold">{{ $user->full_name }}</td> --}}
+
                                     <td>
                                         <div class="d-flex align-items-center">
                                             {{-- Gọi trực tiếp asset($user->image) vì trong DB đã lưu kèm đường dẫn uploads/user_images/ --}}

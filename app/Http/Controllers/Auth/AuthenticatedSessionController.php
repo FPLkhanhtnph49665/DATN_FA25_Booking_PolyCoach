@@ -12,6 +12,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -74,6 +75,7 @@ class AuthenticatedSessionController extends Controller
             'phone' => 'nullable|string|size:10|regex:/^[0-9]+$/|unique:users,phone,' . $user->id,
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
+            'password' => 'nullable|string|min:6|confirmed',
         ], [
             'first_name.required' => 'Vui lòng nhập tên.',
             'last_name.required' => 'Vui lòng nhập họ.',
@@ -85,8 +87,15 @@ class AuthenticatedSessionController extends Controller
             'image.image' => 'File tải lên phải là hình ảnh.',
             'image.mimes' => 'Chỉ chấp nhận JPEG, JPG, PNG.',
             'image.max' => 'Dung lượng ảnh tối đa 1MB.',
+            'password.confirmed' => 'Mật khẩu xác nhận không khớp.',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
         ]);
 
+        // Nếu có nhập mật khẩu mới
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+        // Xử lý ảnh đại diện nếu có upload
         if ($request->hasFile('image')) {
             // Xóa ảnh cũ
             if ($user->image) {
