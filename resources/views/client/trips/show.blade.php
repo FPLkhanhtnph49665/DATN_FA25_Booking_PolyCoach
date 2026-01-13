@@ -495,7 +495,6 @@
                                     </div>
                                     <select name="pickup_point_id" id="pickup-select" class="form-select mb-2">
                                         <option value="">-- Mặc định (Tại bến xe) --</option>
-
                                         @if ($route->pickupPoints && $route->pickupPoints->count() > 0)
                                             @foreach ($route->pickupPoints as $point)
                                                 <option value="{{ $point->id }}">

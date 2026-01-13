@@ -106,7 +106,7 @@
                                         @endif
                                     </td>
                                     <td class="fw-semibold">
-                                        {{ preg_replace('/^([0-9]{2}[A-Z]{1})/', '$1-', strtoupper($bus->plate_number)) }}
+                                        {{ preg_replace('/^([0-9]{2}[A-Z]{1})/', '$1', strtoupper($bus->plate_number)) }}
                                     </td>
                                     <td>
                                         <span class="badge bg-secondary-subtle text-dark border border-primary-subtle">

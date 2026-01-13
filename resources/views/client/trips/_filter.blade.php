@@ -43,8 +43,8 @@
             <div class="row g-2">
                 @php
                     $types = [
-                        'ghe' => 'Ghế ngồi',
-                        'giuong' => 'Giường nằm',
+                        'seat' => 'Ghế ngồi',
+                        'sleeper' => 'Giường nằm',
                         'limousine' => 'Limousine'
                     ];
                 @endphp
