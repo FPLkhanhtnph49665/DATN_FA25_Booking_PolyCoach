@@ -177,12 +177,6 @@
                         </span>
                         <span>Lịch sử mua vé</span>
                     </a>
-                    <a href="#" class="account-menu-item">
-                        <span class="account-menu-icon icon-blue">
-                            <i class="bi bi-geo-alt"></i>
-                        </span>
-                        <span>Địa chỉ của bạn</span>
-                    </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button class="account-menu-item w-100 text-start border-0 bg-transparent">
@@ -204,7 +198,7 @@
                         <div class="alert alert-success py-2">{{ session('success') }}</div>
                     @endif
 
-                    @if ($errors->any())
+                    {{-- @if ($errors->any())
                         <div class="alert alert-danger py-2">
                             <ul class="mb-0">
                                 @foreach ($errors->all() as $err)
@@ -212,7 +206,7 @@
                                 @endforeach
                             </ul>
                         </div>
-                    @endif
+                    @endif --}}
 
                     <form action="{{ route('client.account.update') }}" method="POST" enctype="multipart/form-data">
                         @csrf

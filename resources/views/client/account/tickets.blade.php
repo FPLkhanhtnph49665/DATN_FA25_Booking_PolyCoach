@@ -154,18 +154,6 @@
                         </span>
                         <span>Lịch sử mua vé</span>
                     </a>
-                    <a href="#" class="account-menu-item">
-                        <span class="account-menu-icon icon-blue">
-                            <i class="bi bi-geo-alt"></i>
-                        </span>
-                        <span>Địa chỉ của bạn</span>
-                    </a>
-                    <a href="{{ route('password.request') }}" class="account-menu-item">
-                        <span class="account-menu-icon icon-red">
-                            <i class="bi bi-shield-lock"></i>
-                        </span>
-                        <span>Đặt lại mật khẩu</span>
-                    </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button class="account-menu-item w-100 text-start border-0 bg-transparent">
