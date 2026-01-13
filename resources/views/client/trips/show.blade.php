@@ -158,7 +158,7 @@
 
         .seat.selected {
             background: #ffe6d8;
-            border-color: #ff7a00;
+            border-color: #ff595e;
             color: #c2410c;
         }
 
@@ -204,13 +204,13 @@
 
         .legend-selected {
             background: #ffe6d8;
-            border-color: #ff7a00;
+            border-color: #ff595e;
         }
 
         /* ===== Nút chính ===== */
         .btn-main {
-            background-color: #ff7a00;
-            border-color: #ff7a00;
+            background-color: #ff595e;
+            border-color: #ff595e;
             color: #fff;
             border-radius: 999px;
             padding: 8px 24px;
@@ -236,15 +236,15 @@
         }
 
         .payment-option:hover {
-            border-color: #ff7a00;
+            border-color: #ff595e;
             background-color: #fff8f5;
         }
 
         /* Khi radio được check, label cha sẽ đổi màu (xử lý bằng JS bên dưới hoặc :has nếu trình duyệt hỗ trợ) */
         .payment-option.active {
-            border-color: #ff7a00;
+            border-color: #ff595e;
             background-color: #fff8f5;
-            box-shadow: 0 0 0 1px #ff7a00;
+            box-shadow: 0 0 0 1px #ff595e;
         }
 
         .payment-option .form-check-input {
@@ -495,7 +495,6 @@
                                     </div>
                                     <select name="pickup_point_id" id="pickup-select" class="form-select mb-2">
                                         <option value="">-- Mặc định (Tại bến xe) --</option>
-
                                         @if ($route->pickupPoints && $route->pickupPoints->count() > 0)
                                             @foreach ($route->pickupPoints as $point)
                                                 <option value="{{ $point->id }}">

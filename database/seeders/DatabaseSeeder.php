@@ -66,7 +66,7 @@ class DatabaseSeeder extends Seeder
                     'first_name' => explode(' ', $u['name'])[0],
                     'last_name'  => explode(' ', $u['name'])[1] ?? '',
                     'full_name'  => $u['name'],
-                    'password'   => Hash::make('Poly@123'),
+                    'password'   => Hash::make('1'),
                     'role'       => $u['role'],
                     'status'     => 1,
                 ]
@@ -82,15 +82,67 @@ class DatabaseSeeder extends Seeder
          * ======================================================
          */
         $routeData = [
-            ['from' => 'HN', 'to' => 'HCM', 'distance' => 1700, 'time' => '22:00:00'],
-            ['from' => 'HCM', 'to' => 'HN', 'distance' => 1700, 'time' => '23:00:00'],
-            ['from' => 'HN', 'to' => 'DN',  'distance' => 800,  'time' => '15:00:00'],
-            ['from' => 'DN', 'to' => 'HCM', 'distance' => 960,  'time' => '18:00:00'],
-            ['from' => 'HCM', 'to' => 'CT', 'distance' => 170,  'time' => '04:00:00'],
+            [
+                'from'     => 'HN',
+                'to'       => 'HCM',
+                'distance' => 1700,
+                'time'     => '22:00:00',
+            ],
+            [
+                'from'     => 'HCM',
+                'to'       => 'HN',
+                'distance' => 1700,
+                'time'     => '23:00:00',
+            ],
+
+            [
+                'from'     => 'HN',
+                'to'       => 'DN',
+                'distance' => 800,
+                'time'     => '15:00:00',
+            ],
+            [
+                'from'     => 'DN',
+                'to'       => 'HN',
+                'distance' => 800,
+                'time'     => '14:30:00',
+            ],
+            [
+                'from'     => 'DN',
+                'to'       => 'HCM',
+                'distance' => 960,
+                'time'     => '18:00:00',
+            ],
+            [
+                'from'     => 'HCM',
+                'to'       => 'DN',
+                'distance' => 960,
+                'time'     => '17:30:00',
+            ],
+
+            [
+                'from'     => 'HCM',
+                'to'       => 'CT',
+                'distance' => 170,
+                'time'     => '04:00:00',
+            ],
+            [
+                'from'     => 'CT',
+                'to'       => 'HCM',
+                'distance' => 170,
+                'time'     => '04:00:00',
+            ],
         ];
 
         $routes = collect();
+
         foreach ($routeData as $r) {
+
+            // Bảo vệ dữ liệu: tránh thiếu city
+            if (!isset($cities[$r['from']], $cities[$r['to']])) {
+                continue;
+            }
+
             $route = Route::updateOrCreate(
                 [
                     'from_city_id' => $cities[$r['from']]->id,
@@ -102,8 +154,10 @@ class DatabaseSeeder extends Seeder
                     'status'         => 1,
                 ]
             );
+
             $routes->push($route);
         }
+
 
         /**
          * ======================================================
@@ -111,11 +165,26 @@ class DatabaseSeeder extends Seeder
          * ======================================================
          */
         $busData = [
-            ['plate' => '29B-88888', 'type' => 'sleeper',    'seats' => 32],
-            ['plate' => '51B-12345', 'type' => 'sleeper',    'seats' => 32],
-            ['plate' => '43B-45678', 'type' => 'limousine', 'seats' => 32],
-            ['plate' => '29A-34567', 'type' => 'seat',      'seats' => 32],
+            ['plate' => '29A-88888', 'type' => 'limousine', 'seats' => 4],
+            ['plate' => '29A-99999', 'type' => 'limousine', 'seats' => 4],
+            ['plate' => '51A-68686', 'type' => 'limousine', 'seats' => 7],
+            ['plate' => '43A-78789', 'type' => 'limousine', 'seats' => 7],
+
+            ['plate' => '29C-16888', 'type' => 'limousine', 'seats' => 16],
+            ['plate' => '29C-18888', 'type' => 'limousine', 'seats' => 16],
+            ['plate' => '51C-86868', 'type' => 'limousine', 'seats' => 16],
+            ['plate' => '43C-69999', 'type' => 'limousine', 'seats' => 16],
+
+            ['plate' => '29B-12345', 'type' => 'seat',      'seats' => 16],
+            ['plate' => '30B-56789', 'type' => 'seat',      'seats' => 16],
+
+            ['plate' => '29D-88868', 'type' => 'sleeper',   'seats' => 32],
+            ['plate' => '29D-68686', 'type' => 'sleeper',   'seats' => 32],
+            ['plate' => '51D-99968', 'type' => 'sleeper',   'seats' => 32],
+            ['plate' => '43D-88899', 'type' => 'sleeper',   'seats' => 32],
+            ['plate' => '30D-77777', 'type' => 'sleeper',   'seats' => 32],
         ];
+
 
         $buses = collect();
         foreach ($busData as $b) {
@@ -180,89 +249,101 @@ class DatabaseSeeder extends Seeder
                 'checked_by'      => 1, // admin
             ]);
         }
-
         /**
          * ======================================================
-         * 6. PICKUP / DROPOFF POINTS
+         * 6. PICKUP & DROPOFF POINTS – Theo tuyến
          * ======================================================
          */
-        foreach ($routes as $route) {
-            $fromCity = $route->fromCity;
-            $toCity   = $route->toCity;
+        $pointsByCity = [
 
-            $points = [
-                // Pickup
-                [
-                    'route_id' => $route->id,
-                    'type'     => 'pickup',
-                    'name'     => 'Bến xe trung tâm ' . $fromCity->name,
-                    'address'  => 'Bến xe trung tâm ' . $fromCity->name,
-                    // 'order'    => 1,
-                    'active'   => 1,
+            'HN' => [
+                'pickup' => [
+                    'Bến xe Mỹ Đình',
+                    'Bến xe Giáp Bát',
+                    'Bến xe Nước Ngầm',
                 ],
-                [
-                    'route_id' => $route->id,
-                    'type'     => 'pickup',
-                    'name'     => 'Văn phòng chính ' . $fromCity->name,
-                    'address'  => 'Văn phòng PoLyCoach tại ' . $fromCity->name,
-                    // 'order'    => 2,
-                    'active'   => 1,
+                'dropoff' => [
+                    'Bến xe Mỹ Đình',
+                    'Bến xe Giáp Bát',
                 ],
+            ],
 
-                // Dropoff
-                [
-                    'route_id' => $route->id,
-                    'type'     => 'dropoff',
-                    'name'     => 'Bến xe trung tâm ' . $toCity->name,
-                    'address'  => 'Bến xe trung tâm ' . $toCity->name,
-                    // 'order'    => 1,
-                    'active'   => 1,
+            'DN' => [
+                'pickup' => [
+                    'Bến xe Trung tâm Đà Nẵng',
+                    'Bến xe phía Nam Đà Nẵng',
                 ],
-                [
-                    'route_id' => $route->id,
-                    'type'     => 'dropoff',
-                    'name'     => 'Văn phòng chính ' . $toCity->name,
-                    'address'  => 'Văn phòng PoLyCoach tại ' . $toCity->name,
-                    // 'order'    => 2,
-                    'active'   => 1,
+                'dropoff' => [
+                    'Bến xe Trung tâm Đà Nẵng',
                 ],
-            ];
+            ],
 
-            PickupDropoffPoint::insert($points);
-        }
+            'HCM' => [
+                'pickup' => [
+                    'Bến xe Miền Đông',
+                    'Bến xe Miền Tây',
+                ],
+                'dropoff' => [
+                    'Bến xe Miền Đông',
+                    'Bến xe Miền Tây',
+                ],
+            ],
 
-        /**
-         * ======================================================
-         * 7. POINT FARES – Giá vé giữa các điểm
-         * ======================================================
-         */
+            'CT' => [
+                'pickup' => [
+                    'Bến xe Trung tâm Cần Thơ',
+                ],
+                'dropoff' => [
+                    'Bến xe Trung tâm Cần Thơ',
+                ],
+            ],
+        ];
         foreach ($routes as $route) {
 
-            $pickups = PickupDropoffPoint::where('route_id', $route->id)
-                ->where('type', 'pickup')
-                ->get();
+    $fromCode = City::find($route->from_city_id)->code;
+    $toCode   = City::find($route->to_city_id)->code;
 
-            $dropoffs = PickupDropoffPoint::where('route_id', $route->id)
-                ->where('type', 'dropoff')
-                ->get();
+    /** ===== PICKUP POINTS ===== */
+    if (isset($pointsByCity[$fromCode]['pickup'])) {
 
-            foreach ($pickups as $pickup) {
-                foreach ($dropoffs as $dropoff) {
-
-                    PointFare::updateOrCreate(
-                        [
-                            'route_id'         => $route->id,
-                            'pickup_point_id'  => $pickup->id,
-                            'dropoff_point_id' => $dropoff->id,
-                        ],
-                        [
-                            'price'  => rand(200000, 600000),
-                            'active' => 1,
-                        ]
-                    );
-                }
-            }
+        foreach ($pointsByCity[$fromCode]['pickup'] as $index => $name) {
+            PickupDropoffPoint::updateOrCreate(
+                [
+                    'route_id' => $route->id,
+                    'name'     => $name,
+                    'type'     => 'pickup',
+                ],
+                [
+                    'city_id'   => $route->from_city_id,
+                    'address'   => $name,
+                    'is_default'=> $index === 0,
+                    'active'    => 1,
+                ]
+            );
         }
+    }
+
+    /** ===== DROPOFF POINTS ===== */
+    if (isset($pointsByCity[$toCode]['dropoff'])) {
+
+        foreach ($pointsByCity[$toCode]['dropoff'] as $index => $name) {
+            PickupDropoffPoint::updateOrCreate(
+                [
+                    'route_id' => $route->id,
+                    'name'     => $name,
+                    'type'     => 'dropoff',
+                ],
+                [
+                    'city_id'   => $route->to_city_id,
+                    'address'   => $name,
+                    'is_default'=> $index === 0,
+                    'active'    => 1,
+                ]
+            );
+        }
+    }
+}
+
         /**
          * ======================================================
          * 8. NEWS – Tin tức
