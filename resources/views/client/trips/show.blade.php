@@ -494,7 +494,7 @@
                                         </span>
                                     </div>
                                     <select name="pickup_point_id" id="pickup-select" class="form-select mb-2">
-                                        <option value="">-- Mặc định (Tại bến xe) --</option>
+                                        <option value="">-- Mặc định (Tại văn phòng PolyCoach) --</option>
                                         @if ($route->pickupPoints && $route->pickupPoints->count() > 0)
                                             @foreach ($route->pickupPoints as $point)
                                                 <option value="{{ $point->id }}">
@@ -513,7 +513,7 @@
                                         </span>
                                     </div>
                                     <select name="dropoff_point_id" id="dropoff-select" class="form-select mb-2">
-                                        <option value="">-- Mặc định (Tại bến xe) --</option>
+                                        <option value="">-- Mặc định (Tại văn phòng PolyCoach) --</option>
 
                                         @if ($route->dropoffPoints && $route->dropoffPoints->count() > 0)
                                             @foreach ($route->dropoffPoints as $point)
