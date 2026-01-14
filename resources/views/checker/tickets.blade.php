@@ -4,26 +4,26 @@
 
 @section('content')
 
-    <h3 class="mb-4">Danh sách vé</h3>
+    <h3 class="mb-4 text-whith fw-bold"><i class="bi bi-ticket-detailed"></i> Danh sách vé</h3>
 
     {{-- ===========================
     BỘ LỌC TÌM KIẾM
     =========================== --}}
-    <div class="card mb-4">
+    <div class="card mb-4 shadow-sm border-0">
         <div class="card-body">
 
             <form method="GET" class="row g-3">
 
                 {{-- Mã vé --}}
                 <div class="col-md-3">
-                    <label class="form-label">Mã vé</label>
+                    <label class="form-label fw-bold">Mã vé</label>
                     <input type="text" name="code" value="{{ request('code') }}" class="form-control"
                         placeholder="Nhập mã vé...">
                 </div>
 
                 {{-- Trạng thái --}}
                 <div class="col-md-3">
-                    <label class="form-label">Trạng thái</label>
+                    <label class="form-label fw-bold">Trạng thái</label>
                     <select name="status" class="form-select">
                         <option value="">-- Tất cả --</option>
                         <option value="checked" {{ request('status') == 'checked' ? 'selected' : '' }}>Đã kiểm</option>
@@ -34,7 +34,7 @@
 
                 {{-- Tuyến --}}
                 <div class="col-md-4">
-                    <label class="form-label">Tuyến</label>
+                    <label class="form-label fw-bold">Tuyến</label>
                     <select name="route_id" class="form-select">
                         <option value="">-- Tất cả tuyến --</option>
                         @foreach ($routes as $r)
@@ -70,13 +70,12 @@
                     <th>số ghế</th>
                     <th>Giá</th>
                     <th>Trạng thái</th>
-                    <th>giờ khởi hành</th>
+                    <th>thời gian</th>
                     <th class="text-center" style="width: 70px;"></th>
                 </tr>
             </thead>
 
             <tbody>
-
                 @forelse ($tickets as $ticket)
                     @php
                         $trip = $ticket->trip;
@@ -111,14 +110,10 @@
                         </td>
                         {{-- Xe đi --}}
                         <td>
-                            @if ($trip && $trip->bus)
-                                <div>
-                                    <i class="bi bi-bus-front text-primary"></i>
-                                    {{ $trip->bus->plate_number }}
-                                </div>
-                            @else
-                                ---
-                            @endif
+                            <div>
+                                <i class="bi bi-bus-front text-primary"></i>
+                                {{ $trip->bus->plate_number }}
+                            </div>
                         </td>
 
                         {{-- Số ghế --}}
@@ -129,7 +124,7 @@
                         </td>
 
                         {{-- Giá --}}
-                        <td>{{ number_format($ticket->price) }}đ</td>
+                        <td>{{ number_format($ticket->price) }}VND</td>
 
                         {{-- Trạng thái với màu Vexere-style --}}
                         <td>
@@ -144,12 +139,15 @@
                             @endif
                         </td>
 
-                        {{-- giờ đi --}}
+                        {{-- Giờ đi --}}
                         <td class="text-center">
-                            <i class="fa-regular fa-clock text-primary me-1"></i>
-                            <strong>
+                            <h5 class="mb-0 text-dark fw-bold">
                                 {{ \Carbon\Carbon::parse($trip->departure_time)->format('H:i') }}
-                            </strong>
+                            </h5>
+                            @if ($trip->arrival_time)
+                                <small class="text-muted">Đến:
+                                    {{ \Carbon\Carbon::parse($trip->arrival_time)->format('H:i') }}</small>
+                            @endif
                         </td>
 
 
@@ -160,10 +158,12 @@
                                 <i class="bi bi-eye"></i>
                             </a>
                             {{-- Thay đổi nút kiểm tra vé --}}
-                            <button type="button" class="btn btn-sm btn-success mt-2 btn-check-ticket"
-                                data-bs-toggle="modal" data-bs-target="#checkTicketModal" data-id="{{ $ticket->id }}"
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2 btn-check-ticket"
+                                {{ $ticket->checked_at ? 'disabled' : '' }} data-bs-toggle="modal"
+                                data-bs-target="#checkTicketModal" data-id="{{ $ticket->id }}"
                                 data-status="{{ $ticket->status }}" data-code="{{ $ticket->code }}"
-                                data-url="{{ route('checker.tickets.updateStatus', ':id') }}" title="Kiểm tra vé">
+                                data-url="{{ route('checker.tickets.updateStatus', ':id') }}"
+                                title="{{ $ticket->checked_at ? 'Vé này đã được kiểm tra' : 'Kiểm tra vé' }}">
                                 <i class="bi bi-check2-circle"></i>
                             </button>
                         </td>
@@ -186,21 +186,29 @@
     <div class="d-flex justify-content-end mt-3">
         {{ $tickets->withQueryString()->links('pagination::bootstrap-4') }}
     </div>
+    {{-- ===========================
+    MODAL CẬP NHẬT TRẠNG THÁI VÉ
+    =========================== --}}
     <div class="modal fade" id="checkTicketModal" tabindex="-1" aria-labelledby="checkTicketModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <form id="updateStatusForm" method="POST" action="">
                 @csrf
                 @method('PATCH')
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="checkTicketModalLabel">Cập nhật trạng thái vé</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="checkTicketModalLabel">
+                            <i class="bi bi-gear-fill me-2"></i>
+                            Cập nhật trạng thái vé
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
-                        <p>Chọn trạng thái mới cho vé mã: <strong id="modal-ticket-code"></strong></p>
-
+                    <div class="modal-body p-4">
+                        <div class="alert alert-light border mb-3">
+                            vé mã: <strong id="modal-ticket-code" class="text-primary fs-5">...</strong>
+                        </div>
                         <div class="mb-3">
-                            <label class="form-label">Trạng thái</label>
+                            <label class="form-label text-muted">Trạng thái</label>
                             <select name="status" id="modal-status-select" class="form-select">
                                 <option value="pending">Đang chờ xử lý</option>
                                 <option value="paid">Đã thanh toán</option>
@@ -209,8 +217,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                        <button type="submit" class="btn btn-primary">Xác nhận thay đổi</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">hủy</button>
+                        <button type="submit" class="btn btn-primary px-4">lưu thay đổi</button>
                     </div>
                 </div>
             </form>

@@ -31,7 +31,7 @@ class BookingController extends Controller
             'seat_codes' => 'required|string',
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:20',
-            'customer_email' => 'nullable|email',
+            'customer_email' => 'required|email',
             'pickup_point_id' => 'nullable',
             'dropoff_point_id' => 'nullable',
             'payment_method' => 'required|in:cash,vnpay,momo',
@@ -69,6 +69,15 @@ class BookingController extends Controller
 
         DB::beginTransaction();
         try {
+            // --- PHẦN THÊM MỚI: Cập nhật số điện thoại cho User ---
+            $user = Auth::user();
+            // Kiểm tra nếu user chưa có số điện thoại hoặc số điện thoại mới khác số cũ thì cập nhật
+            if ($user->phone !== $request->customer_phone) {
+                $user->update([
+                    'phone' => $request->customer_phone
+                ]);
+            }
+            // -------------------------------------------------------
             // 6. Tạo Booking
             $booking = Booking::create([
                 'user_id' => Auth::id(),
@@ -93,16 +102,6 @@ class BookingController extends Controller
                     'price' => $fareInfo->price,
                     'status' => 'pending',
                     'payment_method' => $request->payment_method,
-                ]);
-
-                // 8. Tạo Passenger cho từng ghế
-                Passenger::create([
-                    'ticket_id' => $ticket->id,
-                    'name' => $request->customer_name,
-                    'phone' => $request->customer_phone,
-                    'email' => $request->customer_email,
-                    'age' => null,
-                    'seat_number' => $seatNumber,
                 ]);
             }
 

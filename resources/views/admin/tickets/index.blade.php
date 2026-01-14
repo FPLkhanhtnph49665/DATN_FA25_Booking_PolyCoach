@@ -73,11 +73,11 @@
                             <tr>
                                 <th class="text-muted small">#</th>
                                 <th class="text-muted small">Chuyến</th>
-                                <th class="text-muted small">Người dùng</th>
+                                <th class="text-muted small">Khách hàng</th>
                                 <th class="text-muted small">Số ghế</th>
                                 <th class="text-muted small">giá vé</th>
-                                <th class="text-muted small">Trạng thái</th>
                                 <th class="text-muted small">thanh toán</th>
+                                <th class="text-muted small">Trạng thái</th>
                                 <th class="text-muted small">kiểm bởi</th>
                                 <th class="text-muted small text-center"></th>
                             </tr>
@@ -108,9 +108,6 @@
                                                     @endif
                                                     {{ $trip->departure_time_formatted ?? ($trip->departure_time ?? '') }}
                                                 </span>
-                                                <span class="text-muted small">
-                                                    Mã chuyến: {{ $trip->ma_chuyen ?? $trip->id }}
-                                                </span>
                                             </div>
                                         @else
                                             <span class="text-muted small">N/A</span>
@@ -126,13 +123,6 @@
                                             </span>
 
                                             @if ($ticket->user)
-                                                {{-- Hiển thị Email nếu có --}}
-                                                @if ($ticket->user->email)
-                                                    <span class="text-muted small">
-                                                        <i class="bi bi-envelope"></i> {{ $ticket->user->email }}
-                                                    </span>
-                                                @endif
-
                                                 {{-- Hiển thị Số điện thoại nếu có (không dùng elseif để hiện cả hai) --}}
                                                 @if ($ticket->user->phone)
                                                     <span class="text-muted small">
@@ -171,7 +161,21 @@
                                             <span class="text-muted small">-</span>
                                         @endif
                                     </td>
+                                    {{-- Phương thức thanh toán --}}
+                                    <td>
+                                        @php
+                                            $method = $ticket->payment_method ?? '-';
+                                        @endphp
 
+                                        @if ($method !== '-')
+                                            <span
+                                                class="badge bg-info-subtle text-info border border-info-subtle">
+                                                {{ ucfirst($method) }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted small">-</span>
+                                        @endif
+                                    </td>
                                     {{-- Trạng thái --}}
                                     <td>
                                         @if ($ticket->status === 'pending')
@@ -191,23 +195,6 @@
                                             </span>
                                         @endif
                                     </td>
-
-                                    {{-- Phương thức thanh toán --}}
-                                    <td>
-                                        @php
-                                            $method = $ticket->payment_method ?? '-';
-                                        @endphp
-
-                                        @if ($method !== '-')
-                                            <span
-                                                class="badge bg-info-subtle text-info border border-info-subtle">
-                                                {{ ucfirst($method) }}
-                                            </span>
-                                        @else
-                                            <span class="text-muted small">-</span>
-                                        @endif
-                                    </td>
-
                                     {{-- Kiểm bởi --}}
                                     <td>
                                         @if ($ticket->checked_by)

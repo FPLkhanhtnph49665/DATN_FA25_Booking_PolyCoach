@@ -206,19 +206,13 @@
 
                                     {{-- Hành động --}}
                                     <td class="text-center">
+                                        {{-- Chỉ cho phép sửa nếu trip_status == 1 (Chưa xuất phát) --}}
                                         <a href="{{ route('admin.trips.edit', $trip->id) }}"
-                                            class="btn btn-sm btn-outline-info me-1">
+                                            class="btn btn-sm btn-outline-info me-1 {{ $trip->trip_status != 1 ? 'disabled' : '' }}"
+                                            @if ($trip->trip_status != 1) style="pointer-events: none; opacity: 0.5;" 
+            title="Chỉ có thể chỉnh sửa chuyến chưa xuất phát" @endif>
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
-
-                                        <form action="{{ route('admin.trips.destroy', $trip->id) }}" method="POST"
-                                            class="d-inline-block delete-trip-form">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                <i class="bi bi-trash3"></i>
-                                            </button>
-                                        </form>
                                     </td>
                                 </tr>
 

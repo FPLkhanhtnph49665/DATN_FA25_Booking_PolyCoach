@@ -447,7 +447,7 @@
                         <div class="border-top pt-3 mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <div class="section-title mb-0">Thông tin khách hàng</div>
-                                <span class="text-danger small">ĐIỀU KHOẢN &amp; LƯU Ý</span>
+                                
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
@@ -565,12 +565,25 @@
                         <span>{{ $route->fromCity->name ?? '' }} - {{ $route->toCity->name ?? '' }}</span>
                     </div>
                     <div class="price-row">
+                        <span>Quãng đường</span>
+                        <span>{{ $route->distance ?? '' }} km</span>
+                    </div>
+                    <div class="price-row">
                         <span>biển số xe</span>
                         <span>{{ $trip->bus->plate_number ?? '' }}</span>
                     </div>
                     <div class="price-row">
                         <span>Thời gian xuất bến</span>
-                        <span>{{ $trip->departure_time }} {{ $date->format('d/m/Y') }}</span>
+                        <div>{{ \Carbon\Carbon::parse($trip->departure_date)->format('d/m/Y') }}</div>
+                        <div class="fw-bold text-dark">
+                            {{ $trip->departure_time ? \Carbon\Carbon::parse($trip->departure_time)->format('H:i') : '--:--' }}
+                        </div>
+                    </div>
+                    <div class="price-row">
+                        <span>Thời gian đến dự kiến</span>
+                        <div class="fw-bold text-dark">
+                            {{ $trip->arrival_time ? \Carbon\Carbon::parse($trip->arrival_time)->format('H:i') : '--:--' }}
+                        </div>
                     </div>
                     <div class="price-row">
                         <span>Số lượng ghế</span>
@@ -580,27 +593,23 @@
                         <span>Số ghế</span>
                         <span id="sidebar-seat-codes">—</span>
                     </div>
-                    <div class="price-row">
-                        <span>Tổng tiền</span>
-                        <span class="price-total" id="sidebar-trip-total">0đ</span>
-                    </div>
                 </div>
                 <div class="booking-side-card">
                     <h6>Chi tiết giá</h6>
                     <div class="price-row">
                         <span>Giá vé</span>
                         <span id="sidebar-price-per-seat">
-                            {{ number_format($trip->ticket_price, 0, '.', '.') }}đ
+                            {{ number_format($trip->ticket_price, 0, '.', '.') }}VND
                         </span>
                     </div>
                     <div class="price-row">
                         <span>Phí thanh toán</span>
-                        <span>0đ</span>
+                        <span>0VND</span>
                     </div>
                     <hr>
                     <div class="price-row">
                         <span class="fw-semibold">Tổng tiền</span>
-                        <span class="price-total" id="sidebar-total-all">0đ</span>
+                        <span class="price-total" id="sidebar-total-all">0VND</span>
                     </div>
                 </div>
             </div>
@@ -624,7 +633,7 @@
             const dropoffSelect = document.getElementById('dropoff-select');
 
             function formatMoney(n) {
-                return Number(n).toLocaleString('vi-VN') + 'đ';
+                return Number(n).toLocaleString('vi-VN') + 'VND';
             }
 
             function updateSummary() {
@@ -638,7 +647,7 @@
                 if (sidebarSeatQty) sidebarSeatQty.textContent = count + ' ghế';
                 if (sidebarSeatCodes) sidebarSeatCodes.textContent = count ? selected.join(', ') : '—';
                 const total = count * currentPrice;
-                const totalText = count ? formatMoney(total) : '0đ';
+                const totalText = count ? formatMoney(total) : '0VND';
                 if (sidebarTripTotal) sidebarTripTotal.textContent = totalText;
                 if (sidebarTotalAll) sidebarTotalAll.textContent = totalText;
             }

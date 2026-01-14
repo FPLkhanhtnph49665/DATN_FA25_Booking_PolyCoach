@@ -122,7 +122,7 @@
 
                                     {{-- Amount --}}
                                     <td>
-                                        <span class="fw-semibold text-success">
+                                        <span class="fw-semibold text-danger">
                                             {{ number_format($payment->amount, 0, ',', '.') }} VND
                                         </span>
                                     </td>

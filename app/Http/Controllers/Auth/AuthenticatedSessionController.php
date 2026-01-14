@@ -94,6 +94,9 @@ class AuthenticatedSessionController extends Controller
         // Nếu có nhập mật khẩu mới
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
+        }// Ngược lại, không cập nhật mật khẩu
+        else {
+            unset($data['password']);
         }
         // Xử lý ảnh đại diện nếu có upload
         if ($request->hasFile('image')) {

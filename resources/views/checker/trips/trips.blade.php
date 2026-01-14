@@ -4,11 +4,8 @@
 
 @section('content')
 
-    <h3 class="mb-4 text-primary fw-bold"><i class="bi bi-bus-front"></i> Quản lý Chuyến Xe</h3>
+    <h3 class="mb-4 text-whith fw-bold"><i class="bi bi-bus-front"></i> Danh sách Chuyến Xe</h3>
 
-    {{-- ===========================
-       BỘ LỌC TÌM KIẾM
-    =========================== --}}
     <div class="card mb-4 shadow-sm border-0">
         <div class="card-body">
             <form method="GET" class="row g-3">
@@ -33,7 +30,7 @@
 
                 {{-- Tuyến --}}
                 <div class="col-md-4">
-                    <label class="form-label fw-bold">Tuyến đường</label>
+                    <label class="form-label fw-bold">Tuyến</label>
                     <select name="route_id" class="form-select">
                         <option value="">-- Tất cả tuyến --</option>
                         @foreach ($routes as $r)
@@ -47,7 +44,7 @@
                 {{-- Button --}}
                 <div class="col-md-2 d-flex align-items-end">
                     <button class="btn btn-primary w-100">
-                        <i class="bi bi-search"></i> Tìm kiếm
+                        <i class="bi bi-search"></i> Lọc
                     </button>
                 </div>
             </form>
@@ -58,17 +55,17 @@
        BẢNG DANH SÁCH
     =========================== --}}
 
-    <div class="table-responsive shadow-sm rounded">
-        <table class="table table-hover align-middle mb-0 bg-white">
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
             <thead class="table-light">
                 <tr>
-                    <th class="py-3">Mã chuyến</th>
-                    <th class="py-3">Thông tin tuyến</th>
-                    <th class="py-3">Xe & Tài xế</th>
-                    <th class="py-3 text-center">Số khách</th>
-                    <th class="py-3 text-center">Trạng thái</th>
-                    <th class="py-3 text-center">Thời gian</th>
-                    <th class="py-3 text-center" style="width: 100px;"></th>
+                    <th>Mã chuyến</th>
+                    <th>tuyến</th>
+                    <th>Xe đi</th>
+                    <th>Số khách</th>
+                    <th>Trạng thái</th>
+                    <th>Thời gian</th>
+                    <th class="text-center" style="width: 70px;"></th>
                 </tr>
             </thead>
 
@@ -77,32 +74,31 @@
                     <tr>
                         {{-- Mã chuyến --}}
                         <td>
-                            <span class="badge bg-light text-dark border">
-                                #{{ $trip->trip_code }}
+                            <span class="fw-bold">
+                                {{ $trip->trip_code }}
                             </span>
                         </td>
 
                         {{-- Tuyến --}}
                         <td>
-                            <div class="fw-bold text-primary">
-                                {{ $trip->route->fromCity->name ?? '...' }}
-                                <i class="bi bi-arrow-right-short"></i>
-                                {{ $trip->route->toCity->name ?? '...' }}
+                            <div>
+                                <i class="bi bi-geo-alt text-primary"></i>
+                                {{ $trip->route->fromCity->name }} → {{ $trip->route->toCity->name }}
                             </div>
+
                             <small class="text-muted">
-                                <i class="bi bi-calendar3"></i>
-                                {{ $trip->departure_date ? $trip->departure_date->format('d/m/Y') : '' }}
+                                <i class="bi bi-clock"></i>
+                                {{ $trip->departure_date?->format('d/m/Y') }}
                             </small>
                         </td>
 
                         {{-- Xe đi --}}
+
                         <td>
-                            @if ($trip->bus)
-                                <div class="fw-bold">{{ $trip->bus->plate_number }}</div>
-                                <small class="text-muted">{{ $trip->bus->seat_count }} chỗ</small>
-                            @else
-                                <span class="text-muted fst-italic">Chưa xếp xe</span>
-                            @endif
+                            <div>
+                                <i class="bi bi-bus-front text-primary"></i>
+                                {{ $trip->bus->plate_number }}
+                            </div>
                         </td>
 
                         {{-- Số khách (Đếm theo số lượng vé đã bán) --}}
@@ -145,12 +141,17 @@
 
                         {{-- Action --}}
                         <td class="text-center">
+                            @php
+                                // Kiểm tra nếu trạng thái là Đã tạm hoãn (2) hoặc Đã hoàn thành (4)
+                                $isLocked = in_array($trip->trip_status, [2, 4]);
+                            @endphp
                             {{-- Nút mở Modal --}}
                             <button type="button" class="btn btn-sm btn-outline-primary btn-update-status"
-                                data-id="{{ $trip->id }}" data-code="{{ $trip->trip_code }}"
-                                data-status="{{ $trip->trip_status }}" data-bs-toggle="modal"
-                                data-bs-target="#checkTicketModal" title="Cập nhật trạng thái">
-                                <i class="bi bi-pencil-square"></i>
+                                {{ $isLocked ? 'disabled' : '' }} data-id="{{ $trip->id }}"
+                                data-code="{{ $trip->trip_code }}" data-status="{{ $trip->trip_status }}"
+                                data-bs-toggle="modal" data-bs-target="#checkTicketModal"
+                                title="{{ $isLocked ? 'Chuyến xe đã kết thúc hoặc bị hoãn, không thể cập nhật' : 'Cập nhật trạng thái' }}">
+                                <i class="bi bi-check2-circle"></i>
                             </button>
                         </td>
                     </tr>
@@ -181,11 +182,10 @@
             <form id="updateStatusForm" method="POST" action="">
                 @csrf
                 @method('PATCH')
-
                 <div class="modal-content">
                     <div class="modal-header bg-primary text-white">
                         <h5 class="modal-title">
-                            <i class="bi bi-gear-fill me-2"></i> Cập nhật trạng thái
+                            <i class="bi bi-gear-fill me-2"></i> Cập nhật trạng thái chuyến
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                             aria-label="Close"></button>
@@ -195,14 +195,13 @@
                         <div class="alert alert-light border mb-3">
                             Chuyến xe: <strong id="modal-trip-code" class="text-primary fs-5">...</strong>
                         </div>
-
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Chọn trạng thái mới:</label>
-                            <select name="trip_status" id="modal-status-select" class="form-select form-select-lg">
-                                <option value="1">🔵 Chưa xuất phát (Scheduled)</option>
-                                <option value="2">🔴 Đã tạm hoãn (Cancelled)</option>
-                                <option value="3">🚀 Đã xuất phát (In Transit)</option>
-                                <option value="4">🏁 Đã hoàn thành (Completed)</option>
+                            <label class="form-label text-muted">Trạng thái</label>
+                            <select name="trip_status" id="modal-status-select" class="form-select">
+                                <option value="1">Chưa xuất phát</option>
+                                <option value="2">Đã tạm hoãn</option>
+                                <option value="3">Đã xuất phát</option>
+                                <option value="4">Đã hoàn thành</option>
                             </select>
                         </div>
                     </div>
@@ -219,32 +218,46 @@
     {{-- JAVASCRIPT XỬ LÝ MODAL --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const updateButtons = document.querySelectorAll('.btn-update-status');
-            const modalCode = document.getElementById('modal-trip-code');
-            const modalSelect = document.getElementById('modal-status-select');
-            const form = document.getElementById('updateStatusForm');
+    const updateButtons = document.querySelectorAll('.btn-update-status');
+    const modalCode = document.getElementById('modal-trip-code');
+    const modalSelect = document.getElementById('modal-status-select');
+    const form = document.getElementById('updateStatusForm');
 
-            // Route gốc (cần thay thế bằng route thực tế của bạn)
-            // Giả sử route là: /checker/trips/{id}/update-status
-            const baseUrl = "{{ url('checker/trips') }}";
+    const baseUrl = "{{ url('checker/trips') }}";
 
-            updateButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const id = this.getAttribute('data-id');
-                    const code = this.getAttribute('data-code');
-                    const status = this.getAttribute('data-status');
+    updateButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const code = this.getAttribute('data-code');
+            const status = this.getAttribute('data-status'); // Trạng thái hiện tại
 
-                    // 1. Cập nhật Text
-                    modalCode.textContent = code;
+            // 1. Cập nhật thông tin cơ bản
+            modalCode.textContent = code;
+            modalSelect.value = status;
+            form.action = `${baseUrl}/${id}/update-status`;
 
-                    // 2. Cập nhật Select value
-                    modalSelect.value = status;
+            // 2. Logic ẩn/hiện các option dựa trên trạng thái hiện tại
+            const options = modalSelect.querySelectorAll('option');
+            
+            options.forEach(option => {
+                // Trước tiên, hiển thị lại tất cả các option (reset trạng thái)
+                option.style.display = 'block';
+                option.disabled = false;
 
-                    // 3. Cập nhật Form Action URL
-                    form.action = `${baseUrl}/${id}/update-status`;
-                });
+                if (status == '3') { // Nếu trạng thái hiện tại là "Đã xuất phát"
+                    // Ẩn "Chưa xuất phát" (1) và "Đã tạm hoãn" (2)
+                    if (option.value == '1' || option.value == '2') {
+                        option.style.display = 'none';
+                        option.disabled = true;
+                    }
+                }
+                
+                // Lưu ý: "Đã xuất phát" (3) vẫn hiện để giữ giá trị mặc định, 
+                // và "Đã hoàn thành" (4) hiện để người dùng chọn.
             });
         });
+    });
+});
     </script>
     {{-- Thông báo thành công --}}
     @if (session('success'))
